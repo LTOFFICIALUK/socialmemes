@@ -110,14 +110,14 @@ export const Navigation = ({ currentUser, onSignOut, onNotificationRead }: Navig
           <img 
             src="/logo.png" 
             alt="Social Memes" 
-            className="h-24 w-auto object-contain"
+            className="h-32 w-auto object-contain"
             style={{ aspectRatio: '1/1' }}
           />
         </Link>
       </div>
 
       {/* Navigation Links */}
-      <div className="flex-1 px-4">
+      <div className="flex-1 px-4 -mt-4">
         <ul className="space-y-2">
           {navigation.map((item) => {
             const isActive = pathname === item.href
