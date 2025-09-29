@@ -9,9 +9,12 @@ export async function middleware(request: NextRequest) {
     },
   })
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
+  
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         get(name: string) {
@@ -57,26 +60,32 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
 
-  // If user is authenticated and trying to access auth pages, redirect to home
-  if (session && (request.nextUrl.pathname === '/auth/signin' || request.nextUrl.pathname === '/auth/signup')) {
-    return NextResponse.redirect(new URL('/', request.url))
-  }
+    // If user is authenticated and trying to access auth pages, redirect to home
+    if (session && (request.nextUrl.pathname === '/auth/signin' || request.nextUrl.pathname === '/auth/signup')) {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
 
-  // Temporarily disable the redirect to signup to debug the issue
-  // if (!session && request.nextUrl.pathname === '/') {
-  //   return NextResponse.redirect(new URL('/auth/signup', request.url))
-  // }
+    // Temporarily disable the redirect to signup to debug the issue
+    // if (!session && request.nextUrl.pathname === '/') {
+    //   return NextResponse.redirect(new URL('/auth/signup', request.url))
+    // }
 
-  // Allow auth pages to be accessed without authentication
-  if (request.nextUrl.pathname.startsWith('/auth/')) {
+    // Allow auth pages to be accessed without authentication
+    if (request.nextUrl.pathname.startsWith('/auth/')) {
+      return response
+    }
+
+    return response
+  } catch (error) {
+    console.error('Middleware error:', error)
+    // If there's an error with Supabase, just continue with the request
     return response
   }
-
-  return response
 }
 
 export const config = {
