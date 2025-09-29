@@ -70,7 +70,7 @@ export default function SignUpPage() {
           data: {
             username,
           },
-          emailRedirectTo: `${window.location.origin}/auth/signin`
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/signin`
         }
       })
 
