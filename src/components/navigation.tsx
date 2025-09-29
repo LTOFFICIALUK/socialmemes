@@ -105,19 +105,19 @@ export const Navigation = ({ currentUser, onSignOut, onNotificationRead }: Navig
   return (
     <nav className="h-full w-full bg-black flex flex-col">
       {/* Logo */}
-      <div className="p-6">
-        <Link href="/" className="flex items-center justify-center">
+      <div className="pt-0 pr-6 pl-7">
+        <Link href="/" className="flex items-center">
           <img 
             src="/logo.png" 
             alt="Social Memes" 
-            className="h-12 w-auto object-contain"
+            className="h-24 w-auto object-contain"
             style={{ aspectRatio: '1/1' }}
           />
         </Link>
       </div>
 
       {/* Navigation Links */}
-      <div className="flex-1 px-4 pt-2">
+      <div className="flex-1 px-4">
         <ul className="space-y-2">
           {navigation.map((item) => {
             const isActive = pathname === item.href
