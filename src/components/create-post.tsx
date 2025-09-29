@@ -178,7 +178,7 @@ export const CreatePost = ({ currentUser, onSubmit, isSubmitting }: CreatePostPr
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="p-4">
+      <form onSubmit={handleSubmit} className="p-3 sm:p-4">
         <div className="flex items-start space-x-3">
           <button
             onClick={handleAvatarClick}

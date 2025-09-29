@@ -79,15 +79,7 @@ export const TrendingTokens = ({ limit = 10, timePeriod = '24 hours' }: Trending
   }
 
   if (trendingTokens.length === 0) {
-    return (
-      <div>
-        <div className="bg-gray-900 rounded-lg p-4 border border-gray-800 text-center">
-          <Coins className="h-8 w-8 text-gray-500 mx-auto mb-2" />
-          <p className="text-gray-400 text-sm">No trending tokens yet</p>
-          <p className="text-gray-500 text-xs mt-1">Posts with tokens will appear here</p>
-        </div>
-      </div>
-    )
+    return null
   }
 
   return (

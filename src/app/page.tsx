@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Navigation } from '@/components/navigation'
+import { MobileNavigation } from '@/components/mobile-navigation'
 import { CreatePost } from '@/components/create-post'
 import { Feed } from '@/components/feed'
 import { TrendingTokens } from '@/components/trending-tokens'
@@ -11,6 +12,53 @@ import { ToastContainer, useToast } from '@/components/ui/toast'
 import { Post } from '@/lib/database'
 import { getPosts, createPost as createPostDB } from '@/lib/database'
 import { supabase } from '@/lib/supabase'
+
+const TrendingTokensSection = () => {
+  const [hasTokens, setHasTokens] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    const checkForTokens = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('posts')
+          .select('id')
+          .not('token_symbol', 'is', null)
+          .neq('token_symbol', '')
+          .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+          .limit(1)
+        
+        if (!error) {
+          setHasTokens(data && data.length > 0)
+        }
+      } catch (error) {
+        console.error('Error checking for tokens:', error)
+        setHasTokens(false)
+      }
+    }
+
+    checkForTokens()
+  }, [])
+
+  if (hasTokens === null) {
+    return null // Don't show anything while checking
+  }
+
+  if (!hasTokens) {
+    return null // Don't show the section if no tokens
+  }
+
+  return (
+    <div className="bg-black rounded-xl border border-gray-800">
+      <div className="bg-black backdrop-blur-sm px-4 py-3 rounded-t-xl">
+        <h2 className="text-lg font-bold text-white">Trending Tokens</h2>
+      </div>
+      
+      <div className="px-4 pb-4 pt-1">
+        <TrendingTokens limit={8} timePeriod="24 hours" />
+      </div>
+    </div>
+  )
+}
 
 export default function Home() {
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string } | undefined>(undefined)
@@ -214,12 +262,12 @@ export default function Home() {
     <div className="min-h-screen bg-black text-white">
       <div className="flex h-screen max-w-7xl mx-auto">
         {/* Left Column - Navigation */}
-        <div className="w-64 px-8 h-screen overflow-y-auto">
+        <div className="w-64 px-4 lg:px-8 h-screen overflow-y-auto hidden lg:block">
           <Navigation currentUser={currentUser} onSignOut={handleSignOut} />
         </div>
         
         {/* Center Column - Feed */}
-        <div className="flex-1 max-w-2xl border-l border-r border-gray-800 h-screen flex flex-col">
+        <div className="flex-1 w-full lg:max-w-2xl lg:border-l lg:border-r border-gray-800 h-screen flex flex-col pb-16 lg:pb-0">
           {/* Header */}
           <div className="bg-black/80 backdrop-blur-sm border-b border-gray-800 px-4 py-3 flex-shrink-0">
             <h1 className="text-xl font-bold text-white">Home</h1>
@@ -246,26 +294,21 @@ export default function Home() {
         </div>
         
         {/* Right Column - Search & Trending Tokens */}
-        <div className="w-96 px-8 h-screen overflow-y-auto">
+        <div className="w-96 px-8 h-screen overflow-y-auto hidden xl:block">
           {/* Search Bar */}
           <div className="mt-4 mb-4">
             <SearchBar placeholder="Search posts, users, tokens..." />
           </div>
           
-          <div className="bg-black rounded-xl border border-gray-800">
-            <div className="bg-black backdrop-blur-sm px-4 py-3 rounded-t-xl">
-              <h2 className="text-lg font-bold text-white">Trending Tokens</h2>
-            </div>
-            
-            <div className="px-4 pb-4 pt-1">
-              <TrendingTokens limit={8} timePeriod="24 hours" />
-            </div>
-          </div>
+          <TrendingTokensSection />
         </div>
       </div>
       
       {/* Toast Notifications */}
       <ToastContainer toasts={toasts} onClose={removeToast} />
+      
+      {/* Mobile Navigation */}
+      <MobileNavigation currentUser={currentUser} onSignOut={handleSignOut} />
     </div>
   )
 }

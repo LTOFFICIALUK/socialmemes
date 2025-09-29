@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { Navigation } from '@/components/navigation'
+import { MobileNavigation } from '@/components/mobile-navigation'
 import { Feed } from '@/components/feed'
 import { TrendingTokens } from '@/components/trending-tokens'
 import { SearchBar } from '@/components/search-bar'
@@ -185,12 +186,12 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-black">
       <div className="flex h-screen max-w-7xl mx-auto">
         {/* Left Column - Navigation */}
-        <div className="w-64 px-8 h-screen overflow-y-auto">
+        <div className="w-64 px-4 lg:px-8 h-screen overflow-y-auto hidden lg:block">
           <Navigation currentUser={currentUser} />
         </div>
         
         {/* Center Column - Profile Content */}
-        <div className="flex-1 max-w-2xl border-l border-r border-gray-800 h-screen flex flex-col">
+        <div className="flex-1 w-full lg:max-w-2xl lg:border-l lg:border-r border-gray-800 h-screen flex flex-col pb-16 lg:pb-0">
           {/* Header */}
           <div className="bg-black/80 backdrop-blur-sm border-b border-gray-800 px-4 py-3 flex-shrink-0">
             <h1 className="text-xl font-bold text-white">
@@ -299,7 +300,7 @@ export default function ProfilePage() {
         </div>
         
         {/* Right Column - Search & Trending Tokens */}
-        <div className="w-96 px-8 h-screen overflow-y-auto">
+        <div className="w-96 px-8 h-screen overflow-y-auto hidden xl:block">
           {/* Search Bar */}
           <div className="mt-4 mb-4">
             <SearchBar placeholder="Search posts, users, tokens..." />
@@ -340,6 +341,9 @@ export default function ProfilePage() {
         profile={profile}
         onProfileUpdate={handleProfileUpdate}
       />
+      
+      {/* Mobile Navigation */}
+      <MobileNavigation currentUser={currentUser} />
     </div>
   )
 }

@@ -124,7 +124,7 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete }: Po
       className="border-b border-gray-800 hover:bg-gray-900/50 transition-colors cursor-pointer"
       onClick={handlePostCardClick}
     >
-      <div className="flex space-x-3 p-4">
+      <div className="flex space-x-3 p-3 sm:p-4">
         <Avatar 
           className="h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity"
           onClick={handleProfileClick}
@@ -229,7 +229,7 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete }: Po
             </div>
           )}
 
-          <div className="flex items-center space-x-6 text-gray-400">
+          <div className="flex items-center space-x-4 sm:space-x-6 text-gray-400">
             <Button
               variant="ghost"
               size="sm"

@@ -3,10 +3,58 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Navigation } from '@/components/navigation'
+import { MobileNavigation } from '@/components/mobile-navigation'
 import { ImageGrid } from '@/components/image-grid'
 import { TrendingTokens } from '@/components/trending-tokens'
 import { SearchBar } from '@/components/search-bar'
 import { supabase } from '@/lib/supabase'
+
+const TrendingTokensSection = () => {
+  const [hasTokens, setHasTokens] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    const checkForTokens = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('posts')
+          .select('id')
+          .not('token_symbol', 'is', null)
+          .neq('token_symbol', '')
+          .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+          .limit(1)
+        
+        if (!error) {
+          setHasTokens(data && data.length > 0)
+        }
+      } catch (error) {
+        console.error('Error checking for tokens:', error)
+        setHasTokens(false)
+      }
+    }
+
+    checkForTokens()
+  }, [])
+
+  if (hasTokens === null) {
+    return null // Don't show anything while checking
+  }
+
+  if (!hasTokens) {
+    return null // Don't show the section if no tokens
+  }
+
+  return (
+    <div className="bg-black rounded-xl border border-gray-800">
+      <div className="sticky top-0 bg-black backdrop-blur-sm px-4 py-3 rounded-t-xl">
+        <h2 className="text-lg font-bold text-white">Trending Tokens</h2>
+      </div>
+      
+      <div className="px-4 pb-4 pt-1">
+        <TrendingTokens limit={8} timePeriod="24 hours" />
+      </div>
+    </div>
+  )
+}
 
 export default function Explore() {
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string } | undefined>(undefined)
@@ -91,12 +139,12 @@ export default function Explore() {
     <div className="min-h-screen bg-black text-white">
       <div className="flex min-h-screen max-w-7xl mx-auto">
         {/* Left Column - Navigation */}
-        <div className="w-64 px-8 h-screen">
+        <div className="w-64 px-4 lg:px-8 h-screen hidden lg:block">
           <Navigation currentUser={currentUser} onSignOut={handleSignOut} />
         </div>
         
         {/* Center Column - Image Grid */}
-        <div className="flex-1 max-w-4xl border-l border-r border-gray-800">
+        <div className="flex-1 w-full lg:max-w-4xl lg:border-l lg:border-r border-gray-800 pb-16 lg:pb-0">
           {/* Header */}
           <div className="sticky top-0 bg-black border-b border-gray-800 px-4 py-3 z-50">
             <h1 className="text-xl font-bold text-white">Explore</h1>
@@ -108,23 +156,18 @@ export default function Explore() {
         </div>
         
         {/* Right Column - Search & Trending Tokens */}
-        <div className="w-96 px-8">
+        <div className="w-96 px-8 hidden xl:block">
           {/* Search Bar */}
           <div className="mt-4 mb-4">
             <SearchBar placeholder="Search posts, users, tokens..." />
           </div>
           
-          <div className="bg-black rounded-xl border border-gray-800">
-            <div className="sticky top-0 bg-black backdrop-blur-sm px-4 py-3 rounded-t-xl">
-              <h2 className="text-lg font-bold text-white">Trending Tokens</h2>
-            </div>
-            
-            <div className="px-4 pb-4 pt-1">
-              <TrendingTokens limit={8} timePeriod="24 hours" />
-            </div>
-          </div>
+          <TrendingTokensSection />
         </div>
       </div>
+      
+      {/* Mobile Navigation */}
+      <MobileNavigation currentUser={currentUser} onSignOut={handleSignOut} />
     </div>
   )
 }

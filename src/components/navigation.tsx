@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Grid3X3, User, LogOut, Settings, Bell } from 'lucide-react'
+import { Home, Grid3X3, User, LogOut, Settings, Bell, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getUnreadNotificationCount } from '@/lib/database'
@@ -23,6 +23,7 @@ interface NavigationProps {
 const navigation = [
   { name: 'Home', href: '/', icon: Home },
   { name: 'Explore', href: '/explore', icon: Grid3X3 },
+  { name: 'Search', href: '/search', icon: Search },
   { name: 'Notifications', href: '/notifications', icon: Bell },
 ]
 

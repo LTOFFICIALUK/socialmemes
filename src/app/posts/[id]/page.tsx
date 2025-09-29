@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { Navigation } from '@/components/navigation'
+import { MobileNavigation } from '@/components/mobile-navigation'
 import { TrendingTokens } from '@/components/trending-tokens'
 import { SearchBar } from '@/components/search-bar'
 import { PostDetail } from '@/components/post-detail'
@@ -100,12 +101,12 @@ export default function PostPage() {
     <div className="min-h-screen bg-black text-white">
       <div className="flex h-screen max-w-7xl mx-auto">
         {/* Left Column - Navigation */}
-        <div className="w-64 px-8 h-screen overflow-y-auto">
+        <div className="w-64 px-4 lg:px-8 h-screen overflow-y-auto hidden lg:block">
           <Navigation currentUser={currentUser} onSignOut={handleSignOut} />
         </div>
         
         {/* Center Column - Post Detail */}
-        <div className="flex-1 max-w-2xl border-l border-r border-gray-800 h-screen flex flex-col">
+        <div className="flex-1 w-full lg:max-w-2xl lg:border-l lg:border-r border-gray-800 h-screen flex flex-col pb-16 lg:pb-0">
           {/* Header */}
           <div className="bg-black/80 backdrop-blur-sm border-b border-gray-800 px-4 py-3 flex-shrink-0">
             <div className="flex items-center space-x-4">
@@ -130,7 +131,7 @@ export default function PostPage() {
         </div>
         
         {/* Right Column - Search & Trending Tokens */}
-        <div className="w-96 px-8 h-screen overflow-y-auto">
+        <div className="w-96 px-8 h-screen overflow-y-auto hidden xl:block">
           {/* Search Bar */}
           <div className="mt-4 mb-4">
             <SearchBar placeholder="Search posts, users, tokens..." />
@@ -150,6 +151,9 @@ export default function PostPage() {
       
       {/* Toast Notifications */}
       <ToastContainer toasts={toasts} onClose={removeToast} />
+      
+      {/* Mobile Navigation */}
+      <MobileNavigation currentUser={currentUser} onSignOut={handleSignOut} />
     </div>
   )
 }
