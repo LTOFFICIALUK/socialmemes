@@ -153,12 +153,14 @@ export const Navigation = ({ currentUser, onSignOut, onNotificationRead }: Navig
       {currentUser ? (
         <div className="p-4 relative">
           <div className="flex items-center space-x-3">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={currentUser.avatar_url || undefined} alt={currentUser.username} />
-              <AvatarFallback className="bg-green-500 text-white font-semibold">
-                {currentUser.username ? currentUser.username.charAt(0).toUpperCase() : 'U'}
-              </AvatarFallback>
-            </Avatar>
+            <Link href={`/profile/${currentUser.username || 'user'}`}>
+              <Avatar className="h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity">
+                <AvatarImage src={currentUser.avatar_url || undefined} alt={currentUser.username} />
+                <AvatarFallback className="bg-green-500 text-white font-semibold">
+                  {currentUser.username ? currentUser.username.charAt(0).toUpperCase() : 'U'}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-white truncate">
                 {currentUser.username || 'User'}

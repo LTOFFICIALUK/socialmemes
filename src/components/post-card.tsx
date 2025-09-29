@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Heart, MessageCircle, Share, ExternalLink, MoreHorizontal, Trash2, Coins } from 'lucide-react'
+import { Heart, MessageCircle, Share, Check, ExternalLink, MoreHorizontal, Trash2, Coins } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -25,6 +25,7 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete }: Po
   const [showDeleteMenu, setShowDeleteMenu] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [isShared, setIsShared] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
   const handleLike = () => {
@@ -83,6 +84,21 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete }: Po
     } finally {
       setIsDeleting(false)
       setShowDeleteDialog(false)
+    }
+  }
+
+  const handleShare = async () => {
+    try {
+      const postUrl = `${window.location.origin}/posts/${post.id}`
+      await navigator.clipboard.writeText(postUrl)
+      setIsShared(true)
+      
+      // Reset the icon after 2 seconds
+      setTimeout(() => {
+        setIsShared(false)
+      }, 2000)
+    } catch (error) {
+      console.error('Error copying to clipboard:', error)
     }
   }
 
@@ -242,12 +258,18 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete }: Po
             <Button
               variant="ghost"
               size="sm"
-              className="flex items-center space-x-2 hover:text-green-500"
-              onClick={() => navigator.clipboard.writeText(window.location.href)}
+              className={`flex items-center space-x-2 ${
+                isShared ? 'text-green-500' : 'hover:text-green-500'
+              }`}
+              onClick={handleShare}
               data-prevent-navigation
             >
-              <Share className="h-5 w-5" />
-              <span>Share</span>
+              {isShared ? (
+                <Check className="h-5 w-5" />
+              ) : (
+                <Share className="h-5 w-5" />
+              )}
+              <span>{isShared ? 'Copied!' : 'Share'}</span>
             </Button>
           </div>
         </div>

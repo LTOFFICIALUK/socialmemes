@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Heart, MessageCircle, Share, MoreHorizontal, Trash2, Coins } from 'lucide-react'
+import { Heart, MessageCircle, Share, Check, MoreHorizontal, Trash2, Coins } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog'
@@ -29,6 +29,7 @@ export const PostDetail = ({ postId, currentUser }: PostDetailProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isSubmittingReply, setIsSubmittingReply] = useState(false)
   const [isLoadingReplies, setIsLoadingReplies] = useState(false)
+  const [isShared, setIsShared] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
   const loadPost = async () => {
@@ -111,6 +112,21 @@ export const PostDetail = ({ postId, currentUser }: PostDetailProps) => {
     } finally {
       setIsDeleting(false)
       setShowDeleteDialog(false)
+    }
+  }
+
+  const handleShare = async () => {
+    try {
+      const postUrl = `${window.location.origin}/posts/${postId}`
+      await navigator.clipboard.writeText(postUrl)
+      setIsShared(true)
+      
+      // Reset the icon after 2 seconds
+      setTimeout(() => {
+        setIsShared(false)
+      }, 2000)
+    } catch (error) {
+      console.error('Error copying to clipboard:', error)
     }
   }
 
@@ -332,11 +348,17 @@ export const PostDetail = ({ postId, currentUser }: PostDetailProps) => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex items-center space-x-2 hover:text-green-500"
-                onClick={() => navigator.clipboard.writeText(window.location.href)}
+                className={`flex items-center space-x-2 ${
+                  isShared ? 'text-green-500' : 'hover:text-green-500'
+                }`}
+                onClick={handleShare}
               >
-                <Share className="h-5 w-5" />
-                <span>Share</span>
+                {isShared ? (
+                  <Check className="h-5 w-5" />
+                ) : (
+                  <Share className="h-5 w-5" />
+                )}
+                <span>{isShared ? 'Copied!' : 'Share'}</span>
               </Button>
             </div>
           </div>
