@@ -243,16 +243,17 @@ export const PostDetail = ({ postId, currentUser }: PostDetailProps) => {
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center space-x-2">
                 <span 
-                  className="font-semibold text-white truncate cursor-pointer hover:underline"
+                  className="font-semibold text-white cursor-pointer hover:underline"
                   onClick={() => handleProfileClick(post.profiles?.username || '')}
+                  style={{ 
+                    maxWidth: post.token_symbol ? '120px' : '200px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}
+                  title={post.profiles?.full_name || post.profiles?.username || 'Unknown User'}
                 >
                   {post.profiles?.full_name || post.profiles?.username || 'Unknown User'}
-                </span>
-                <span 
-                  className="text-gray-400 text-sm cursor-pointer hover:underline"
-                  onClick={() => handleProfileClick(post.profiles?.username || '')}
-                >
-                  @{post.profiles?.username || 'unknown'}
                 </span>
                 <span className="text-gray-400 text-sm">·</span>
                 <time className="text-gray-400 text-sm">
@@ -454,16 +455,17 @@ const ReplyCard = ({ reply, currentUserId, onProfileClick }: ReplyCardProps) => 
         <div className="flex-1 min-w-0">
           <div className="flex items-center space-x-2 mb-1">
             <span 
-              className="font-semibold text-white text-sm truncate cursor-pointer hover:underline"
+              className="font-semibold text-white text-sm cursor-pointer hover:underline"
               onClick={() => onProfileClick(reply.profiles?.username || '')}
+              style={{ 
+                maxWidth: '150px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}
+              title={reply.profiles?.full_name || reply.profiles?.username || 'Unknown User'}
             >
               {reply.profiles?.full_name || reply.profiles?.username || 'Unknown User'}
-            </span>
-            <span 
-              className="text-gray-400 text-xs cursor-pointer hover:underline"
-              onClick={() => onProfileClick(reply.profiles?.username || '')}
-            >
-              @{reply.profiles?.username || 'unknown'}
             </span>
             <span className="text-gray-400 text-xs">·</span>
             <time className="text-gray-400 text-xs">

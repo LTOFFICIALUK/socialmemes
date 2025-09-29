@@ -121,10 +121,10 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete }: Po
 
   return (
     <article 
-      className="border-b border-gray-800 hover:bg-gray-900/50 transition-colors cursor-pointer"
+      className="border-b border-gray-800 hover:bg-gray-900/50 transition-colors cursor-pointer overflow-hidden"
       onClick={handlePostCardClick}
     >
-      <div className="flex space-x-3 p-3 sm:p-4">
+      <div className="flex space-x-3 p-3 sm:p-4 min-w-0">
         <Avatar 
           className="h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity"
           onClick={handleProfileClick}
@@ -137,32 +137,32 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete }: Po
         </Avatar>
         
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center space-x-2">
+          <div className="flex items-start justify-between mb-1 min-w-0">
+            <div className="flex items-center space-x-2 min-w-0 flex-1 overflow-hidden">
               <span 
-                className="font-semibold text-white truncate cursor-pointer hover:underline"
+                className="font-semibold text-white cursor-pointer hover:underline flex-shrink-0"
                 onClick={handleProfileClick}
                 data-prevent-navigation
+                style={{ 
+                  maxWidth: post.token_symbol ? '120px' : '200px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+                title={post.profiles?.full_name || post.profiles?.username || 'Unknown User'}
               >
                 {post.profiles?.full_name || post.profiles?.username || 'Unknown User'}
               </span>
-              <span 
-                className="text-gray-400 text-sm cursor-pointer hover:underline"
-                onClick={handleProfileClick}
-                data-prevent-navigation
-              >
-                @{post.profiles?.username || 'unknown'}
-              </span>
-              <span className="text-gray-400 text-sm">·</span>
-              <time className="text-gray-400 text-sm">
+              <span className="text-gray-400 text-sm flex-shrink-0">·</span>
+              <time className="text-gray-400 text-sm flex-shrink-0">
                 {formatDate(post.created_at)}
               </time>
-              {/* Token tag */}
+              {/* Token tag - gets priority space */}
               {post.token_symbol && (
                 <>
-                  <span className="text-gray-400 text-sm">·</span>
+                  <span className="text-gray-400 text-sm flex-shrink-0">·</span>
                   <div 
-                    className="flex items-center space-x-1 cursor-pointer hover:text-green-300 transition-colors"
+                    className="flex items-center space-x-1 cursor-pointer hover:text-green-300 transition-colors flex-shrink-0"
                     onClick={() => {
                       if (post.dex_screener_url) {
                         window.open(post.dex_screener_url, '_blank', 'noopener,noreferrer')

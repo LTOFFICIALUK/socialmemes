@@ -39,8 +39,8 @@ const docSections: DocSection[] = [
         title: 'Introduction',
         icon: BookOpen,
         content: (
-          <div className="prose prose-invert max-w-none">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6">Welcome to Social Memes</h1>
+          <div className="prose prose-invert max-w-none overflow-hidden">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 break-words">Welcome to Social Memes</h1>
             <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed">
               Social Memes is a modern social media platform built for sharing and discovering memes, 
               with a focus on community engagement and real-time interactions.
@@ -83,8 +83,8 @@ const docSections: DocSection[] = [
         title: 'Account Setup',
         icon: Users,
         content: (
-          <div className="prose prose-invert max-w-none">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6">Account Setup</h1>
+          <div className="prose prose-invert max-w-none overflow-hidden">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 break-words">Account Setup</h1>
             <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed">
               Setting up your Social Memes account is quick and easy. Follow these steps to get started.
             </p>
@@ -128,8 +128,8 @@ const docSections: DocSection[] = [
         title: 'Posting Memes',
         icon: MessageSquare,
         content: (
-          <div className="prose prose-invert max-w-none">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6">Posting Memes</h1>
+          <div className="prose prose-invert max-w-none overflow-hidden">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 break-words">Posting Memes</h1>
             <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed">
               Learn how to create and share memes on Social Memes platform.
             </p>
@@ -169,8 +169,8 @@ const docSections: DocSection[] = [
         title: 'Interactions',
         icon: Heart,
         content: (
-          <div className="prose prose-invert max-w-none">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6">Interactions</h1>
+          <div className="prose prose-invert max-w-none overflow-hidden">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 break-words">Interactions</h1>
             <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed">
               Engage with the community through likes, comments, and shares.
             </p>
@@ -208,8 +208,8 @@ const docSections: DocSection[] = [
         title: 'Notifications',
         icon: Bell,
         content: (
-          <div className="prose prose-invert max-w-none">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6">Notifications</h1>
+          <div className="prose prose-invert max-w-none overflow-hidden">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 break-words">Notifications</h1>
             <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed">
               Stay updated with real-time notifications about your activity and interactions.
             </p>
@@ -260,8 +260,8 @@ const docSections: DocSection[] = [
         title: 'Search Basics',
         icon: Search,
         content: (
-          <div className="prose prose-invert max-w-none">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6">Search & Discovery</h1>
+          <div className="prose prose-invert max-w-none overflow-hidden">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 break-words">Search & Discovery</h1>
             <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed">
               Find the content and people you&apos;re looking for with our powerful search features.
             </p>
@@ -305,8 +305,8 @@ const docSections: DocSection[] = [
         title: 'Privacy Settings',
         icon: Shield,
         content: (
-          <div className="prose prose-invert max-w-none">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6">Privacy Settings</h1>
+          <div className="prose prose-invert max-w-none overflow-hidden">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 break-words">Privacy Settings</h1>
             <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed">
               Control your privacy and manage how others can interact with your content.
             </p>
@@ -351,8 +351,8 @@ const docSections: DocSection[] = [
         title: 'Frequently Asked Questions',
         icon: HelpCircle,
         content: (
-          <div className="prose prose-invert max-w-none">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6">Frequently Asked Questions</h1>
+          <div className="prose prose-invert max-w-none overflow-hidden">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 break-words">Frequently Asked Questions</h1>
             <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed">
               Find answers to common questions about using Social Memes.
             </p>
@@ -808,16 +808,16 @@ const DocsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white overflow-x-hidden">
       {/* Mobile Header */}
       <div className="lg:hidden bg-black border-b border-gray-800 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <BookOpen className="h-6 w-6 text-blue-500" />
-          <h1 className="text-lg font-bold text-white">Documentation</h1>
+        <div className="flex items-center space-x-3 min-w-0">
+          <BookOpen className="h-6 w-6 text-blue-500 flex-shrink-0" />
+          <h1 className="text-lg font-bold text-white truncate">Documentation</h1>
         </div>
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-2 text-gray-300 hover:text-white transition-colors"
+          className="p-2 text-gray-300 hover:text-white transition-colors flex-shrink-0"
         >
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -825,7 +825,7 @@ const DocsPage = () => {
         </button>
       </div>
 
-      <div className="flex">
+      <div className="flex min-w-0">
         {/* Mobile Overlay */}
         {isMobileMenuOpen && (
           <div 
@@ -863,8 +863,8 @@ const DocsPage = () => {
         </div>
         
         {/* Right Column - Main Content */}
-        <div className="flex-1 lg:ml-80">
-          <div className="p-4 sm:p-6 lg:p-8">
+        <div className="flex-1 lg:ml-80 min-w-0">
+          <div className="p-4 sm:p-6 lg:p-8 min-w-0">
             {renderContentCards() || (
               <div className="text-center py-8 lg:py-12">
                 <BookOpen className="h-12 w-12 text-gray-500 mx-auto mb-4" />

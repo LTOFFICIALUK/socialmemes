@@ -182,15 +182,15 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="flex h-screen max-w-7xl mx-auto">
+    <div className="min-h-screen bg-black text-white overflow-x-hidden">
+      <div className="flex h-screen max-w-7xl mx-auto min-w-0">
         {/* Left Column - Navigation */}
         <div className="w-64 px-4 lg:px-8 h-screen overflow-y-auto hidden lg:block">
           <Navigation currentUser={currentUser} onSignOut={handleSignOut} />
         </div>
         
         {/* Center Column - Notifications */}
-        <div className="flex-1 w-full lg:max-w-2xl lg:border-l lg:border-r border-gray-800 h-screen flex flex-col pb-16 lg:pb-0">
+        <div className="flex-1 w-full lg:max-w-2xl lg:border-l lg:border-r border-gray-800 h-screen flex flex-col pb-16 lg:pb-0 min-w-0">
           {/* Header */}
           <div className="bg-black/80 backdrop-blur-sm border-b border-gray-800 px-4 py-3 flex-shrink-0">
             <div className="flex items-center justify-between">

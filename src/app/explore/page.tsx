@@ -136,15 +136,15 @@ export default function Explore() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="flex min-h-screen max-w-7xl mx-auto">
+    <div className="min-h-screen bg-black text-white overflow-x-hidden">
+      <div className="flex min-h-screen max-w-7xl mx-auto min-w-0">
         {/* Left Column - Navigation */}
         <div className="w-64 px-4 lg:px-8 h-screen hidden lg:block">
           <Navigation currentUser={currentUser} onSignOut={handleSignOut} />
         </div>
         
         {/* Center Column - Image Grid */}
-        <div className="flex-1 w-full lg:max-w-4xl lg:border-l lg:border-r border-gray-800 pb-16 lg:pb-0">
+        <div className="flex-1 w-full lg:max-w-4xl lg:border-l lg:border-r border-gray-800 pb-16 lg:pb-0 min-w-0">
           {/* Header */}
           <div className="sticky top-0 bg-black border-b border-gray-800 px-4 py-3 z-50">
             <h1 className="text-xl font-bold text-white">Explore</h1>
