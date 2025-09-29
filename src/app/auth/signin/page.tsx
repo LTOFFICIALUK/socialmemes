@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
+import AuthFooter from '@/components/auth-footer'
 
 function SignInForm() {
   const [email, setEmail] = useState('')
@@ -82,87 +83,94 @@ function SignInForm() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
-            Sign in to Social Memes
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-400">
-            Or{' '}
-            <Link href="/auth/signup" className="font-medium text-green-400 hover:text-green-300">
-              create a new account
-            </Link>
-          </p>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-white">
-                Email address
-              </label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value)
-                  if (validationErrors.email) {
-                    setValidationErrors(prev => ({...prev, email: false}))
-                  }
-                }}
-                className={`mt-1 border-gray-700 focus-visible:border-gray-600 ${validationErrors.email ? 'border-red-500' : ''}`}
-                placeholder="Enter your email"
-              />
-              {validationErrors.email && (
-                <p className="mt-1 text-sm text-red-500">Email address is required</p>
-              )}
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-white">
-                Password
-              </label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value)
-                  if (validationErrors.password) {
-                    setValidationErrors(prev => ({...prev, password: false}))
-                  }
-                }}
-                className={`mt-1 border-gray-700 focus-visible:border-gray-600 ${validationErrors.password ? 'border-red-500' : ''}`}
-                placeholder="Enter your password"
-              />
-              {validationErrors.password && (
-                <p className="mt-1 text-sm text-red-500">Password is required</p>
-              )}
-            </div>
+    <div className="min-h-screen bg-black flex flex-col">
+      <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
+              Sign in to Social Memes
+            </h2>
+            <p className="mt-2 text-center text-sm text-gray-400">
+              Or{' '}
+              <Link href="/auth/signup" className="font-medium text-green-400 hover:text-green-300">
+                create a new account
+              </Link>
+            </p>
           </div>
-
-          {error && (
-            <div className="text-red-600 text-sm text-center">{error}</div>
-          )}
-
-          {success && (
-            <div className="text-green-400 text-sm text-center bg-green-900/20 border border-green-800 rounded-md p-3">
-              {success}
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-white">
+                  Email address
+                </label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value)
+                    if (validationErrors.email) {
+                      setValidationErrors(prev => ({...prev, email: false}))
+                    }
+                  }}
+                  className={`mt-1 border-gray-700 focus-visible:border-gray-600 ${validationErrors.email ? 'border-red-500' : ''}`}
+                  placeholder="Enter your email"
+                />
+                {validationErrors.email && (
+                  <p className="mt-1 text-sm text-red-500">Email address is required</p>
+                )}
+              </div>
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-white">
+                  Password
+                </label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                    if (validationErrors.password) {
+                      setValidationErrors(prev => ({...prev, password: false}))
+                    }
+                  }}
+                  className={`mt-1 border-gray-700 focus-visible:border-gray-600 ${validationErrors.password ? 'border-red-500' : ''}`}
+                  placeholder="Enter your password"
+                />
+                {validationErrors.password && (
+                  <p className="mt-1 text-sm text-red-500">Password is required</p>
+                )}
+              </div>
             </div>
-          )}
 
-          <Button
-            type="submit"
-            className="w-full border border-gray-600 cursor-pointer"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Signing in...' : 'Sign in'}
-          </Button>
-        </form>
+            {error && (
+              <div className="text-red-600 text-sm text-center">{error}</div>
+            )}
+
+            {success && (
+              <div className="text-green-400 text-sm text-center bg-green-900/20 border border-green-800 rounded-md p-3">
+                {success}
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              className="w-full border border-gray-600 cursor-pointer"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Signing in...' : 'Sign in'}
+            </Button>
+          </form>
+        </div>
+      </div>
+      
+      {/* Footer */}
+      <div className="pb-6">
+        <AuthFooter />
       </div>
     </div>
   )

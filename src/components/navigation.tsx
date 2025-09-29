@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Grid3X3, User, LogOut, Settings, Bell, Search } from 'lucide-react'
+import { Home, Grid3X3, User, LogOut, Settings, Bell, Search, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getUnreadNotificationCount } from '@/lib/database'
@@ -153,6 +153,22 @@ export const Navigation = ({ currentUser, onSignOut, onNotificationRead }: Navig
       {/* User Profile Section */}
       {currentUser ? (
         <div className="p-4 relative">
+          {/* Docs Menu Item */}
+          <div className="mb-4">
+            <Link
+              href="/docs"
+              className={cn(
+                "flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors",
+                pathname === '/docs'
+                  ? "text-white font-bold"
+                  : "text-gray-300 hover:bg-white/5 hover:text-white"
+              )}
+            >
+              <BookOpen className="h-5 w-5" />
+              <span>Docs</span>
+            </Link>
+          </div>
+          
           <div className="flex items-center space-x-3">
             <Link href={`/profile/${currentUser.username || 'user'}`}>
               <Avatar className="h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity">

@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog'
 import { CreateReply } from '@/components/create-reply'
 import { Post, Reply } from '@/lib/database'
-import { formatDate, formatNumber } from '@/lib/utils'
+import { formatDate, formatNumber, getBestDexScreenerUrl } from '@/lib/utils'
 import { getPostById, likePost, unlikePost, deletePost, createReply, getRepliesByPostId } from '@/lib/database'
 import { supabase } from '@/lib/supabase'
 
@@ -165,7 +165,7 @@ export const PostDetail = ({ postId, currentUser }: PostDetailProps) => {
       // Generate DexScreener URL if token address is provided
       let dexScreenerUrl = undefined
       if (data.tokenAddress) {
-        dexScreenerUrl = `https://dexscreener.com/solana/${data.tokenAddress}`
+        dexScreenerUrl = await getBestDexScreenerUrl(data.tokenAddress)
       }
 
       const newReply = await createReply({

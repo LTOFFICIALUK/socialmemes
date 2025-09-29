@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { TrendingUp, ExternalLink, Coins } from 'lucide-react'
 import { getTrendingTokens, TrendingToken } from '@/lib/database'
-import { formatNumber } from '@/lib/utils'
+import { formatNumber, getBestDexScreenerUrl } from '@/lib/utils'
 
 interface TrendingTokensProps {
   limit?: number
@@ -34,9 +34,18 @@ export const TrendingTokens = ({ limit = 10, timePeriod = '24 hours' }: Trending
     loadTrendingTokens()
   }, [limit, timePeriod])
 
-  const handleTokenClick = (token: TrendingToken) => {
-    if (token.dex_screener_url) {
-      window.open(token.dex_screener_url, '_blank', 'noopener,noreferrer')
+  const handleTokenClick = async (token: TrendingToken) => {
+    if (token.token_address) {
+      try {
+        const bestUrl = await getBestDexScreenerUrl(token.token_address)
+        window.open(bestUrl, '_blank', 'noopener,noreferrer')
+      } catch (error) {
+        console.error('Error getting DexScreener URL:', error)
+        // Fallback to stored URL if available
+        if (token.dex_screener_url) {
+          window.open(token.dex_screener_url, '_blank', 'noopener,noreferrer')
+        }
+      }
     }
   }
 
@@ -99,7 +108,7 @@ export const TrendingTokens = ({ limit = 10, timePeriod = '24 hours' }: Trending
                 <p className="text-sm font-medium text-white truncate">
                   ${token.token_symbol}
                 </p>
-                {token.dex_screener_url && (
+                {token.token_address && (
                   <ExternalLink className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                 )}
               </div>

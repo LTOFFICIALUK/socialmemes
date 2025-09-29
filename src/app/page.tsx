@@ -12,6 +12,7 @@ import { ToastContainer, useToast } from '@/components/ui/toast'
 import { Post } from '@/lib/database'
 import { getPosts, createPost as createPostDB } from '@/lib/database'
 import { supabase } from '@/lib/supabase'
+import { getBestDexScreenerUrl } from '@/lib/utils'
 
 const TrendingTokensSection = () => {
   const [hasTokens, setHasTokens] = useState<boolean | null>(null)
@@ -178,7 +179,7 @@ export default function Home() {
       // Generate DexScreener URL if token address is provided
       let dexScreenerUrl = undefined
       if (data.tokenAddress) {
-        dexScreenerUrl = `https://dexscreener.com/solana/${data.tokenAddress}`
+        dexScreenerUrl = await getBestDexScreenerUrl(data.tokenAddress)
       }
 
       // Create post
