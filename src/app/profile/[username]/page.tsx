@@ -203,59 +203,65 @@ export default function ProfilePage() {
           <div className="flex-1 overflow-y-auto">
             {/* Banner */}
             {profile.banner_url && (
-              <div className="w-full h-48 bg-gray-800 relative">
+              <div className="w-full h-32 sm:h-48 bg-gray-800 relative">
                 <img
                   src={profile.banner_url}
                   alt={`${profile.username}'s banner`}
                   className="w-full h-full object-cover"
+                  style={{ objectPosition: 'center' }}
                 />
               </div>
             )}
             
             {/* Profile Header */}
-            <div className="border-b border-gray-800 p-6">
-              <div className="flex items-start space-x-4">
-                <Avatar className="h-20 w-20">
+            <div className="border-b border-gray-800 p-4 sm:p-6">
+              <div className="flex items-start space-x-3 sm:space-x-4">
+                <Avatar className="h-16 w-16 sm:h-20 sm:w-20">
                   <AvatarImage src={profile.avatar_url || undefined} alt={profile.username} />
-                  <AvatarFallback className="bg-green-500 text-white font-semibold text-2xl">
+                  <AvatarFallback className="bg-green-500 text-white font-semibold text-lg sm:text-2xl">
                     {profile.username.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between">
-                    <div>
-                      <h2 className="text-2xl font-bold text-white">
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-lg sm:text-2xl font-bold text-white truncate">
                         {profile.full_name || profile.username}
                       </h2>
-                      <p className="text-gray-400">@{profile.username}</p>
+                      <p className="text-sm sm:text-base text-gray-400 truncate">@{profile.username}</p>
                     </div>
                     
                     {isOwnProfile ? (
                       <Button
                         onClick={() => setShowEditProfileModal(true)}
                         variant="outline"
-                        className="flex items-center space-x-2"
+                        size="sm"
+                        className="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm ml-2 flex-shrink-0"
                       >
-                        <Settings className="h-4 w-4" />
-                        <span>Edit Profile</span>
+                        <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="hidden sm:inline">Edit Profile</span>
+                        <span className="sm:hidden">Edit</span>
                       </Button>
                     ) : currentUser ? (
                       <Button
                         onClick={handleFollow}
                         disabled={isFollowingLoading}
                         variant="outline"
-                        className="flex items-center space-x-2"
+                        size="sm"
+                        className="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm ml-2 flex-shrink-0"
                       >
                         {isFollowingUser ? (
                           <>
-                            <UserMinus className="h-4 w-4" />
-                            <span>Unfollow</span>
+                            <UserMinus className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="hidden sm:inline">Unfollow</span>
+                            <span className="sm:hidden">Unfollow</span>
                           </>
                         ) : (
                           <>
-                            <UserPlus className="h-4 w-4" />
-                            <span>Follow</span>
+                            <UserPlus className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="hidden sm:inline">Follow</span>
+                            <span className="sm:hidden">Follow</span>
                           </>
                         )}
                       </Button>
@@ -263,12 +269,12 @@ export default function ProfilePage() {
                   </div>
                   
                   {profile.bio && (
-                    <p className="mt-2 text-gray-100">{profile.bio}</p>
+                    <p className="mt-2 text-sm sm:text-base text-gray-100 break-words">{profile.bio}</p>
                   )}
                   
-                  <div className="mt-4 flex items-center space-x-6 text-sm text-gray-400">
+                  <div className="mt-3 sm:mt-4 flex items-center space-x-4 sm:space-x-6 text-xs sm:text-sm text-gray-400">
                     <div className="flex items-center space-x-1">
-                      <Users className="h-4 w-4 text-white" />
+                      <Users className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                       <span><span className="font-semibold text-white">{posts.length}</span> posts</span>
                     </div>
                     <button 
