@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Social Memes - $MEMES",
+  title: "Social Memes",
   description: "Share memes and tag tokens on the ultimate crypto meme platform",
 };
 

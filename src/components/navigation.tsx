@@ -106,8 +106,13 @@ export const Navigation = ({ currentUser, onSignOut, onNotificationRead }: Navig
     <nav className="h-full w-full bg-black flex flex-col">
       {/* Logo */}
       <div className="p-6">
-        <Link href="/" className="text-2xl font-bold text-green-500">
-          $MEMES
+        <Link href="/" className="flex items-center space-x-3">
+          <img 
+            src="/logo.png" 
+            alt="Social Memes" 
+            className="h-8 w-8"
+          />
+          <span className="text-2xl font-bold text-white">Social Memes</span>
         </Link>
       </div>
 

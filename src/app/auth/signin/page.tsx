@@ -86,7 +86,7 @@ function SignInForm() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
-            Sign in to $MEMES
+            Sign in to Social Memes
           </h2>
           <p className="mt-2 text-center text-sm text-gray-400">
             Or{' '}
