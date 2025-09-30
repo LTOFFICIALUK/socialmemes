@@ -504,7 +504,7 @@ const docSections: DocSection[] = [
 
             <h2 className="text-2xl font-semibold text-white mb-4">Disclaimer</h2>
             <p className="text-gray-300 mb-6">
-              The information on this website is provided on an "as is" basis. To the fullest extent permitted by law, 
+              The information on this website is provided on an &quot;as is&quot; basis. To the fullest extent permitted by law, 
               Social Memes excludes all representations, warranties, conditions and terms relating to our website and 
               the use of this website.
             </p>

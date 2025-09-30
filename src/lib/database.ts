@@ -132,6 +132,13 @@ export const deletePost = async (userId: string, postId: string) => {
   if (error) throw error
 }
 
+// Type for raw database result with count arrays
+type RawPost = Database['public']['Tables']['posts']['Row'] & {
+  profiles: Profile
+  likes_count: { count: number }[]
+  replies_count: { count: number }[]
+}
+
 export const getPosts = async (userId?: string, limit = 20, offset = 0): Promise<Post[]> => {
   try {
     // Build the select query with proper PostgREST syntax
@@ -190,14 +197,14 @@ export const getPosts = async (userId?: string, limit = 20, offset = 0): Promise
     }
     
     // Process posts
-    const processedRegularPosts = (regularPosts || []).map((post: any) => ({
+    const processedRegularPosts = (regularPosts || []).map((post: RawPost) => ({
       ...post,
       likes_count: post.likes_count?.[0]?.count || 0,
       replies_count: post.replies_count?.[0]?.count || 0,
       is_liked: userId ? userLikes.includes(post.id) : false
     }))
 
-    const processedPromotedPosts = (promotedPosts || []).map((post: any) => ({
+    const processedPromotedPosts = (promotedPosts || []).map((post: RawPost) => ({
       ...post,
       likes_count: post.likes_count?.[0]?.count || 0,
       replies_count: post.replies_count?.[0]?.count || 0,

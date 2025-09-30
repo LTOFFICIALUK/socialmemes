@@ -214,7 +214,7 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
               )}
 
               <p className="text-xs text-gray-400 text-center mt-3">
-                By clicking Promote Post, you're indicating that you have read and agree to the{' '}
+                By clicking Promote Post, you&apos;re indicating that you have read and agree to the{' '}
                 <a href="#" className="text-blue-400 hover:underline">Terms and Advertising Guidelines</a>.
               </p>
             </div>
