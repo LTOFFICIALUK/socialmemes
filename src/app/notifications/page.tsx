@@ -6,6 +6,7 @@ import { Check, Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Navigation } from '@/components/navigation'
 import { MobileNavigation } from '@/components/mobile-navigation'
+import { MobileMenuButton } from '@/components/mobile-menu-button'
 import { SearchBar } from '@/components/search-bar'
 import { TrendingTokens } from '@/components/trending-tokens'
 import { NotificationItem } from '@/components/notification-item'
@@ -195,18 +196,24 @@ export default function NotificationsPage() {
           <div className="bg-black/80 backdrop-blur-sm border-b border-gray-800 px-4 py-3 flex-shrink-0">
             <div className="flex items-center justify-between">
               <h1 className="text-xl font-bold text-white">Notifications</h1>
-              {notifications.some(n => !n.is_read) && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleMarkAllAsRead}
-                  disabled={isMarkingAllRead}
-                  className="flex items-center gap-2 text-gray-400 hover:text-white"
-                >
-                  <Check className="h-4 w-4" />
-                  Mark all read
-                </Button>
-              )}
+              <div className="flex items-center gap-2">
+                {notifications.some(n => !n.is_read) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleMarkAllAsRead}
+                    disabled={isMarkingAllRead}
+                    className="flex items-center gap-2 text-gray-400 hover:text-white"
+                  >
+                    <Check className="h-4 w-4" />
+                    Mark all read
+                  </Button>
+                )}
+                {/* Mobile Menu Button */}
+                <div className="lg:hidden">
+                  <MobileMenuButton currentUser={currentUser} onSignOut={handleSignOut} />
+                </div>
+              </div>
             </div>
           </div>
           

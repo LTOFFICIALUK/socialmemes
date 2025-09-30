@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Navigation } from '@/components/navigation'
 import { MobileNavigation } from '@/components/mobile-navigation'
+import { MobileMenuButton } from '@/components/mobile-menu-button'
 import { CreatePost } from '@/components/create-post'
 import { Feed } from '@/components/feed'
 import { TrendingTokens } from '@/components/trending-tokens'
@@ -270,8 +271,12 @@ export default function Home() {
         {/* Center Column - Feed */}
         <div className="flex-1 w-full lg:max-w-2xl lg:border-l lg:border-r border-gray-800 h-screen flex flex-col pb-16 lg:pb-0 min-w-0">
           {/* Header */}
-          <div className="bg-black/80 backdrop-blur-sm border-b border-gray-800 px-4 py-3 flex-shrink-0">
+          <div className="bg-black/80 backdrop-blur-sm border-b border-gray-800 px-4 py-3 flex-shrink-0 flex items-center justify-between">
             <h1 className="text-xl font-bold text-white">Home</h1>
+            {/* Mobile Menu Button */}
+            <div className="lg:hidden">
+              <MobileMenuButton currentUser={currentUser} onSignOut={handleSignOut} />
+            </div>
           </div>
           
           {/* Feed - Scrollable content including CreatePost */}

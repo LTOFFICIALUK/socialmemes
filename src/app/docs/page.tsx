@@ -19,6 +19,7 @@ import {
   ArrowRight
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { MobileMenuButton } from '@/components/mobile-menu-button'
 
 interface DocSection {
   id: string

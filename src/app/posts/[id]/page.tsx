@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { Navigation } from '@/components/navigation'
 import { MobileNavigation } from '@/components/mobile-navigation'
+import { MobileMenuButton } from '@/components/mobile-menu-button'
 import { TrendingTokens } from '@/components/trending-tokens'
 import { SearchBar } from '@/components/search-bar'
 import { PostDetail } from '@/components/post-detail'
@@ -109,15 +110,21 @@ export default function PostPage() {
         <div className="flex-1 w-full lg:max-w-2xl lg:border-l lg:border-r border-gray-800 h-screen flex flex-col pb-16 lg:pb-0 min-w-0">
           {/* Header */}
           <div className="bg-black/80 backdrop-blur-sm border-b border-gray-800 px-4 py-3 flex-shrink-0">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={handleBackClick}
-                className="p-2 hover:bg-gray-800 rounded-full transition-colors"
-                aria-label="Go back"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <h1 className="text-xl font-bold">Post</h1>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={handleBackClick}
+                  className="p-2 hover:bg-gray-800 rounded-full transition-colors"
+                  aria-label="Go back"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+                <h1 className="text-xl font-bold">Post</h1>
+              </div>
+              {/* Mobile Menu Button */}
+              <div className="lg:hidden">
+                <MobileMenuButton currentUser={currentUser} onSignOut={handleSignOut} />
+              </div>
             </div>
           </div>
           

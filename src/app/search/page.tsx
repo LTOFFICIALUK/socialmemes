@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Navigation } from '@/components/navigation'
 import { MobileNavigation } from '@/components/mobile-navigation'
+import { MobileMenuButton } from '@/components/mobile-menu-button'
 import { SearchBar } from '@/components/search-bar'
 import { PostCard } from '@/components/post-card'
 import { TrendingTokens } from '@/components/trending-tokens'
@@ -339,15 +340,23 @@ function SearchContent() {
         <div className="flex-1 w-full lg:max-w-2xl lg:border-l lg:border-r border-gray-800 h-screen flex flex-col pb-16 lg:pb-0 min-w-0">
           {/* Search Bar at Top */}
           <div className="bg-black/80 backdrop-blur-sm border-b border-gray-800 px-4 py-3 flex-shrink-0">
-            <SearchBar 
-              placeholder="Search posts, users, tokens..." 
-              value={query}
-              onChange={(newQuery) => {
-                if (newQuery !== query) {
-                  router.push(`/search?q=${encodeURIComponent(newQuery)}`)
-                }
-              }}
-            />
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <SearchBar 
+                  placeholder="Search posts, users, tokens..." 
+                  value={query}
+                  onChange={(newQuery) => {
+                    if (newQuery !== query) {
+                      router.push(`/search?q=${encodeURIComponent(newQuery)}`)
+                    }
+                  }}
+                />
+              </div>
+              {/* Mobile Menu Button */}
+              <div className="lg:hidden">
+                <MobileMenuButton currentUser={currentUser} onSignOut={handleSignOut} />
+              </div>
+            </div>
           </div>
           
           {/* Tabs */}

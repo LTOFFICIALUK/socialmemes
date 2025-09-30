@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Navigation } from '@/components/navigation'
 import { MobileNavigation } from '@/components/mobile-navigation'
+import { MobileMenuButton } from '@/components/mobile-menu-button'
 import { ImageGrid } from '@/components/image-grid'
 import { TrendingTokens } from '@/components/trending-tokens'
 import { SearchBar } from '@/components/search-bar'
@@ -147,8 +148,16 @@ export default function Explore() {
         <div className="flex-1 w-full lg:max-w-4xl lg:border-l lg:border-r border-gray-800 pb-16 lg:pb-0 min-w-0">
           {/* Header */}
           <div className="sticky top-0 bg-black border-b border-gray-800 px-4 py-3 z-50">
-            <h1 className="text-xl font-bold text-white">Explore</h1>
-            <p className="text-sm text-gray-400">Discover memes from the community</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-xl font-bold text-white">Explore</h1>
+                <p className="text-sm text-gray-400">Discover memes from the community</p>
+              </div>
+              {/* Mobile Menu Button */}
+              <div className="lg:hidden">
+                <MobileMenuButton currentUser={currentUser} onSignOut={handleSignOut} />
+              </div>
+            </div>
           </div>
           
           {/* Image Grid */}
