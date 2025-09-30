@@ -350,30 +350,41 @@ const docSections: DocSection[] = [
               Control your privacy and manage how others can interact with your content.
             </p>
 
-            <h2 className="text-2xl font-semibold text-white mb-4">Profile Privacy</h2>
-            <h3 className="text-xl font-semibold text-white mb-4">Privacy Options</h3>
-            <ul className="space-y-3 text-gray-300 ml-4 mb-8">
-              <li>• <strong>Public Profile:</strong> Anyone can view your posts and profile</li>
-              <li>• <strong>Private Profile:</strong> Only approved followers can see your content</li>
-              <li>• <strong>Custom:</strong> Set specific privacy rules for different content types</li>
-            </ul>
-
-            <h2 className="text-2xl font-semibold text-white mb-4">Content Controls</h2>
-            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
-              <li>Control who can comment on your posts</li>
-              <li>Block or mute specific users</li>
-              <li>Set content filters for your feed</li>
-              <li>Manage who can tag you in posts</li>
-              <li>Control data sharing preferences</li>
-            </ul>
-
             <h2 className="text-2xl font-semibold text-white mb-4">Account Security</h2>
             <h3 className="text-xl font-semibold text-red-300 mb-4">Security Features</h3>
-            <ul className="text-red-200 space-y-2 ml-4">
-              <li>• Two-factor authentication</li>
+            <ul className="text-red-200 space-y-2 ml-4 mb-8">
               <li>• Login activity monitoring</li>
               <li>• Password strength requirements</li>
               <li>• Suspicious activity alerts</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Platform Information</h2>
+            <p className="text-gray-300 mb-4">
+              Social Memes is a decentralized platform that operates with community-driven moderation. 
+              As a decentralized platform, we have limited centralized moderation capabilities and rely 
+              on community reporting and self-regulation.
+            </p>
+            
+            <p className="text-gray-300 mb-4">
+              This platform does not include parental controls or automated content filtering systems. 
+              All content is user-generated and publicly visible. Users are encouraged to be mindful 
+              of the content they share and consume.
+            </p>
+            
+            <p className="text-gray-300 mb-8">
+              While we encourage respectful behavior and have community guidelines in place, 
+              enforcement is primarily community-driven. Users can report inappropriate content, 
+              but moderation responses may vary based on community input and available resources.
+            </p>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Staying Safe</h2>
+            <p className="text-gray-300 mb-4">Best practices for using Social Memes safely:</p>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>Be mindful of the content you share and consume</li>
+              <li>Report inappropriate content when you encounter it</li>
+              <li>Don&apos;t share personal information publicly</li>
+              <li>Be cautious when interacting with unknown users</li>
+              <li>Remember that all content is public and permanent</li>
             </ul>
           </div>
         )
@@ -385,6 +396,215 @@ const docSections: DocSection[] = [
     title: 'Help & Support',
     icon: HelpCircle,
     children: [
+      {
+        id: 'terms-of-service',
+        title: 'Terms of Service',
+        icon: BookOpen,
+        content: (
+          <div className="prose prose-invert max-w-none overflow-hidden">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 break-words">Terms of Service</h1>
+            <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed">
+              Please read these terms carefully before using Social Memes.
+            </p>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Acceptance of Terms</h2>
+            <p className="text-gray-300 mb-6">
+              By accessing and using Social Memes, you accept and agree to be bound by the terms and provision of this agreement. 
+              If you do not agree to abide by the above, please do not use this service.
+            </p>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Use License</h2>
+            <p className="text-gray-300 mb-4">Permission is granted to temporarily use Social Memes for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:</p>
+            <ul className="list-disc list-inside space-y-2 text-gray-300 ml-4 mb-6">
+              <li>Modify or copy the materials</li>
+              <li>Use the materials for any commercial purpose or for any public display</li>
+              <li>Attempt to reverse engineer any software contained on the website</li>
+              <li>Remove any copyright or other proprietary notations from the materials</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">User Content</h2>
+            <p className="text-gray-300 mb-4">You are responsible for all content you post on Social Memes. By posting content, you agree that:</p>
+            <ul className="list-disc list-inside space-y-2 text-gray-300 ml-4 mb-6">
+              <li>You own or have the right to use the content</li>
+              <li>Your content does not violate any laws or third-party rights</li>
+              <li>Your content is not harmful, offensive, or inappropriate</li>
+              <li>You grant Social Memes a license to display and distribute your content</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Prohibited Uses</h2>
+            <p className="text-gray-300 mb-4">You may not use Social Memes:</p>
+            <ul className="list-disc list-inside space-y-2 text-gray-300 ml-4 mb-6">
+              <li>For any unlawful purpose or to solicit others to perform unlawful acts</li>
+              <li>To violate any international, federal, provincial, or state regulations, rules, laws, or local ordinances</li>
+              <li>To infringe upon or violate our intellectual property rights or the intellectual property rights of others</li>
+              <li>To harass, abuse, insult, harm, defame, slander, disparage, intimidate, or discriminate</li>
+              <li>To submit false or misleading information</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Disclaimer</h2>
+            <p className="text-gray-300 mb-6">
+              The information on this website is provided on an "as is" basis. To the fullest extent permitted by law, 
+              Social Memes excludes all representations, warranties, conditions and terms relating to our website and 
+              the use of this website.
+            </p>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Limitations</h2>
+            <p className="text-gray-300 mb-6">
+              In no event shall Social Memes or its suppliers be liable for any damages (including, without limitation, 
+              damages for loss of data or profit, or due to business interruption) arising out of the use or inability 
+              to use the materials on Social Memes, even if Social Memes or an authorized representative has been 
+              notified orally or in writing of the possibility of such damage.
+            </p>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Changes to Terms</h2>
+            <p className="text-gray-300 mb-6">
+              Social Memes may revise these terms of service at any time without notice. By using this website, 
+              you are agreeing to be bound by the then current version of these terms of service.
+            </p>
+          </div>
+        )
+      },
+      {
+        id: 'privacy-policy',
+        title: 'Privacy Policy',
+        icon: Shield,
+        content: (
+          <div className="prose prose-invert max-w-none overflow-hidden">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 break-words">Privacy Policy</h1>
+            <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed">
+              This privacy policy explains how Social Memes collects, uses, and protects your information.
+            </p>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Information We Collect</h2>
+            <h3 className="text-xl font-semibold text-white mb-4">Account Information</h3>
+            <ul className="list-disc list-inside space-y-2 text-gray-300 ml-4 mb-6">
+              <li>Email address and password for account creation</li>
+              <li>Username and display name</li>
+              <li>Profile picture and banner image</li>
+              <li>Bio and other profile information you choose to provide</li>
+            </ul>
+
+            <h3 className="text-xl font-semibold text-white mb-4">Content Information</h3>
+            <ul className="list-disc list-inside space-y-2 text-gray-300 ml-4 mb-6">
+              <li>Posts, comments, and other content you create</li>
+              <li>Images and media you upload</li>
+              <li>Token information you attach to posts</li>
+              <li>Engagement data (likes, follows, etc.)</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">How We Use Your Information</h2>
+            <p className="text-gray-300 mb-4">We use the information we collect to:</p>
+            <ul className="list-disc list-inside space-y-2 text-gray-300 ml-4 mb-6">
+              <li>Provide and maintain the Social Memes platform</li>
+              <li>Display your content to other users</li>
+              <li>Send you notifications about activity on your posts</li>
+              <li>Improve our services and user experience</li>
+              <li>Ensure platform security and prevent abuse</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Information Sharing</h2>
+            <p className="text-gray-300 mb-4">We may share your information in the following circumstances:</p>
+            <ul className="list-disc list-inside space-y-2 text-gray-300 ml-4 mb-6">
+              <li>Your public profile and posts are visible to all users</li>
+              <li>We may share information with service providers who help us operate the platform</li>
+              <li>We may disclose information if required by law or to protect our rights</li>
+              <li>We do not sell your personal information to third parties</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Data Security</h2>
+            <p className="text-gray-300 mb-6">
+              We implement appropriate security measures to protect your personal information against unauthorized access, 
+              alteration, disclosure, or destruction. However, no method of transmission over the internet is 100% secure.
+            </p>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Your Rights</h2>
+            <p className="text-gray-300 mb-4">You have the right to:</p>
+            <ul className="list-disc list-inside space-y-2 text-gray-300 ml-4 mb-6">
+              <li>Access and update your account information</li>
+              <li>Delete your account and associated data</li>
+              <li>Control your privacy settings</li>
+              <li>Request a copy of your data</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Contact Us</h2>
+            <p className="text-gray-300 mb-6">
+              If you have any questions about this privacy policy, please contact us at privacy@socialmemes.fun
+            </p>
+          </div>
+        )
+      },
+      {
+        id: 'community-guidelines',
+        title: 'Community Guidelines',
+        icon: Users,
+        content: (
+          <div className="prose prose-invert max-w-none overflow-hidden">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 break-words">Community Guidelines</h1>
+            <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed">
+              Help us maintain a positive and respectful community on Social Memes.
+            </p>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Be Respectful</h2>
+            <p className="text-gray-300 mb-4">Treat all community members with respect and kindness:</p>
+            <ul className="list-disc list-inside space-y-2 text-gray-300 ml-4 mb-6">
+              <li>Use respectful language in all interactions</li>
+              <li>Be considerate of different opinions and perspectives</li>
+              <li>Avoid personal attacks or harassment</li>
+              <li>Respect others&apos; privacy and boundaries</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Share Quality Content</h2>
+            <p className="text-gray-300 mb-4">Help maintain a high-quality community by:</p>
+            <ul className="list-disc list-inside space-y-2 text-gray-300 ml-4 mb-6">
+              <li>Sharing original and engaging memes and content</li>
+              <li>Adding meaningful captions to your posts</li>
+              <li>Using relevant token attachments when appropriate</li>
+              <li>Avoiding spam or repetitive content</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Prohibited Content</h2>
+            <p className="text-gray-300 mb-4">The following content is not allowed:</p>
+            <ul className="list-disc list-inside space-y-2 text-gray-300 ml-4 mb-6">
+              <li>Hate speech, discrimination, or harassment</li>
+              <li>Violence, graphic content, or disturbing imagery</li>
+              <li>Spam, scams, or misleading information</li>
+              <li>Copyright infringement or stolen content</li>
+              <li>Illegal activities or content</li>
+              <li>NSFW content or explicit material</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Token and Crypto Guidelines</h2>
+            <p className="text-gray-300 mb-4">When discussing tokens and cryptocurrency:</p>
+            <ul className="list-disc list-inside space-y-2 text-gray-300 ml-4 mb-6">
+              <li>Do not provide financial advice</li>
+              <li>Be transparent about your positions or interests</li>
+              <li>Avoid pump and dump schemes or market manipulation</li>
+              <li>Respect others&apos; investment decisions</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Reporting and Enforcement</h2>
+            <p className="text-gray-300 mb-4">Help us maintain community standards:</p>
+            <ul className="list-disc list-inside space-y-2 text-gray-300 ml-4 mb-6">
+              <li>Report content that violates these guidelines</li>
+              <li>Use the report function on posts and comments</li>
+              <li>Provide constructive feedback when possible</li>
+              <li>Remember that enforcement is community-driven</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Consequences</h2>
+            <p className="text-gray-300 mb-6">
+              Violations of these guidelines may result in content removal, account restrictions, or account suspension. 
+              We rely on community reporting and self-regulation to maintain these standards.
+            </p>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Questions or Concerns</h2>
+            <p className="text-gray-300 mb-6">
+              If you have questions about these guidelines or need to report a serious violation, 
+              please contact us at community@socialmemes.fun
+            </p>
+          </div>
+        )
+      },
       {
         id: 'faq',
         title: 'Frequently Asked Questions',
@@ -785,6 +1005,9 @@ const DocsPage = () => {
                           {child.id === 'notifications' && "Manage your notifications and stay updated with platform activity."}
                           {child.id === 'search-basics' && "Discover content and users with our powerful search and discovery features."}
                           {child.id === 'privacy-settings' && "Control your privacy and manage how others can interact with your content."}
+                          {child.id === 'terms-of-service' && "Read the terms and conditions for using Social Memes."}
+                          {child.id === 'privacy-policy' && "Learn how we collect, use, and protect your information."}
+                          {child.id === 'community-guidelines' && "Guidelines for maintaining a positive community environment."}
                           {child.id === 'faq' && "Find answers to common questions about using the Social Memes platform."}
                         </p>
                       </div>
