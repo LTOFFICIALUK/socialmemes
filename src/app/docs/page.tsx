@@ -92,20 +92,21 @@ const docSections: DocSection[] = [
             <h2 className="text-2xl font-semibold text-white mb-4">Creating Your Account</h2>
             <h3 className="text-xl font-semibold text-white mb-4">Sign Up Process</h3>
             <ol className="list-decimal list-inside space-y-3 text-gray-300 ml-4 mb-8">
-              <li>Click the &quot;Sign Up&quot; button in the navigation</li>
+              <li>Visit socialmemes.fun - you&apos;ll be automatically redirected to the sign up page</li>
               <li>Enter your email address and create a secure password</li>
-              <li>Choose a unique username (this will be your profile handle)</li>
-              <li>Verify your email address</li>
-              <li>Complete your profile setup</li>
+              <li>Choose a unique username (this will be your permanent profile handle)</li>
+              <li>Click &quot;Sign up&quot; to create your account</li>
+              <li>Check your email to verify your account</li>
             </ol>
 
-            <h2 className="text-2xl font-semibold text-white mb-4">Profile Customization</h2>
-            <p className="text-gray-300 mb-4">After creating your account, you can customize your profile:</p>
+            <h2 className="text-2xl font-semibold text-white mb-4">Getting Started</h2>
+            <p className="text-gray-300 mb-4">Once your account is verified, you can:</p>
             <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
-              <li>Upload a profile picture or avatar</li>
-              <li>Add a bio to tell others about yourself</li>
-              <li>Set your display preferences</li>
-              <li>Configure notification settings</li>
+              <li>Start exploring memes on the home feed</li>
+              <li>Create and share your own memes</li>
+              <li>Like and comment on posts</li>
+              <li>Follow other users to build your network</li>
+              <li>Search for content and discover new communities</li>
             </ul>
 
             <div className="bg-black border border-blue-600 rounded-lg p-4">
@@ -137,11 +138,10 @@ const docSections: DocSection[] = [
             <h2 className="text-2xl font-semibold text-white mb-4">Creating a Post</h2>
             <h3 className="text-xl font-semibold text-white mb-4">Step-by-Step Guide</h3>
             <ol className="list-decimal list-inside space-y-3 text-gray-300 ml-4 mb-8">
-              <li>Click the &quot;Create Post&quot; button (usually a + icon)</li>
+              <li>Create a post using the &quot;Create Post&quot; button in the left navigation (opens a popup modal) or the post composer directly on the home feed</li>
               <li>Upload an image or select from your device</li>
-              <li>Add a caption or description</li>
-              <li>Add relevant hashtags for discoverability</li>
-              <li>Choose your privacy settings</li>
+              <li>Add a caption to your post</li>
+              <li>Add a token attachment to link your post to a Solana token</li>
               <li>Click &quot;Post&quot; to share with the community</li>
             </ol>
 
@@ -149,9 +149,8 @@ const docSections: DocSection[] = [
             <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
               <li>Use high-quality images for better engagement</li>
               <li>Write engaging captions that add context</li>
-              <li>Use relevant hashtags to reach more people</li>
+              <li>Link relevant Solana tokens to increase visibility and connect with token communities</li>
               <li>Be respectful and follow community guidelines</li>
-              <li>Credit original creators when possible</li>
             </ul>
 
             <h2 className="text-2xl font-semibold text-white mb-4">Image Guidelines</h2>
@@ -159,7 +158,6 @@ const docSections: DocSection[] = [
             <ul className="text-yellow-200 space-y-2 ml-4">
               <li>• JPEG, PNG, GIF formats</li>
               <li>• Maximum file size: 10MB</li>
-              <li>• Recommended resolution: 1080x1080 or higher</li>
             </ul>
           </div>
         )
@@ -179,17 +177,15 @@ const docSections: DocSection[] = [
             <p className="text-gray-300 mb-4">Show appreciation for memes you enjoy:</p>
             <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
               <li>Click the heart icon to like a post</li>
-              <li>Liked posts appear in your activity</li>
               <li>Authors receive notifications for likes</li>
             </ul>
 
             <h2 className="text-2xl font-semibold text-white mb-4">Comments and Replies</h2>
             <h3 className="text-xl font-semibold text-white mb-4">Commenting System</h3>
             <ul className="space-y-3 text-gray-300 ml-4 mb-8">
-              <li>• Click &quot;Comment&quot; to add your thoughts</li>
+              <li>• Click on any post to add your thoughts</li>
               <li>• Reply to specific comments for threaded discussions</li>
-              <li>• Use @mentions to tag other users</li>
-              <li>• Edit or delete your own comments</li>
+              <li>• Delete your own comments</li>
             </ul>
 
             <h2 className="text-2xl font-semibold text-white mb-4">Following Users</h2>
@@ -197,7 +193,7 @@ const docSections: DocSection[] = [
             <ol className="list-decimal list-inside space-y-3 text-gray-300 ml-4">
               <li>Visit a user&apos;s profile</li>
               <li>Click the &quot;Follow&quot; button</li>
-              <li>Their posts will appear in your feed</li>
+              <li>Their posts will appear more frequently in your feed</li>
               <li>Manage your following list in your profile</li>
             </ol>
           </div>
@@ -220,7 +216,6 @@ const docSections: DocSection[] = [
               <li>• New likes on your posts</li>
               <li>• Comments on your content</li>
               <li>• New followers</li>
-              <li>• Mentions in comments</li>
             </ul>
             
             <h3 className="text-xl font-semibold text-white mb-4">System Notifications</h3>
@@ -230,15 +225,33 @@ const docSections: DocSection[] = [
               <li>• Security alerts</li>
             </ul>
 
-            <h2 className="text-2xl font-semibold text-white mb-4">Managing Notifications</h2>
-            <p className="text-gray-300 mb-4">Customize your notification preferences:</p>
-            <ol className="list-decimal list-inside space-y-3 text-gray-300 ml-4 mb-8">
-              <li>Go to your profile settings</li>
-              <li>Navigate to &quot;Notifications&quot;</li>
-              <li>Toggle specific notification types on/off</li>
-              <li>Set quiet hours for notifications</li>
-              <li>Choose email notification preferences</li>
-            </ol>
+            <h2 className="text-2xl font-semibold text-white mb-4">How Notifications Work</h2>
+            <p className="text-gray-300 mb-4">Notifications are delivered in real-time to keep you connected with your community:</p>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>Notifications appear in the notification bell icon in the navigation</li>
+              <li>Unread notifications are highlighted with a red badge showing the count</li>
+              <li>Click on the notification bell to view all your notifications</li>
+              <li>Notifications are automatically marked as read when you view them</li>
+              <li>You&apos;ll receive notifications instantly when someone engages with your content</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Notification Best Practices</h2>
+            <p className="text-gray-300 mb-4">Make the most of your notification experience:</p>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>Check your notifications regularly to stay engaged with your community</li>
+              <li>Respond to comments and likes to build relationships with other users</li>
+              <li>Use notifications to discover new content and users to follow</li>
+              <li>Notifications help you track the performance and engagement of your posts</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Troubleshooting Notifications</h2>
+            <p className="text-gray-300 mb-4">If you&apos;re not receiving notifications:</p>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>Check your browser&apos;s notification settings for socialmemes.fun</li>
+              <li>Ensure your browser allows notifications for this website</li>
+              <li>Refresh the page if notifications seem delayed</li>
+              <li>Make sure you&apos;re signed in to your account</li>
+            </ul>
 
             <div className="bg-black border border-green-600 rounded-lg p-4">
               <p className="text-green-300">
@@ -263,33 +276,59 @@ const docSections: DocSection[] = [
           <div className="prose prose-invert max-w-none overflow-hidden">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 break-words">Search & Discovery</h1>
             <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed">
-              Find the content and people you&apos;re looking for with our powerful search features.
+              Find posts, users, and tokens with our comprehensive search functionality.
             </p>
 
-            <h2 className="text-2xl font-semibold text-white mb-4">Searching Content</h2>
-            <h3 className="text-xl font-semibold text-white mb-4">Search Options</h3>
-            <ul className="space-y-3 text-gray-300 ml-4 mb-8">
-              <li>• <strong>Text Search:</strong> Search by captions, descriptions, and comments</li>
-              <li>• <strong>Hashtag Search:</strong> Find content by specific hashtags</li>
-              <li>• <strong>User Search:</strong> Find other users by username</li>
-              <li>• <strong>Trending:</strong> Discover popular content and hashtags</li>
+            <h2 className="text-2xl font-semibold text-white mb-4">How Search Works</h2>
+            <p className="text-gray-300 mb-4">Our search engine searches across all content types simultaneously:</p>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li><strong>Posts:</strong> Searches through post content and captions</li>
+              <li><strong>Tokens:</strong> Searches through tagged Solana tokens (symbols)</li>
+              <li><strong>Users:</strong> Searches through usernames and display names</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Search Interface</h2>
+            <h3 className="text-xl font-semibold text-white mb-4">Search Bar</h3>
+            <p className="text-gray-300 mb-4">Enter your search term in the search bar to find:</p>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>Posts containing your keywords</li>
+              <li>Posts tagged with specific token symbols</li>
+              <li>Users with matching usernames or names</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Search Results</h2>
+            <h3 className="text-xl font-semibold text-white mb-4">Filtering Options</h3>
+            <p className="text-gray-300 mb-4">After searching, filter your results using the tabs:</p>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li><strong>Popular:</strong> Posts sorted by likes and engagement</li>
+              <li><strong>Latest:</strong> Posts sorted by creation date (newest first)</li>
+              <li><strong>Users:</strong> User profiles matching your search</li>
             </ul>
 
             <h2 className="text-2xl font-semibold text-white mb-4">Search Tips</h2>
             <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
-              <li>Use specific keywords for better results</li>
-              <li>Try different variations of your search terms</li>
-              <li>Use hashtags to find themed content</li>
-              <li>Check trending topics for popular discussions</li>
-              <li>Save searches for quick access later</li>
+              <li>Search for token symbols (e.g., &quot;SOL&quot;, &quot;USDC&quot;) to find posts about specific tokens</li>
+              <li>Search for usernames to find specific users</li>
+              <li>Search for keywords to find posts with matching content</li>
+              <li>Use the Popular tab to find the most engaging content</li>
+              <li>Use the Latest tab to find recent posts</li>
             </ul>
 
             <h2 className="text-2xl font-semibold text-white mb-4">Discovery Features</h2>
             <h3 className="text-xl font-semibold text-blue-300 mb-4">Explore Page</h3>
-            <p className="text-blue-200 mb-6">Discover trending memes and popular content from across the platform.</p>
+            <p className="text-blue-200 mb-6">Browse the most recent memes and images in a grid layout to discover new content.</p>
             
-            <h3 className="text-xl font-semibold text-purple-300 mb-4">Recommendations</h3>
-            <p className="text-purple-200">Get personalized content suggestions based on your interests and activity.</p>
+            <h3 className="text-xl font-semibold text-purple-300 mb-4">Trending Tokens</h3>
+            <p className="text-purple-200 mb-8">View the top 10 trending Solana tokens based on post activity and engagement in the right sidebar.</p>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Following Discovery</h2>
+            <p className="text-gray-300 mb-4">Discover new users and content through search:</p>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>Find users with similar interests by searching for tokens you follow</li>
+              <li>Follow users who post content you enjoy</li>
+              <li>Discover trending tokens and communities</li>
+              <li>Build your network by finding active creators</li>
+            </ul>
           </div>
         )
       }
@@ -658,7 +697,7 @@ const DocsPage = () => {
             }
           }}
           className={cn(
-            "w-full flex items-center justify-between px-3 py-2 text-left rounded-lg transition-colors",
+            "w-full flex items-center justify-between px-3 py-2 text-left rounded-lg transition-colors cursor-pointer",
             level === 0 ? "text-sm font-medium" : "text-sm",
             isActive && !hasChildren
               ? "text-white font-bold"
@@ -717,7 +756,7 @@ const DocsPage = () => {
             </p>
           </div>
 
-          {docSections.map(section => (
+          {docSections.filter(section => !['platform-whitepaper', 'product-roadmap'].includes(section.id)).map(section => (
             <div key={section.id} className="space-y-4">
               <div className="flex items-center space-x-3">
                 <section.icon className="h-6 w-6 text-blue-500" />
@@ -773,7 +812,7 @@ const DocsPage = () => {
             {previousItem && (
               <button
                 onClick={() => setActiveSection(previousItem.id)}
-                className="w-full flex items-center space-x-3 px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg hover:bg-gray-800/50 transition-colors group"
+                className="w-full flex items-center space-x-3 px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg hover:bg-gray-800/50 transition-colors group cursor-pointer"
               >
                 <ArrowLeft className="h-4 w-4 text-gray-400 group-hover:text-white transition-colors flex-shrink-0" />
                 <div className="text-left min-w-0">
@@ -790,7 +829,7 @@ const DocsPage = () => {
             {nextItem && (
               <button
                 onClick={() => setActiveSection(nextItem.id)}
-                className="w-full flex items-center space-x-3 px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg hover:bg-gray-800/50 transition-colors group"
+                className="w-full flex items-center space-x-3 px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg hover:bg-gray-800/50 transition-colors group cursor-pointer"
               >
                 <div className="text-right min-w-0 flex-1">
                   <div className="text-xs text-gray-500 uppercase tracking-wide">Next</div>
@@ -817,7 +856,7 @@ const DocsPage = () => {
         </div>
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-2 text-gray-300 hover:text-white transition-colors flex-shrink-0"
+          className="p-2 text-gray-300 hover:text-white transition-colors flex-shrink-0 cursor-pointer"
         >
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />

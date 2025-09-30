@@ -23,9 +23,10 @@ interface CreatePostProps {
     tokenName?: string
   }) => Promise<void>
   isSubmitting?: boolean
+  isModal?: boolean
 }
 
-export const CreatePost = ({ currentUser, onSubmit, isSubmitting }: CreatePostProps) => {
+export const CreatePost = ({ currentUser, onSubmit, isSubmitting, isModal = false }: CreatePostProps) => {
   const router = useRouter()
   const [content, setContent] = useState('')
   const [image, setImage] = useState<File | null>(null)
@@ -224,7 +225,7 @@ export const CreatePost = ({ currentUser, onSubmit, isSubmitting }: CreatePostPr
                 <img
                   src={imagePreview}
                   alt="Preview"
-                  className="w-full max-h-[32rem] object-cover rounded-lg"
+                  className="w-full max-h-[32rem] object-cover rounded-lg border border-gray-600"
                 />
                   <Button
                     type="button"
@@ -239,7 +240,7 @@ export const CreatePost = ({ currentUser, onSubmit, isSubmitting }: CreatePostPr
             )}
 
 
-            <div className="flex items-center justify-between">
+            <div className={cn("flex items-center justify-between", isModal && "mt-2")}>
               <div className="flex items-center space-x-1 -ml-2">
                 <input
                   ref={fileInputRef}

@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Grid3X3, User, LogOut, Settings, Bell, Search, BookOpen } from 'lucide-react'
+import { Home, Grid3X3, User, LogOut, Settings, Bell, Search, BookOpen, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { getUnreadNotificationCount } from '@/lib/database'
+import { CreatePost } from '@/components/create-post'
+import { getUnreadNotificationCount, createPost as createPostDB } from '@/lib/database'
 import { supabase } from '@/lib/supabase'
-import { cn } from '@/lib/utils'
+import { cn, getBestDexScreenerUrl } from '@/lib/utils'
 
 interface NavigationProps {
   currentUser?: {
@@ -29,6 +30,8 @@ const navigation = [
 
 export const Navigation = ({ currentUser, onSignOut, onNotificationRead }: NavigationProps) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
   const pathname = usePathname()
 
@@ -103,6 +106,67 @@ export const Navigation = ({ currentUser, onSignOut, onNotificationRead }: Navig
     }
   }
 
+  const handleCreatePost = async (data: {
+    content?: string
+    image?: File
+    tokenSymbol?: string
+    tokenAddress?: string
+    tokenName?: string
+  }) => {
+    if (!currentUser?.id) return
+
+    setIsSubmitting(true)
+    try {
+      let publicUrl: string | undefined
+      
+      // Upload image to Supabase storage if provided
+      if (data.image) {
+        const fileExt = data.image.name.split('.').pop()
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+        
+        const { error: uploadError } = await supabase.storage
+          .from('memes')
+          .upload(fileName, data.image)
+
+        if (uploadError) throw uploadError
+
+        const { data: { publicUrl: uploadedUrl } } = supabase.storage
+          .from('memes')
+          .getPublicUrl(fileName)
+        
+        publicUrl = uploadedUrl
+      }
+
+      // Generate DexScreener URL if token address is provided
+      let dexScreenerUrl = undefined
+      if (data.tokenAddress) {
+        dexScreenerUrl = await getBestDexScreenerUrl(data.tokenAddress)
+      }
+
+      // Create post
+      await createPostDB({
+        user_id: currentUser.id,
+        content: data.content,
+        image_url: publicUrl,
+        token_symbol: data.tokenSymbol,
+        token_address: data.tokenAddress,
+        token_name: data.tokenName,
+        dex_screener_url: dexScreenerUrl,
+      })
+      
+      // Close modal after successful post creation
+      setIsCreatePostModalOpen(false)
+      
+      // Optionally refresh the page or trigger a callback to update the feed
+      window.location.reload()
+    } catch (error) {
+      console.error('Error creating post:', error)
+      alert('Failed to create post. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <nav className="h-full w-full bg-black flex flex-col">
       {/* Logo */}
@@ -168,6 +232,17 @@ export const Navigation = ({ currentUser, onSignOut, onNotificationRead }: Navig
               <span>Docs</span>
             </Link>
           </div>
+
+          {/* Create Post Button */}
+          <div className="mb-4">
+            <button
+              onClick={() => setIsCreatePostModalOpen(true)}
+              className="flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-gray-300 hover:bg-white/5 hover:text-white w-full text-left"
+            >
+              <Plus className="h-5 w-5" />
+              <span>Create Post</span>
+            </button>
+          </div>
           
           <div className="flex items-center space-x-3">
             <Link href={`/profile/${currentUser.username || 'user'}`}>
@@ -225,6 +300,29 @@ export const Navigation = ({ currentUser, onSignOut, onNotificationRead }: Navig
           <Link href="/auth/signup">
             <Button variant="outline" className="w-full">Sign Up</Button>
           </Link>
+        </div>
+      )}
+
+      {/* Create Post Modal */}
+      {isCreatePostModalOpen && currentUser && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setIsCreatePostModalOpen(false)}
+        >
+          <div 
+            className="bg-black border border-gray-800 rounded-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Create Post Component */}
+            <div className="p-0">
+              <CreatePost
+                currentUser={currentUser}
+                onSubmit={handleCreatePost}
+                isSubmitting={isSubmitting}
+                isModal={true}
+              />
+            </div>
+          </div>
         </div>
       )}
     </nav>
