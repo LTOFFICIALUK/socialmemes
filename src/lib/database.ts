@@ -142,23 +142,39 @@ export const getPosts = async (userId?: string, limit = 20, offset = 0): Promise
       replies_count:replies(count)
     `
     
-    const query = supabase
+    // Get regular posts
+    const regularQuery = supabase
       .from('posts')
       .select(selectQuery)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
-    const { data, error } = await query
+    const { data: regularPosts, error: regularError } = await regularQuery
     
-    if (error) {
-      console.error('Error fetching posts:', error.message)
-      throw new Error(`Failed to fetch posts: ${error.message}`)
+    if (regularError) {
+      console.error('Error fetching regular posts:', regularError.message)
+      throw new Error(`Failed to fetch posts: ${regularError.message}`)
     }
-    
+
+    // Get active promoted posts
+    const now = new Date().toISOString()
+    const { data: promotedPosts, error: promotedError } = await supabase
+      .from('posts')
+      .select(selectQuery)
+      .eq('is_promoted', true)
+      .gte('promotion_end', now)
+      .order('promotion_start', { ascending: false })
+
+    if (promotedError) {
+      console.warn('Error fetching promoted posts:', promotedError.message)
+    }
+
     // Get all user likes in a single query if userId is provided
     let userLikes: string[] = []
-    if (userId && data && data.length > 0) {
-      const postIds = data.map((post: { id: string }) => post.id)
+    const allPosts = [...(regularPosts || []), ...(promotedPosts || [])]
+    
+    if (userId && allPosts.length > 0) {
+      const postIds = allPosts.map((post: { id: string }) => post.id)
       const { data: likesData, error: likesError } = await supabase
         .from('likes')
         .select('post_id')
@@ -174,14 +190,38 @@ export const getPosts = async (userId?: string, limit = 20, offset = 0): Promise
     }
     
     // Process posts
-    const processedPosts = (data || []).map((post: { id: string; likes_count: { count: number }[] | null; replies_count: { count: number }[] | null; [key: string]: unknown }) => ({
+    const processedRegularPosts = (regularPosts || []).map((post: any) => ({
+      ...post,
+      likes_count: post.likes_count?.[0]?.count || 0,
+      replies_count: post.replies_count?.[0]?.count || 0,
+      is_liked: userId ? userLikes.includes(post.id) : false
+    }))
+
+    const processedPromotedPosts = (promotedPosts || []).map((post: any) => ({
       ...post,
       likes_count: post.likes_count?.[0]?.count || 0,
       replies_count: post.replies_count?.[0]?.count || 0,
       is_liked: userId ? userLikes.includes(post.id) : false
     }))
     
-    return processedPosts as Post[] as Post[]
+    // Mix promoted posts every 10 posts
+    const mixedPosts: Post[] = []
+    const promotedPostsCopy = [...processedPromotedPosts]
+    
+    for (let i = 0; i < processedRegularPosts.length; i++) {
+      // Add regular post
+      mixedPosts.push(processedRegularPosts[i])
+      
+      // Every 10 posts, add a promoted post if available
+      if ((i + 1) % 10 === 0 && promotedPostsCopy.length > 0) {
+        const promotedPost = promotedPostsCopy.shift() // Remove and get first promoted post
+        if (promotedPost) {
+          mixedPosts.push(promotedPost)
+        }
+      }
+    }
+    
+    return mixedPosts as Post[]
   } catch (error) {
     console.error('Error in getPosts function:', error)
     throw error

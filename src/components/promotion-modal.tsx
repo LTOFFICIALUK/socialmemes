@@ -3,9 +3,8 @@
 import { useState, useEffect } from 'react'
 import { ArrowLeft, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useWallet } from '@solana/wallet-adapter-react'
-import { PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js'
 import { getRevenueWalletAddress, solToLamports } from '@/lib/solana'
+import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js'
 
 interface PromotionModalProps {
   isOpen: boolean
@@ -23,78 +22,67 @@ const calculatePrice = (hours: number) => {
 export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: PromotionModalProps) => {
   const [selectedDuration, setSelectedDuration] = useState(24) // Default to 1 day
   const [isLoading, setIsLoading] = useState(false)
-  const [paymentStep, setPaymentStep] = useState<'select' | 'connecting' | 'confirming' | 'success' | 'error'>('select')
   const [errorMessage, setErrorMessage] = useState('')
 
-  const { publicKey, sendTransaction, connected, connect } = useWallet()
   const totalCost = calculatePrice(selectedDuration)
 
   useEffect(() => {
     if (isOpen) {
-      setPaymentStep('select')
       setErrorMessage('')
     }
   }, [isOpen])
 
   const handlePromote = async () => {
-    if (!connected) {
-      setPaymentStep('connecting')
-      try {
-        await connect()
-        setPaymentStep('select')
-      } catch (error) {
-        console.error('Error connecting wallet:', error)
-        setPaymentStep('error')
-        setErrorMessage('Failed to connect wallet')
-        return
-      }
-    }
-
-    if (!publicKey || !sendTransaction) {
-      setPaymentStep('error')
-      setErrorMessage('Wallet not connected')
-      return
-    }
-
     setIsLoading(true)
-    setPaymentStep('confirming')
+    setErrorMessage('')
 
     try {
-      // Create the transaction
-      const transaction = new Transaction()
-      const revenueWallet = new PublicKey(getRevenueWalletAddress())
-      const lamports = solToLamports(totalCost)
+      // 1. Connect wallet
+      const provider = window.phantom?.solana
+      if (!provider?.isPhantom) {
+        throw new Error('Phantom wallet not found. Please install Phantom wallet.')
+      }
 
-      // Add the transfer instruction
+      // Connect if not already connected
+      if (!provider.isConnected) {
+        await provider.connect()
+      }
+
+      const publicKey = provider.publicKey?.toString()
+      if (!publicKey) {
+        throw new Error('Failed to get wallet address')
+      }
+
+      // 2. Create and send transaction
+      const connection = new Connection('https://api.devnet.solana.com')
+      const transaction = new Transaction()
+      
       transaction.add(
         SystemProgram.transfer({
-          fromPubkey: publicKey,
-          toPubkey: revenueWallet,
-          lamports: lamports,
+          fromPubkey: new PublicKey(publicKey),
+          toPubkey: new PublicKey(getRevenueWalletAddress()),
+          lamports: solToLamports(totalCost),
         })
       )
 
-      // Send the transaction
-      const signature = await sendTransaction(transaction, {
-        skipPreflight: false,
-        preflightCommitment: 'confirmed',
-      })
+      const { blockhash } = await connection.getLatestBlockhash()
+      transaction.recentBlockhash = blockhash
+      transaction.feePayer = new PublicKey(publicKey)
 
-      // Wait for confirmation
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Sign and send
+      const signedTransaction = await provider.signTransaction(transaction)
+      const signature = await connection.sendRawTransaction(signedTransaction.serialize())
 
-      // Call the promotion API
+      // 3. Call promotion API
       const response = await fetch('/api/promote', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           postId,
           duration: selectedDuration,
           price: totalCost,
           signature,
-          fromAddress: publicKey.toString(),
+          fromAddress: publicKey,
         }),
       })
 
@@ -103,18 +91,19 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
         throw new Error(errorData.error || 'Failed to promote post')
       }
 
-      setPaymentStep('success')
-      await onPromote(postId, selectedDuration, totalCost)
-      
-      // Close modal after a short delay
-      setTimeout(() => {
-        onClose()
-      }, 2000)
+      // Success - close modal
+      onPromote(postId, selectedDuration, totalCost)
+      onClose()
 
     } catch (error) {
       console.error('Error promoting post:', error)
-      setPaymentStep('error')
-      setErrorMessage(error instanceof Error ? error.message : 'Payment failed')
+      
+      // Handle user rejection specifically
+      if (error instanceof Error && error.message.includes('User rejected')) {
+        setErrorMessage('Transaction was cancelled. Please try again if you would like to proceed with the promotion.')
+      } else {
+        setErrorMessage(error instanceof Error ? error.message : 'Payment failed')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -201,45 +190,34 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="p-6 border-t border-gray-700">
-          <Button
-            onClick={handlePromote}
-            disabled={isLoading}
-            className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg font-medium"
-          >
-            {paymentStep === 'connecting' ? (
-              <div className="flex items-center justify-center space-x-2">
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                <span>Connecting...</span>
-              </div>
-            ) : paymentStep === 'confirming' ? (
-              <div className="flex items-center justify-center space-x-2">
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                <span>Confirming payment...</span>
-              </div>
-            ) : paymentStep === 'success' ? (
-              <div className="flex items-center justify-center space-x-2">
-                <span>✅ Payment successful!</span>
-              </div>
-            ) : paymentStep === 'error' ? (
-              <span>Try again</span>
-            ) : (
-              'Pay with Phantom'
-            )}
-          </Button>
-          
-          {paymentStep === 'error' && errorMessage && (
-            <div className="mt-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-              <p className="text-red-400 text-sm text-center">{errorMessage}</p>
+            {/* Footer */}
+            <div className="p-6 border-t border-gray-700">
+              <Button
+                onClick={handlePromote}
+                disabled={isLoading}
+                className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg font-medium"
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <span>Processing...</span>
+                  </div>
+                ) : (
+                  'Pay with Phantom'
+                )}
+              </Button>
+
+              {errorMessage && (
+                <div className="mt-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                  <p className="text-red-400 text-sm text-center">{errorMessage}</p>
+                </div>
+              )}
+
+              <p className="text-xs text-gray-400 text-center mt-3">
+                By clicking Promote Post, you're indicating that you have read and agree to the{' '}
+                <a href="#" className="text-blue-400 hover:underline">Terms and Advertising Guidelines</a>.
+              </p>
             </div>
-          )}
-          
-          <p className="text-xs text-gray-400 text-center mt-3">
-            By clicking Promote Post, you're indicating that you have read and agree to the{' '}
-            <a href="#" className="text-blue-400 hover:underline">Terms and Advertising Guidelines</a>.
-          </p>
-        </div>
       </div>
     </div>
   )

@@ -163,6 +163,16 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
               <time className="text-gray-400 text-sm flex-shrink-0">
                 {formatDate(post.created_at)}
               </time>
+              {/* Promoted badge */}
+              {post.is_promoted && (
+                <>
+                  <span className="text-gray-400 text-sm flex-shrink-0">·</span>
+                  <Badge variant="secondary" className="bg-green-600 text-white text-xs px-2 py-0.5 flex-shrink-0">
+                    <TrendingUp className="h-3 w-3 mr-1" />
+                    Promoted
+                  </Badge>
+                </>
+              )}
               {/* Token tag - gets priority space */}
               {post.token_symbol && (
                 <>
@@ -203,7 +213,7 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
                 {showDeleteMenu && (
                   <div className="absolute right-1 top-9 bg-black border border-gray-700 rounded-lg shadow-lg z-10 min-w-[160px] py-1">
                     <button
-                      className="w-full flex items-center px-4 py-2 text-sm text-green-400 hover:text-green-300 hover:bg-green-500/10 transition-colors"
+                      className="w-full flex items-center px-4 py-2 text-sm text-white hover:text-gray-200 hover:bg-gray-500/10 transition-colors"
                       onClick={handlePromoteClick}
                       data-prevent-navigation
                     >

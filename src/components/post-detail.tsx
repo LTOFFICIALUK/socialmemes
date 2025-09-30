@@ -299,7 +299,7 @@ export const PostDetail = ({ postId, currentUser, onPromote }: PostDetailProps) 
                   {showDeleteMenu && (
                     <div className="absolute right-1 top-9 bg-black border border-gray-700 rounded-lg shadow-lg z-10 min-w-[160px] py-1">
                       <button
-                        className="w-full flex items-center px-4 py-2 text-sm text-green-400 hover:text-green-300 hover:bg-green-500/10 transition-colors"
+                        className="w-full flex items-center px-4 py-2 text-sm text-white hover:text-gray-200 hover:bg-gray-500/10 transition-colors"
                         onClick={handlePromoteClick}
                       >
                         <TrendingUp className="h-4 w-4 mr-3" />
