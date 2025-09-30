@@ -1,1 +1,4 @@
 - add "chat" to each profile. this would be a paid subscription feature for each creator, and where they can share alpha
+
+- private profiles
+- profile setting

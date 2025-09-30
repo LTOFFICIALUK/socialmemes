@@ -397,6 +397,66 @@ const docSections: DocSection[] = [
     icon: HelpCircle,
     children: [
       {
+        id: 'faq',
+        title: 'Frequently Asked Questions',
+        icon: HelpCircle,
+        content: (
+          <div className="prose prose-invert max-w-none overflow-hidden">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 break-words">Frequently Asked Questions</h1>
+            <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed">
+              Find answers to common questions about using Social Memes.
+            </p>
+
+            <div className="space-y-8">
+              <div>
+                <h3 className="text-xl font-semibold text-white mb-3">How do I delete my account?</h3>
+                <p className="text-gray-300">
+                  Go to Settings → Account → Delete Account. This action is permanent and cannot be undone.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-semibold text-white mb-3">Can I change my username?</h3>
+                <p className="text-gray-300">
+                  Yes, you can change your username in Settings → Profile. Keep in mind this will update your profile URL.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-semibold text-white mb-3">How do I report inappropriate content?</h3>
+                <p className="text-gray-300">
+                  Click the three dots menu on any post and select &quot;Report&quot;. Our moderation team will review the content.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-semibold text-white mb-3">Why can&apos;t I see certain posts?</h3>
+                <p className="text-gray-300">
+                  This could be due to privacy settings, content filters, or the user may have blocked you.
+                </p>
+              </div>
+            </div>
+
+            <h2 className="text-2xl font-semibold text-white mb-4 mt-8">Still Need Help?</h2>
+            <p className="text-blue-300 mb-4">
+              If you can&apos;t find the answer you&apos;re looking for, we&apos;re here to help:
+            </p>
+            <ul className="text-blue-200 space-y-2 ml-4">
+              <li>• Contact our support team at support@socialmemes.com</li>
+              <li>• Join our community Discord server</li>
+              <li>• Check our status page for service updates</li>
+            </ul>
+          </div>
+        )
+      }
+    ]
+  },
+  {
+    id: 'policies',
+    title: 'Policies',
+    icon: Shield,
+    children: [
+      {
         id: 'terms-of-service',
         title: 'Terms of Service',
         icon: BookOpen,
@@ -602,59 +662,6 @@ const docSections: DocSection[] = [
               If you have questions about these guidelines or need to report a serious violation, 
               please contact us at community@socialmemes.fun
             </p>
-          </div>
-        )
-      },
-      {
-        id: 'faq',
-        title: 'Frequently Asked Questions',
-        icon: HelpCircle,
-        content: (
-          <div className="prose prose-invert max-w-none overflow-hidden">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 break-words">Frequently Asked Questions</h1>
-            <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed">
-              Find answers to common questions about using Social Memes.
-            </p>
-
-            <div className="space-y-8">
-              <div>
-                <h3 className="text-xl font-semibold text-white mb-3">How do I delete my account?</h3>
-                <p className="text-gray-300">
-                  Go to Settings → Account → Delete Account. This action is permanent and cannot be undone.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-xl font-semibold text-white mb-3">Can I change my username?</h3>
-                <p className="text-gray-300">
-                  Yes, you can change your username in Settings → Profile. Keep in mind this will update your profile URL.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-xl font-semibold text-white mb-3">How do I report inappropriate content?</h3>
-                <p className="text-gray-300">
-                  Click the three dots menu on any post and select &quot;Report&quot;. Our moderation team will review the content.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-xl font-semibold text-white mb-3">Why can&apos;t I see certain posts?</h3>
-                <p className="text-gray-300">
-                  This could be due to privacy settings, content filters, or the user may have blocked you.
-                </p>
-              </div>
-            </div>
-
-            <h2 className="text-2xl font-semibold text-white mb-4 mt-8">Still Need Help?</h2>
-            <p className="text-blue-300 mb-4">
-              If you can&apos;t find the answer you&apos;re looking for, we&apos;re here to help:
-            </p>
-            <ul className="text-blue-200 space-y-2 ml-4">
-              <li>• Contact our support team at support@socialmemes.com</li>
-              <li>• Join our community Discord server</li>
-              <li>• Check our status page for service updates</li>
-            </ul>
           </div>
         )
       }
