@@ -20,6 +20,11 @@ CREATE TABLE posts (
   token_address TEXT,
   token_name TEXT,
   dex_screener_url TEXT,
+  is_promoted BOOLEAN DEFAULT FALSE,
+  promotion_start TIMESTAMP WITH TIME ZONE,
+  promotion_end TIMESTAMP WITH TIME ZONE,
+  promotion_price DECIMAL(20,9), -- SOL amount paid (supports up to 1 billion SOL with 9 decimal precision)
+  payment_tx_hash TEXT, -- Solana transaction hash
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -252,6 +257,7 @@ CREATE TRIGGER on_reply_created
 CREATE INDEX posts_user_id_idx ON posts(user_id);
 CREATE INDEX posts_created_at_idx ON posts(created_at DESC);
 CREATE INDEX posts_token_symbol_idx ON posts(token_symbol);
+CREATE INDEX posts_promotion_idx ON posts(is_promoted, promotion_end) WHERE is_promoted = TRUE;
 CREATE INDEX follows_follower_id_idx ON follows(follower_id);
 CREATE INDEX follows_following_id_idx ON follows(following_id);
 CREATE INDEX likes_user_id_idx ON likes(user_id);

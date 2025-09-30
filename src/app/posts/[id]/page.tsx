@@ -9,12 +9,14 @@ import { MobileMenuButton } from '@/components/mobile-menu-button'
 import { TrendingTokens } from '@/components/trending-tokens'
 import { SearchBar } from '@/components/search-bar'
 import { PostDetail } from '@/components/post-detail'
+import { PromotionModal } from '@/components/promotion-modal'
 import { ToastContainer, useToast } from '@/components/ui/toast'
 import { supabase } from '@/lib/supabase'
 
 export default function PostPage() {
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string } | undefined>(undefined)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+  const [showPromotionModal, setShowPromotionModal] = useState(false)
   const router = useRouter()
   const params = useParams()
   const postId = params.id as string
@@ -133,6 +135,7 @@ export default function PostPage() {
             <PostDetail
               postId={postId}
               currentUser={currentUser}
+              onPromote={() => setShowPromotionModal(true)}
             />
           </div>
         </div>
@@ -155,6 +158,17 @@ export default function PostPage() {
           </div>
         </div>
       </div>
+      
+      {/* Promotion Modal */}
+      <PromotionModal
+        isOpen={showPromotionModal}
+        onClose={() => setShowPromotionModal(false)}
+        postId={postId}
+        onPromote={(postId, duration, price) => {
+          console.log('Promoting post:', { postId, duration, price })
+          setShowPromotionModal(false)
+        }}
+      />
       
       {/* Toast Notifications */}
       <ToastContainer toasts={toasts} onClose={removeToast} />

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Heart, MessageCircle, Share, Check, ExternalLink, MoreHorizontal, Trash2, Coins } from 'lucide-react'
+import { Heart, MessageCircle, Share, Check, ExternalLink, MoreHorizontal, Trash2, Coins, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -16,9 +16,10 @@ interface PostCardProps {
   onLike?: (postId: string) => void
   onUnlike?: (postId: string) => void
   onDelete?: (postId: string) => void
+  onPromote?: (postId: string) => void
 }
 
-export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete }: PostCardProps) => {
+export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPromote }: PostCardProps) => {
   const router = useRouter()
   const [isLiked, setIsLiked] = useState(post.is_liked)
   const [likesCount, setLikesCount] = useState(post.likes_count)
@@ -69,6 +70,11 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete }: Po
 
   const handleDeleteClick = () => {
     setShowDeleteDialog(true)
+    setShowDeleteMenu(false)
+  }
+
+  const handlePromoteClick = () => {
+    onPromote?.(post.id)
     setShowDeleteMenu(false)
   }
 
@@ -196,6 +202,14 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete }: Po
                 
                 {showDeleteMenu && (
                   <div className="absolute right-1 top-9 bg-black border border-gray-700 rounded-lg shadow-lg z-10 min-w-[160px] py-1">
+                    <button
+                      className="w-full flex items-center px-4 py-2 text-sm text-green-400 hover:text-green-300 hover:bg-green-500/10 transition-colors"
+                      onClick={handlePromoteClick}
+                      data-prevent-navigation
+                    >
+                      <TrendingUp className="h-4 w-4 mr-3" />
+                      Promote
+                    </button>
                     <button
                       className="w-full flex items-center px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
                       onClick={handleDeleteClick}

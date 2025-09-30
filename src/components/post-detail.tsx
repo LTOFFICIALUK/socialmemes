@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Heart, MessageCircle, Share, Check, MoreHorizontal, Trash2, Coins } from 'lucide-react'
+import { Heart, MessageCircle, Share, Check, MoreHorizontal, Trash2, Coins, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog'
@@ -15,9 +15,10 @@ import { supabase } from '@/lib/supabase'
 interface PostDetailProps {
   postId: string
   currentUser: { id: string; username: string; avatar_url?: string }
+  onPromote?: (postId: string) => void
 }
 
-export const PostDetail = ({ postId, currentUser }: PostDetailProps) => {
+export const PostDetail = ({ postId, currentUser, onPromote }: PostDetailProps) => {
   const router = useRouter()
   const [post, setPost] = useState<Post | null>(null)
   const [replies, setReplies] = useState<Reply[]>([])
@@ -96,6 +97,11 @@ export const PostDetail = ({ postId, currentUser }: PostDetailProps) => {
 
   const handleDeleteClick = () => {
     setShowDeleteDialog(true)
+    setShowDeleteMenu(false)
+  }
+
+  const handlePromoteClick = () => {
+    onPromote?.(postId)
     setShowDeleteMenu(false)
   }
 
@@ -292,6 +298,13 @@ export const PostDetail = ({ postId, currentUser }: PostDetailProps) => {
                   
                   {showDeleteMenu && (
                     <div className="absolute right-1 top-9 bg-black border border-gray-700 rounded-lg shadow-lg z-10 min-w-[160px] py-1">
+                      <button
+                        className="w-full flex items-center px-4 py-2 text-sm text-green-400 hover:text-green-300 hover:bg-green-500/10 transition-colors"
+                        onClick={handlePromoteClick}
+                      >
+                        <TrendingUp className="h-4 w-4 mr-3" />
+                        Promote
+                      </button>
                       <button
                         className="w-full flex items-center px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
                         onClick={handleDeleteClick}

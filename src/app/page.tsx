@@ -9,6 +9,7 @@ import { CreatePost } from '@/components/create-post'
 import { Feed } from '@/components/feed'
 import { TrendingTokens } from '@/components/trending-tokens'
 import { SearchBar } from '@/components/search-bar'
+import { PromotionModal } from '@/components/promotion-modal'
 import { ToastContainer, useToast } from '@/components/ui/toast'
 import { Post } from '@/lib/database'
 import { getPosts, createPost as createPostDB } from '@/lib/database'
@@ -68,6 +69,8 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+  const [showPromotionModal, setShowPromotionModal] = useState(false)
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null)
   const router = useRouter()
   const { toasts, removeToast, success, error: showError } = useToast()
 
@@ -237,6 +240,17 @@ export default function Home() {
     }
   }
 
+  const handlePromotePost = (postId: string) => {
+    setSelectedPostId(postId)
+    setShowPromotionModal(true)
+  }
+
+  const handlePromoteConfirm = async (postId: string, duration: number, price: number) => {
+    // TODO: Implement actual promotion logic with Phantom wallet
+    console.log('Promoting post:', { postId, duration, price })
+    success(`Post promoted for ${duration} hours at ${price} SOL!`)
+  }
+
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     setCurrentUser(undefined)
@@ -295,6 +309,7 @@ export default function Home() {
               currentUserId={currentUser?.id}
               isLoading={isLoading}
               onDeletePost={handleDeletePost}
+              onPromotePost={handlePromotePost}
             />
           </div>
         </div>
@@ -309,6 +324,14 @@ export default function Home() {
           <TrendingTokensSection />
         </div>
       </div>
+      
+      {/* Promotion Modal */}
+      <PromotionModal
+        isOpen={showPromotionModal}
+        onClose={() => setShowPromotionModal(false)}
+        postId={selectedPostId || ''}
+        onPromote={handlePromoteConfirm}
+      />
       
       {/* Toast Notifications */}
       <ToastContainer toasts={toasts} onClose={removeToast} />

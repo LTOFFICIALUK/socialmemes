@@ -313,6 +313,7 @@ export default function ProfilePage() {
               posts={posts}
               currentUserId={currentUser?.id}
               isLoading={false}
+              onPromotePost={() => {}}
             />
           </div>
         </div>

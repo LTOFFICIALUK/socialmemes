@@ -13,9 +13,10 @@ interface FeedProps {
   hasMore?: boolean
   isLoading?: boolean
   onDeletePost?: (postId: string) => void
+  onPromotePost?: (postId: string) => void
 }
 
-export const Feed = ({ posts, currentUserId, onLoadMore, hasMore, isLoading, onDeletePost }: FeedProps) => {
+export const Feed = ({ posts, currentUserId, onLoadMore, hasMore, isLoading, onDeletePost, onPromotePost }: FeedProps) => {
 
   const handleLike = async (postId: string) => {
     if (!currentUserId) return
@@ -77,6 +78,7 @@ export const Feed = ({ posts, currentUserId, onLoadMore, hasMore, isLoading, onD
           onLike={handleLike}
           onUnlike={handleUnlike}
           onDelete={onDeletePost}
+          onPromote={onPromotePost}
         />
       ))}
       

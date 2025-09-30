@@ -482,6 +482,7 @@ function SearchContent() {
                       onLike={handleLike}
                       onUnlike={handleUnlike}
                       onDelete={() => {}}
+                      onPromote={() => {}}
                     />
                   ))}
                 </div>

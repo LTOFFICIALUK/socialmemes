@@ -57,6 +57,11 @@ export interface Database {
           token_address: string | null
           token_name: string | null
           dex_screener_url: string | null
+          is_promoted: boolean
+          promotion_start: string | null
+          promotion_end: string | null
+          promotion_price: number | null
+          payment_tx_hash: string | null
           created_at: string
           updated_at: string
         }
@@ -69,6 +74,11 @@ export interface Database {
           token_address?: string | null
           token_name?: string | null
           dex_screener_url?: string | null
+          is_promoted?: boolean
+          promotion_start?: string | null
+          promotion_end?: string | null
+          promotion_price?: number | null
+          payment_tx_hash?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -81,6 +91,11 @@ export interface Database {
           token_address?: string | null
           token_name?: string | null
           dex_screener_url?: string | null
+          is_promoted?: boolean
+          promotion_start?: string | null
+          promotion_end?: string | null
+          promotion_price?: number | null
+          payment_tx_hash?: string | null
           created_at?: string
           updated_at?: string
         }
