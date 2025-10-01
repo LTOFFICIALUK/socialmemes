@@ -8,6 +8,9 @@ import { MobileMenuButton } from '@/components/mobile-menu-button'
 import { SearchBar } from '@/components/search-bar'
 import { PostCard } from '@/components/post-card'
 import { TrendingTokens } from '@/components/trending-tokens'
+import { FeaturedTokens } from '@/components/featured-tokens'
+import { FeaturedTokenModal } from '@/components/featured-token-modal'
+import { ToastContainer, useToast } from '@/components/ui/toast'
 import { Post } from '@/lib/database'
 import { supabase } from '@/lib/supabase'
 import { likePost, unlikePost } from '@/lib/database'
@@ -50,6 +53,9 @@ function SearchContent() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [activeTab, setActiveTab] = useState<SearchTab>('popular')
   const [followingUsers, setFollowingUsers] = useState<Set<string>>(new Set())
+  const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
+  const [featuredTokensKey, setFeaturedTokensKey] = useState(0)
+  const { toasts, removeToast, success } = useToast()
 
   useEffect(() => {
     // Get current user and their profile
@@ -280,6 +286,7 @@ function SearchContent() {
         likes_count: result.likes_count,
         replies_count: 0, // Search results don't include reply counts
         is_liked: result.is_liked,
+        impression_count: 0, // Search results don't include impression counts
         profiles: {
           id: result.user_id,
           username: result.subtitle.replace('@', ''),
@@ -338,7 +345,11 @@ function SearchContent() {
       <div className="flex h-screen max-w-7xl mx-auto min-w-0">
         {/* Left Column - Navigation */}
         <div className="w-64 px-4 lg:px-8 h-screen overflow-y-auto hidden lg:block">
-          <Navigation currentUser={currentUser} onSignOut={handleSignOut} />
+          <Navigation 
+            currentUser={currentUser} 
+            onSignOut={handleSignOut}
+            onPromoteClick={() => setShowFeaturedTokenModal(true)}
+          />
         </div>
         
         {/* Center Column - Search Results */}
@@ -349,12 +360,6 @@ function SearchContent() {
               <div className="flex-1">
                 <SearchBar 
                   placeholder="Search posts, users, tokens..." 
-                  value={query}
-                  onChange={(newQuery) => {
-                    if (newQuery !== query) {
-                      router.push(`/search?q=${encodeURIComponent(newQuery)}`)
-                    }
-                  }}
                 />
               </div>
               {/* Mobile Menu Button */}
@@ -523,14 +528,33 @@ function SearchContent() {
             </div>
             
             <div className="px-4 pb-4 pt-1">
-              <TrendingTokens limit={8} timePeriod="24 hours" />
+              <TrendingTokens limit={5} timePeriod="24 hours" />
             </div>
           </div>
+          
+          <FeaturedTokens key={featuredTokensKey} limit={6} />
         </div>
       </div>
       
+      {/* Featured Token Modal */}
+      <FeaturedTokenModal
+        isOpen={showFeaturedTokenModal}
+        onClose={() => setShowFeaturedTokenModal(false)}
+        onSuccess={() => {
+          setFeaturedTokensKey(prev => prev + 1)
+          success('Featured token promoted successfully!')
+        }}
+      />
+      
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
+      
       {/* Mobile Navigation */}
-      <MobileNavigation currentUser={currentUser} onSignOut={handleSignOut} />
+      <MobileNavigation 
+        currentUser={currentUser} 
+        onSignOut={handleSignOut}
+        onPromoteClick={() => setShowFeaturedTokenModal(true)}
+      />
     </div>
   )
 }

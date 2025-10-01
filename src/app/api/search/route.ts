@@ -51,16 +51,8 @@ export async function GET(request: NextRequest) {
       const { data: posts, error: postsError } = await supabase
         .from('posts')
         .select(`
-          id,
-          user_id,
-          content,
-          created_at,
-          token_symbol,
-          profiles!posts_user_id_fkey (
-            username,
-            full_name,
-            avatar_url
-          ),
+          *,
+          profiles (*),
           likes_count:likes(count)
         `)
         .or(`content.ilike.${searchTerm},token_symbol.ilike.${searchTerm}`)
@@ -70,6 +62,11 @@ export async function GET(request: NextRequest) {
       if (postsError) {
         console.error('Error searching posts:', postsError)
         return NextResponse.json({ results: [] })
+      }
+
+      console.log('Search API: Posts found:', posts?.length || 0)
+      if (posts && posts.length > 0) {
+        console.log('Search API: First post profile data:', posts[0].profiles)
       }
 
       // Get user likes if currentUserId is provided
@@ -98,10 +95,16 @@ export async function GET(request: NextRequest) {
         content: string; 
         token_symbol: string | null; 
         created_at: string; 
-        profiles: { username: string; full_name: string | null; avatar_url: string | null }[]; 
+        profiles: { username: string; full_name: string | null; avatar_url: string | null }; 
         likes_count: { count: number }[] | null 
       }) => {
-        const profile = post.profiles?.[0]
+        const profile = post.profiles
+        console.log('Search API: Processing post:', {
+          postId: post.id,
+          userId: post.user_id,
+          profiles: post.profiles,
+          profile: profile
+        })
         return {
           id: post.id,
           user_id: post.user_id,

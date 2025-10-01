@@ -7,10 +7,13 @@ import { MobileNavigation } from '@/components/mobile-navigation'
 import { MobileMenuButton } from '@/components/mobile-menu-button'
 import { Feed } from '@/components/feed'
 import { TrendingTokens } from '@/components/trending-tokens'
+import { FeaturedTokens } from '@/components/featured-tokens'
 import { SearchBar } from '@/components/search-bar'
+import { FeaturedTokenModal } from '@/components/featured-token-modal'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Post, Profile, getProfileByUsername, getPostsByUser, isFollowing, followUser, unfollowUser, getTopFollowers, getFollowing } from '@/lib/database'
+import { ToastContainer, useToast } from '@/components/ui/toast'
+import { Post, Profile, getProfileByUsername, getPostsByUser, isFollowing, followUser, unfollowUser, getTopFollowers, getFollowing, getFollowerCount, getFollowingCount } from '@/lib/database'
 import { supabase } from '@/lib/supabase'
 import { Users, UserPlus, UserMinus, Settings } from 'lucide-react'
 import { FollowersModal } from '@/components/followers-modal'
@@ -29,89 +32,139 @@ export default function ProfilePage() {
   const [isFollowingLoading, setIsFollowingLoading] = useState(false)
   const [followers, setFollowers] = useState<Profile[]>([])
   const [following, setFollowing] = useState<Profile[]>([])
+  const [followerCount, setFollowerCount] = useState(0)
+  const [followingCount, setFollowingCount] = useState(0)
   const [showFollowersModal, setShowFollowersModal] = useState(false)
   const [showFollowingModal, setShowFollowingModal] = useState(false)
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
+  const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
+  const [featuredTokensKey, setFeaturedTokensKey] = useState(0)
+  const { toasts, removeToast, success } = useToast()
 
-  useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        setIsLoading(true)
-        
-        // Get current user
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-          // Fetch user profile to get username
-          try {
-            const { data: profile, error } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', user.id)
-              .single()
+  const loadProfile = async () => {
+    try {
+      setIsLoading(true)
+      
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        // Fetch user profile to get username
+        try {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single()
 
-            if (error) {
-              console.error('Error fetching profile:', error)
-              // Fallback to auth user data
-              setCurrentUser({
-                id: user.id,
-                username: user.user_metadata?.username || `user_${user.id.slice(0, 8)}`,
-                avatar_url: user.user_metadata?.avatar_url
-              })
-            } else {
-              // Use profile data
-              setCurrentUser({
-                id: profile.id,
-                username: profile.username,
-                avatar_url: profile.avatar_url
-              })
-            }
-          } catch (err) {
-            console.error('Error fetching profile:', err)
+          if (error) {
+            console.error('Error fetching profile:', error)
             // Fallback to auth user data
             setCurrentUser({
               id: user.id,
               username: user.user_metadata?.username || `user_${user.id.slice(0, 8)}`,
               avatar_url: user.user_metadata?.avatar_url
             })
+          } else {
+            // Use profile data
+            setCurrentUser({
+              id: profile.id,
+              username: profile.username,
+              avatar_url: profile.avatar_url
+            })
           }
-        } else {
-          setCurrentUser(undefined)
+        } catch (err) {
+          console.error('Error fetching profile:', err)
+          // Fallback to auth user data
+          setCurrentUser({
+            id: user.id,
+            username: user.user_metadata?.username || `user_${user.id.slice(0, 8)}`,
+            avatar_url: user.user_metadata?.avatar_url
+          })
         }
-        
-        // Get profile
-        const profileData = await getProfileByUsername(username)
-        if (!profileData) {
-          // Profile not found
-          return
-        }
-        setProfile(profileData)
-        
-        // Get posts
-        const postsData = await getPostsByUser(profileData.id)
-        setPosts(postsData)
-        
-        // Get followers and following
-        const [followersData, followingData] = await Promise.all([
+      } else {
+        setCurrentUser(undefined)
+      }
+      
+      // Get profile
+      const profileData = await getProfileByUsername(username)
+      if (!profileData) {
+        // Profile not found
+        return
+      }
+      setProfile(profileData)
+      
+      // Get posts
+      const postsData = await getPostsByUser(profileData.id)
+      setPosts(postsData)
+      
+        // Get followers, following, and counts
+        const [followersData, followingData, followerCountData, followingCountData] = await Promise.all([
           getTopFollowers(profileData.id, 10),
-          getFollowing(profileData.id)
+          getFollowing(profileData.id),
+          getFollowerCount(profileData.id),
+          getFollowingCount(profileData.id)
         ])
         setFollowers(followersData)
         setFollowing(followingData)
-        
-        // Check if current user is following this profile
-        if (user && user.id !== profileData.id) {
-          const followingStatus = await isFollowing(user.id, profileData.id)
-          setIsFollowingUser(followingStatus)
-        }
-      } catch (error) {
-        console.error('Error loading profile:', error)
-      } finally {
-        setIsLoading(false)
+        setFollowerCount(followerCountData)
+        setFollowingCount(followingCountData)
+      
+      // Check if current user is following this profile
+      if (user && user.id !== profileData.id) {
+        const followingStatus = await isFollowing(user.id, profileData.id)
+        setIsFollowingUser(followingStatus)
       }
+    } catch (error) {
+      console.error('Error loading profile:', error)
+    } finally {
+      setIsLoading(false)
     }
-    
+  }
+
+  useEffect(() => {
     loadProfile()
   }, [username])
+
+  // Refresh profile data when page becomes visible (e.g., when navigating from search)
+  useEffect(() => {
+    const refreshFollowers = async () => {
+      if (!profile) return
+      try {
+        const [followersData, followingData, followerCountData, followingCountData] = await Promise.all([
+          getTopFollowers(profile.id, 10),
+          getFollowing(profile.id),
+          getFollowerCount(profile.id),
+          getFollowingCount(profile.id)
+        ])
+        setFollowers(followersData)
+        setFollowing(followingData)
+        setFollowerCount(followerCountData)
+        setFollowingCount(followingCountData)
+      } catch (error) {
+        console.error('Error refreshing followers:', error)
+      }
+    }
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden && profile) {
+        refreshFollowers()
+      }
+    }
+
+    const handleFocus = () => {
+      if (profile) {
+        refreshFollowers()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleFocus)
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [profile])
 
   const handleFollow = async () => {
     if (!currentUser || !profile || currentUser.id === profile.id) return
@@ -126,6 +179,18 @@ export default function ProfilePage() {
         await followUser(currentUser.id, profile.id)
         setIsFollowingUser(true)
       }
+      
+      // Refresh follower/following data after follow/unfollow
+      const [followersData, followingData, followerCountData, followingCountData] = await Promise.all([
+        getTopFollowers(profile.id, 10),
+        getFollowing(profile.id),
+        getFollowerCount(profile.id),
+        getFollowingCount(profile.id)
+      ])
+      setFollowers(followersData)
+      setFollowing(followingData)
+      setFollowerCount(followerCountData)
+      setFollowingCount(followingCountData)
     } catch (error) {
       console.error('Error updating follow status:', error)
     } finally {
@@ -155,7 +220,10 @@ export default function ProfilePage() {
         <div className="flex min-h-screen">
           {/* Left Column - Navigation */}
           <div className="w-80 border-l border-gray-800">
-            <Navigation currentUser={currentUser} />
+            <Navigation 
+              currentUser={currentUser}
+              onPromoteClick={() => setShowFeaturedTokenModal(true)}
+            />
           </div>
           
           {/* Center Column - Error */}
@@ -179,7 +247,7 @@ export default function ProfilePage() {
               </div>
               
               <div className="px-4 pb-4 pt-1">
-                <TrendingTokens limit={8} timePeriod="24 hours" />
+                <TrendingTokens limit={5} timePeriod="24 hours" />
               </div>
             </div>
           </div>
@@ -195,7 +263,10 @@ export default function ProfilePage() {
       <div className="flex h-screen max-w-7xl mx-auto min-w-0">
         {/* Left Column - Navigation */}
         <div className="w-64 px-4 lg:px-8 h-screen overflow-y-auto hidden lg:block">
-          <Navigation currentUser={currentUser} />
+          <Navigation 
+            currentUser={currentUser}
+            onPromoteClick={() => setShowFeaturedTokenModal(true)}
+          />
         </div>
         
         {/* Center Column - Profile Content */}
@@ -293,14 +364,14 @@ export default function ProfilePage() {
                       onClick={() => setShowFollowersModal(true)}
                       className="flex items-center space-x-1 hover:text-white transition-colors"
                     >
-                      <span className="font-semibold text-white">{followers.length}</span>
+                      <span className="font-semibold text-white">{followerCount}</span>
                       <span>followers</span>
                     </button>
                     <button 
                       onClick={() => setShowFollowingModal(true)}
                       className="flex items-center space-x-1 hover:text-white transition-colors"
                     >
-                      <span className="font-semibold text-white">{following.length}</span>
+                      <span className="font-semibold text-white">{followingCount}</span>
                       <span>following</span>
                     </button>
                   </div>
@@ -331,9 +402,11 @@ export default function ProfilePage() {
             </div>
             
             <div className="px-4 py-4">
-              <TrendingTokens limit={8} timePeriod="24 hours" />
+              <TrendingTokens limit={5} timePeriod="24 hours" />
             </div>
           </div>
+          
+          <FeaturedTokens key={featuredTokensKey} limit={6} />
         </div>
       </div>
 
@@ -361,8 +434,23 @@ export default function ProfilePage() {
         onProfileUpdate={handleProfileUpdate}
       />
       
+      <FeaturedTokenModal
+        isOpen={showFeaturedTokenModal}
+        onClose={() => setShowFeaturedTokenModal(false)}
+        onSuccess={() => {
+          setFeaturedTokensKey(prev => prev + 1)
+          success('Featured token promoted successfully!')
+        }}
+      />
+      
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
+      
       {/* Mobile Navigation */}
-      <MobileNavigation currentUser={currentUser} />
+      <MobileNavigation 
+        currentUser={currentUser}
+        onPromoteClick={() => setShowFeaturedTokenModal(true)}
+      />
     </div>
   )
 }

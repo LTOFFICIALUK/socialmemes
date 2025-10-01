@@ -10,18 +10,63 @@ interface TrendingTokensProps {
   timePeriod?: string
 }
 
-export const TrendingTokens = ({ limit = 10, timePeriod = '24 hours' }: TrendingTokensProps) => {
+export const TrendingTokens = ({ limit = 5, timePeriod = '24 hours' }: TrendingTokensProps) => {
   const [trendingTokens, setTrendingTokens] = useState<TrendingToken[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [tokenImages, setTokenImages] = useState<Record<string, string>>({})
+
+  const fetchTokenImage = async (tokenAddress: string): Promise<string | null> => {
+    try {
+      const response = await fetch(`https://datapi.jup.ag/v1/assets/search?query=${tokenAddress}`)
+      if (!response.ok) return null
+      
+      const data = await response.json()
+      if (data && data.length > 0 && data[0].icon) {
+        return data[0].icon
+      }
+      return null
+    } catch (error) {
+      console.error('Error fetching token image:', error)
+      return null
+    }
+  }
 
   useEffect(() => {
     const loadTrendingTokens = async () => {
       try {
         setIsLoading(true)
         setError(null)
+        
+        // Load tokens and images in parallel for maximum speed
         const tokens = await getTrendingTokens(limit, timePeriod)
         setTrendingTokens(tokens)
+        
+        // Fetch token images for tokens with addresses in parallel
+        const imagePromises = tokens
+          .filter(token => token.token_address)
+          .map(async (token) => {
+            const imageUrl = await fetchTokenImage(token.token_address!)
+            if (imageUrl) {
+              // Preload the image for instant display
+              const img = new Image()
+              img.src = imageUrl
+              
+              return { address: token.token_address!, imageUrl }
+            }
+            return null
+          })
+        
+        const imageResults = await Promise.all(imagePromises)
+        const images: Record<string, string> = {}
+        
+        imageResults.forEach(result => {
+          if (result) {
+            images[result.address] = result.imageUrl
+          }
+        })
+        
+        setTokenImages(images)
       } catch (err) {
         console.error('Error loading trending tokens:', err)
         const errorMessage = err instanceof Error ? err.message : 'Failed to load trending tokens'
@@ -73,6 +118,13 @@ export const TrendingTokens = ({ limit = 10, timePeriod = '24 hours' }: Trending
     return '+25%'
   }
 
+  const getRankTextColor = (index: number): string => {
+    switch (index) {
+      case 0: return 'text-yellow-400' // Gold for 1st place
+      default: return 'text-white' // Default white for others
+    }
+  }
+
   if (isLoading) {
     return null
   }
@@ -100,12 +152,29 @@ export const TrendingTokens = ({ limit = 10, timePeriod = '24 hours' }: Trending
             className="flex items-center space-x-3 cursor-pointer group"
             onClick={() => handleTokenClick(token)}
           >
-            <div className="w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center text-gray-300 font-bold text-sm">
-              {index + 1}
+            <div className="w-6 h-6 rounded-full flex items-center justify-center overflow-hidden">
+              {token.token_address && tokenImages[token.token_address] ? (
+                <img 
+                  src={tokenImages[token.token_address]} 
+                  alt={`${token.token_symbol} logo`}
+                  className="w-full h-full object-cover rounded-full"
+                  onError={(e) => {
+                    // Fallback to emoji if image fails to load
+                    const target = e.target as HTMLImageElement
+                    target.style.display = 'none'
+                    const parent = target.parentElement
+                    if (parent) {
+                      parent.innerHTML = `<span class="text-xs">${getTokenEmoji(token.token_symbol)}</span>`
+                    }
+                  }}
+                />
+              ) : (
+                <span className="text-xs">{getTokenEmoji(token.token_symbol)}</span>
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2">
-                <p className="text-sm font-medium text-white truncate">
+                <p className={`text-sm font-medium truncate ${getRankTextColor(index)}`}>
                   ${token.token_symbol}
                 </p>
                 {token.token_address && (

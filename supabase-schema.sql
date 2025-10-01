@@ -25,6 +25,7 @@ CREATE TABLE posts (
   promotion_end TIMESTAMP WITH TIME ZONE,
   promotion_price DECIMAL(20,9), -- SOL amount paid (supports up to 1 billion SOL with 9 decimal precision)
   payment_tx_hash TEXT, -- Solana transaction hash
+  impression_count INTEGER DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -42,9 +43,18 @@ CREATE TABLE follows (
 CREATE TABLE likes (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
-  post_id UUID REFERENCES posts(id) ON DELETE CASCADE NOT NULL,
+  post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
+  reply_id UUID REFERENCES replies(id) ON DELETE CASCADE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(user_id, post_id)
+  -- Ensure either post_id or reply_id is provided, but not both
+  CONSTRAINT likes_post_or_reply CHECK (
+    (post_id IS NOT NULL AND reply_id IS NULL) OR 
+    (post_id IS NULL AND reply_id IS NOT NULL)
+  ),
+  -- Unique constraint for posts
+  UNIQUE(user_id, post_id) WHERE post_id IS NOT NULL,
+  -- Unique constraint for replies
+  UNIQUE(user_id, reply_id) WHERE reply_id IS NOT NULL
 );
 
 -- Create replies table
@@ -52,6 +62,7 @@ CREATE TABLE replies (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   post_id UUID REFERENCES posts(id) ON DELETE CASCADE NOT NULL,
+  parent_reply_id UUID REFERENCES replies(id) ON DELETE CASCADE, -- For endless threading
   content TEXT,
   image_url TEXT,
   token_symbol TEXT,
@@ -74,6 +85,14 @@ CREATE TABLE notifications (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Create impressions table
+CREATE TABLE impressions (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  post_id UUID REFERENCES posts(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  viewed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Enable Row Level Security
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
@@ -81,6 +100,7 @@ ALTER TABLE follows ENABLE ROW LEVEL SECURITY;
 ALTER TABLE likes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE replies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE impressions ENABLE ROW LEVEL SECURITY;
 
 -- Profiles policies
 CREATE POLICY "Public profiles are viewable by everyone" ON profiles
@@ -148,6 +168,13 @@ CREATE POLICY "Users can update their own notifications" ON notifications
 CREATE POLICY "System can insert notifications" ON notifications
   FOR INSERT WITH CHECK (true);
 
+-- Impressions policies
+CREATE POLICY "Anyone can insert impressions" ON impressions
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Impressions are viewable by everyone" ON impressions
+  FOR SELECT USING (true);
+
 -- Function to automatically create a profile when a user signs up
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
@@ -209,15 +236,32 @@ CREATE OR REPLACE FUNCTION public.create_like_notification()
 RETURNS TRIGGER AS $$
 DECLARE
   post_owner_id UUID;
+  reply_owner_id UUID;
 BEGIN
-  -- Get the post owner
-  SELECT user_id INTO post_owner_id FROM posts WHERE id = NEW.post_id;
-  
-  -- Don't create notification if user is liking their own post
-  IF NEW.user_id != post_owner_id THEN
-    INSERT INTO public.notifications (user_id, type, actor_id, post_id)
-    VALUES (post_owner_id, 'like', NEW.user_id, NEW.post_id);
+  -- Handle post likes
+  IF NEW.post_id IS NOT NULL THEN
+    -- Get the post owner
+    SELECT user_id INTO post_owner_id FROM posts WHERE id = NEW.post_id;
+    
+    -- Don't create notification if user is liking their own post
+    IF NEW.user_id != post_owner_id THEN
+      INSERT INTO public.notifications (user_id, type, actor_id, post_id)
+      VALUES (post_owner_id, 'like', NEW.user_id, NEW.post_id);
+    END IF;
   END IF;
+  
+  -- Handle reply likes
+  IF NEW.reply_id IS NOT NULL THEN
+    -- Get the reply owner
+    SELECT user_id INTO reply_owner_id FROM replies WHERE id = NEW.reply_id;
+    
+    -- Don't create notification if user is liking their own reply
+    IF NEW.user_id != reply_owner_id THEN
+      INSERT INTO public.notifications (user_id, type, actor_id, reply_id)
+      VALUES (reply_owner_id, 'like', NEW.user_id, NEW.reply_id);
+    END IF;
+  END IF;
+  
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -253,6 +297,22 @@ CREATE TRIGGER on_reply_created
   AFTER INSERT ON replies
   FOR EACH ROW EXECUTE FUNCTION public.create_comment_notification();
 
+-- Function to increment impression count
+CREATE OR REPLACE FUNCTION public.increment_post_impression_count()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE posts 
+  SET impression_count = impression_count + 1
+  WHERE id = NEW.post_id;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to auto-increment impression count
+CREATE TRIGGER on_impression_created
+  AFTER INSERT ON impressions
+  FOR EACH ROW EXECUTE FUNCTION public.increment_post_impression_count();
+
 -- Create indexes for better performance
 CREATE INDEX posts_user_id_idx ON posts(user_id);
 CREATE INDEX posts_created_at_idx ON posts(created_at DESC);
@@ -264,12 +324,16 @@ CREATE INDEX likes_user_id_idx ON likes(user_id);
 CREATE INDEX likes_post_id_idx ON likes(post_id);
 CREATE INDEX replies_user_id_idx ON replies(user_id);
 CREATE INDEX replies_post_id_idx ON replies(post_id);
+CREATE INDEX replies_parent_reply_id_idx ON replies(parent_reply_id);
 CREATE INDEX replies_created_at_idx ON replies(created_at DESC);
 CREATE INDEX profiles_username_idx ON profiles(username);
 CREATE INDEX notifications_user_id_idx ON notifications(user_id);
 CREATE INDEX notifications_created_at_idx ON notifications(created_at DESC);
 CREATE INDEX notifications_is_read_idx ON notifications(is_read);
 CREATE INDEX notifications_type_idx ON notifications(type);
+CREATE INDEX impressions_post_id_idx ON impressions(post_id);
+CREATE INDEX impressions_user_id_idx ON impressions(user_id);
+CREATE INDEX impressions_viewed_at_idx ON impressions(viewed_at DESC);
 
 -- Create storage buckets for memes/images and banners
 INSERT INTO storage.buckets (id, name, public) 

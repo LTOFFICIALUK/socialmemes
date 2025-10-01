@@ -2,15 +2,17 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Heart, MessageCircle, Share, Check, MoreHorizontal, Trash2, Coins, TrendingUp } from 'lucide-react'
+import { Heart, MessageCircle, Share, Check, MoreHorizontal, Trash2, Coins, TrendingUp, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog'
 import { CreateReply } from '@/components/create-reply'
+import { ThreadedReply } from '@/components/threaded-reply'
 import { Post, Reply } from '@/lib/database'
 import { formatDate, formatNumber, getBestDexScreenerUrl } from '@/lib/utils'
-import { getPostById, likePost, unlikePost, deletePost, createReply, getRepliesByPostId } from '@/lib/database'
+import { getPostById, likePost, unlikePost, deletePost, createReply, getRepliesByPostId, getRepliesToReply } from '@/lib/database'
 import { supabase } from '@/lib/supabase'
+import { useImpressionTrackingImmediate } from '@/hooks/useImpressionTrackingImmediate'
 
 interface PostDetailProps {
   postId: string
@@ -32,6 +34,12 @@ export const PostDetail = ({ postId, currentUser, onPromote }: PostDetailProps) 
   const [isLoadingReplies, setIsLoadingReplies] = useState(false)
   const [isShared, setIsShared] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  
+  useImpressionTrackingImmediate({
+    postId,
+    userId: currentUser.id,
+    enabled: !isLoading && !!post
+  })
 
   const loadPost = async () => {
     try {
@@ -66,6 +74,26 @@ export const PostDetail = ({ postId, currentUser, onPromote }: PostDetailProps) 
       loadReplies()
     }
   }, [postId, currentUser.id])
+
+  // Handle scrolling to specific reply when page loads with hash
+  useEffect(() => {
+    const hash = window.location.hash
+    if (hash && hash.startsWith('#reply-')) {
+      const replyId = hash.replace('#reply-', '')
+      // Wait a bit for replies to load, then scroll to the reply
+      setTimeout(() => {
+        const replyElement = document.getElementById(`reply-${replyId}`)
+        if (replyElement) {
+          replyElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          // Add a temporary highlight effect
+          replyElement.style.backgroundColor = 'rgba(34, 197, 94, 0.1)'
+          setTimeout(() => {
+            replyElement.style.backgroundColor = ''
+          }, 2000)
+        }
+      }, 500)
+    }
+  }, [replies]) // Run when replies are loaded
 
   const handleLike = async () => {
     if (!post) return
@@ -336,7 +364,7 @@ export const PostDetail = ({ postId, currentUser, onPromote }: PostDetailProps) 
               </div>
             )}
 
-            <div className="flex items-center space-x-6 text-gray-400">
+            <div className="flex items-center space-x-6 text-gray-400 -ml-3">
               <Button
                 variant="ghost"
                 size="sm"
@@ -358,6 +386,11 @@ export const PostDetail = ({ postId, currentUser, onPromote }: PostDetailProps) 
                 <MessageCircle className="h-5 w-5" />
                 <span>{formatNumber(post.replies_count || 0)}</span>
               </Button>
+
+              <div className="flex items-center space-x-2 text-gray-400">
+                <BarChart3 className="h-5 w-5" />
+                <span>{formatNumber(post.impression_count || 0)}</span>
+              </div>
 
               <Button
                 variant="ghost"
@@ -399,11 +432,13 @@ export const PostDetail = ({ postId, currentUser, onPromote }: PostDetailProps) 
           </div>
         ) : (
           replies.map((reply) => (
-            <ReplyCard
+            <ThreadedReply
               key={reply.id}
               reply={reply}
-              currentUserId={currentUser.id}
-              onProfileClick={handleProfileClick}
+              currentUser={currentUser}
+              onPromote={onPromote}
+              depth={0}
+              maxDepth={10}
             />
           ))
         )}
@@ -422,122 +457,5 @@ export const PostDetail = ({ postId, currentUser, onPromote }: PostDetailProps) 
         isLoading={isDeleting}
       />
     </div>
-  )
-}
-
-// Reply Card Component
-interface ReplyCardProps {
-  reply: Reply
-  currentUserId: string
-  onProfileClick: (username: string) => void
-}
-
-const ReplyCard = ({ reply, currentUserId, onProfileClick }: ReplyCardProps) => {
-  const [isLiked, setIsLiked] = useState(reply.is_liked)
-  const [likesCount, setLikesCount] = useState(reply.likes_count)
-
-  const handleLike = async () => {
-    try {
-      if (isLiked) {
-        await unlikePost(currentUserId, reply.id)
-        setIsLiked(false)
-        setLikesCount(prev => prev - 1)
-      } else {
-        await likePost(currentUserId, reply.id)
-        setIsLiked(true)
-        setLikesCount(prev => prev + 1)
-      }
-    } catch (error) {
-      console.error('Error toggling like:', error)
-    }
-  }
-
-  return (
-    <article className="border-b border-gray-800 hover:bg-gray-900/50 transition-colors">
-      <div className="flex space-x-3 p-4">
-        <Avatar 
-          className="h-8 w-8 cursor-pointer hover:opacity-80 transition-opacity"
-          onClick={() => onProfileClick(reply.profiles?.username || '')}
-        >
-          <AvatarImage src={reply.profiles?.avatar_url || undefined} alt={reply.profiles?.username || 'User'} />
-          <AvatarFallback className="bg-green-500 text-white font-semibold text-sm">
-            {reply.profiles?.username?.charAt(0).toUpperCase() || 'U'}
-          </AvatarFallback>
-        </Avatar>
-        
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center space-x-2 mb-1">
-            <span 
-              className="font-semibold text-white text-sm cursor-pointer hover:underline"
-              onClick={() => onProfileClick(reply.profiles?.username || '')}
-              style={{ 
-                maxWidth: '150px',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap'
-              }}
-              title={reply.profiles?.full_name || reply.profiles?.username || 'Unknown User'}
-            >
-              {reply.profiles?.full_name || reply.profiles?.username || 'Unknown User'}
-            </span>
-            <span className="text-gray-400 text-xs">·</span>
-            <time className="text-gray-400 text-xs">
-              {formatDate(reply.created_at)}
-            </time>
-          </div>
-
-          {reply.content && (
-            <p className="text-gray-100 text-sm mb-2 whitespace-pre-wrap break-words">
-              {reply.content}
-            </p>
-          )}
-
-          {reply.image_url && (
-            <div className="relative mb-2">
-              <img
-                src={reply.image_url}
-                alt="Reply image"
-                className="w-full max-h-[20rem] rounded-lg object-contain border border-gray-700"
-                loading="lazy"
-              />
-            </div>
-          )}
-
-          {/* Token tag for replies */}
-          {reply.token_symbol && (
-            <div className="mb-2">
-              <div 
-                className="inline-flex items-center space-x-1 cursor-pointer hover:text-green-300 transition-colors"
-                onClick={() => {
-                  if (reply.dex_screener_url) {
-                    window.open(reply.dex_screener_url, '_blank', 'noopener,noreferrer')
-                  }
-                }}
-                title={reply.dex_screener_url ? "View on DexScreener" : "Token linked"}
-              >
-                <Coins className="h-3 w-3 text-green-400" />
-                <span className="text-green-400 text-xs font-medium">
-                  ${reply.token_symbol}
-                </span>
-              </div>
-            </div>
-          )}
-
-          <div className="flex items-center space-x-4 text-gray-400">
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`flex items-center space-x-1 text-xs ${
-                isLiked ? 'text-red-500 hover:text-red-600' : 'hover:text-red-500'
-              }`}
-              onClick={handleLike}
-            >
-              <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
-              <span>{formatNumber(likesCount)}</span>
-            </Button>
-          </div>
-        </div>
-      </div>
-    </article>
   )
 }

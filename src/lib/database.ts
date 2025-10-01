@@ -7,11 +7,13 @@ export type Post = Database['public']['Tables']['posts']['Row'] & {
   likes_count: number
   replies_count: number
   is_liked: boolean
+  impression_count: number
 }
 export type Reply = {
   id: string
   user_id: string
   post_id: string
+  parent_reply_id: string | null
   content: string | null
   image_url: string | null
   token_symbol: string | null
@@ -40,6 +42,16 @@ export type TrendingToken = {
   post_count: number
   total_likes: number
   trending_score: number
+}
+
+export type FeaturedToken = {
+  id: string
+  user_id: string
+  title: string | null
+  image_url: string
+  destination_url: string
+  display_order: number
+  promotion_end: string
 }
 
 // Profile functions
@@ -105,7 +117,8 @@ export const createPost = async (post: {
     ...data,
     likes_count: data.likes_count?.[0]?.count || 0,
     replies_count: data.replies_count?.[0]?.count || 0,
-    is_liked: false // New posts are not liked by default
+    is_liked: false, // New posts are not liked by default
+    impression_count: 0 // New posts have no impressions
   }
   
   return processedPost
@@ -133,10 +146,11 @@ export const deletePost = async (userId: string, postId: string) => {
 }
 
 // Type for raw database result with count arrays
-type RawPost = Database['public']['Tables']['posts']['Row'] & {
+type RawPost = Omit<Database['public']['Tables']['posts']['Row'], 'impression_count'> & {
   profiles: Profile
   likes_count: { count: number }[]
   replies_count: { count: number }[]
+  impression_count: number
 }
 
 export const getPosts = async (userId?: string, limit = 20, offset = 0): Promise<Post[]> => {
@@ -149,10 +163,11 @@ export const getPosts = async (userId?: string, limit = 20, offset = 0): Promise
       replies_count:replies(count)
     `
     
-    // Get regular posts
+    // Get regular posts (exclude promoted posts to avoid duplicates)
     const regularQuery = supabase
       .from('posts')
       .select(selectQuery)
+      .or('is_promoted.is.null,is_promoted.eq.false')
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
@@ -201,14 +216,16 @@ export const getPosts = async (userId?: string, limit = 20, offset = 0): Promise
       ...post,
       likes_count: post.likes_count?.[0]?.count || 0,
       replies_count: post.replies_count?.[0]?.count || 0,
-      is_liked: userId ? userLikes.includes(post.id) : false
+      is_liked: userId ? userLikes.includes(post.id) : false,
+      impression_count: post.impression_count || 0
     }))
 
     const processedPromotedPosts = (promotedPosts || []).map((post: RawPost) => ({
       ...post,
       likes_count: post.likes_count?.[0]?.count || 0,
       replies_count: post.replies_count?.[0]?.count || 0,
-      is_liked: userId ? userLikes.includes(post.id) : false
+      is_liked: userId ? userLikes.includes(post.id) : false,
+      impression_count: post.impression_count || 0
     }))
     
     // Mix promoted posts every 10 posts
@@ -264,11 +281,12 @@ export const getPostsByUser = async (userId: string, limit = 20, offset = 0): Pr
   }
   
   // Process posts
-  const processedPosts = (data || []).map((post: { id: string; likes_count: { count: number }[] | null; replies_count: { count: number }[] | null; [key: string]: unknown }) => ({
+  const processedPosts = (data || []).map((post: { id: string; likes_count: { count: number }[] | null; replies_count: { count: number }[] | null; impression_count?: number; [key: string]: unknown }) => ({
     ...post,
     likes_count: post.likes_count?.[0]?.count || 0,
     replies_count: post.replies_count?.[0]?.count || 0,
-    is_liked: userLikes.includes(post.id)
+    is_liked: userLikes.includes(post.id),
+    impression_count: post.impression_count || 0
   }))
   
   return processedPosts as Post[]
@@ -318,11 +336,12 @@ export const getFollowingPosts = async (userId: string, limit = 20, offset = 0):
   }
   
   // Process posts
-  const processedPosts = (data || []).map((post: { id: string; likes_count: { count: number }[] | null; replies_count: { count: number }[] | null; [key: string]: unknown }) => ({
+  const processedPosts = (data || []).map((post: { id: string; likes_count: { count: number }[] | null; replies_count: { count: number }[] | null; impression_count?: number; [key: string]: unknown }) => ({
     ...post,
     likes_count: post.likes_count?.[0]?.count || 0,
     replies_count: post.replies_count?.[0]?.count || 0,
-    is_liked: userLikes.includes(post.id)
+    is_liked: userLikes.includes(post.id),
+    impression_count: post.impression_count || 0
   }))
   
   return processedPosts as Post[]
@@ -359,6 +378,26 @@ export const getFollowers = async (userId: string): Promise<Profile[]> => {
   if (error) throw error
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return data?.map((item: any) => item.profiles).filter(Boolean) || []
+}
+
+export const getFollowerCount = async (userId: string): Promise<number> => {
+  const { count, error } = await supabase
+    .from('follows')
+    .select('*', { count: 'exact', head: true })
+    .eq('following_id', userId)
+  
+  if (error) throw error
+  return count || 0
+}
+
+export const getFollowingCount = async (userId: string): Promise<number> => {
+  const { count, error } = await supabase
+    .from('follows')
+    .select('*', { count: 'exact', head: true })
+    .eq('follower_id', userId)
+  
+  if (error) throw error
+  return count || 0
 }
 
 export const getTopFollowers = async (userId: string, limit = 10): Promise<Profile[]> => {
@@ -423,7 +462,20 @@ export const likePost = async (userId: string, postId: string) => {
     .select()
     .single()
   
-  if (error) throw error
+  if (error) {
+    // If it's a unique constraint violation, the user already liked this post
+    if (error.code === '23505') {
+      // Return the existing like instead of throwing an error
+      const { data: existingLike } = await supabase
+        .from('likes')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('post_id', postId)
+        .single()
+      return existingLike
+    }
+    throw error
+  }
   return data
 }
 
@@ -433,6 +485,41 @@ export const unlikePost = async (userId: string, postId: string) => {
     .delete()
     .eq('user_id', userId)
     .eq('post_id', postId)
+  
+  if (error) throw error
+}
+
+// Reply like functions
+export const likeReply = async (userId: string, replyId: string) => {
+  const { data, error } = await supabase
+    .from('likes')
+    .insert({ user_id: userId, reply_id: replyId })
+    .select()
+    .single()
+  
+  if (error) {
+    // If it's a unique constraint violation, the user already liked this reply
+    if (error.code === '23505') {
+      // Return the existing like instead of throwing an error
+      const { data: existingLike } = await supabase
+        .from('likes')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('reply_id', replyId)
+        .single()
+      return existingLike
+    }
+    throw error
+  }
+  return data
+}
+
+export const unlikeReply = async (userId: string, replyId: string) => {
+  const { error } = await supabase
+    .from('likes')
+    .delete()
+    .eq('user_id', userId)
+    .eq('reply_id', replyId)
   
   if (error) throw error
 }
@@ -450,7 +537,7 @@ export const searchUsers = async (query: string, limit = 10): Promise<Profile[]>
 }
 
 // Trending functions
-export const getTrendingTokens = async (limit = 10, timePeriod = '24 hours'): Promise<TrendingToken[]> => {
+export const getTrendingTokens = async (limit = 5, timePeriod = '24 hours'): Promise<TrendingToken[]> => {
   try {
     // First try the RPC function
     const { data, error } = await supabase
@@ -558,7 +645,8 @@ export const getPostById = async (postId: string, userId?: string): Promise<Post
     ...data,
     likes_count: data.likes_count?.[0]?.count || 0,
     replies_count: data.replies_count?.[0]?.count || 0,
-    is_liked: isLiked
+    is_liked: isLiked,
+    impression_count: data.impression_count || 0
   }
 }
 
@@ -566,6 +654,7 @@ export const getPostById = async (postId: string, userId?: string): Promise<Post
 export const createReply = async (reply: {
   user_id: string
   post_id: string
+  parent_reply_id?: string
   content?: string
   image_url?: string
   token_symbol?: string
@@ -583,7 +672,10 @@ export const createReply = async (reply: {
     `)
     .single()
   
-  if (error) throw error
+  if (error) {
+    console.error('Error creating reply:', error)
+    throw error
+  }
   
   return {
     ...data,
@@ -593,6 +685,111 @@ export const createReply = async (reply: {
 }
 
 export const getRepliesByPostId = async (postId: string, userId?: string): Promise<Reply[]> => {
+  const { data, error } = await supabase
+    .from('replies')
+    .select(`
+      *,
+      profiles (*),
+      likes_count:likes(count)
+    `)
+    .eq('post_id', postId)
+    .is('parent_reply_id', null) // Only get top-level replies
+    .order('created_at', { ascending: true })
+  
+  if (error) throw error
+  
+  // Get all user likes in a single query if userId is provided
+  let userLikes: string[] = []
+  if (userId && data && data.length > 0) {
+    const replyIds = data.map((reply: { id: string }) => reply.id)
+    const { data: likesData } = await supabase
+      .from('likes')
+      .select('reply_id')
+      .eq('user_id', userId)
+      .in('reply_id', replyIds)
+    
+    userLikes = likesData?.map(like => like.reply_id) || []
+  }
+  
+  // Process replies
+  return (data || []).map((reply: { id: string; likes_count: { count: number }[] | null; [key: string]: unknown }) => ({
+    ...reply,
+    likes_count: reply.likes_count?.[0]?.count || 0,
+    is_liked: userId ? userLikes.includes(reply.id) : false
+  })) as Reply[]
+}
+
+// Get replies to a specific reply (for threading)
+export const getRepliesToReply = async (replyId: string, userId?: string): Promise<Reply[]> => {
+  const { data, error } = await supabase
+    .from('replies')
+    .select(`
+      *,
+      profiles (*),
+      likes_count:likes(count)
+    `)
+    .eq('parent_reply_id', replyId)
+    .order('created_at', { ascending: true })
+  
+  if (error) throw error
+  
+  // Get all user likes in a single query if userId is provided
+  let userLikes: string[] = []
+  if (userId && data && data.length > 0) {
+    const replyIds = data.map((reply: { id: string }) => reply.id)
+    const { data: likesData } = await supabase
+      .from('likes')
+      .select('reply_id')
+      .eq('user_id', userId)
+      .in('reply_id', replyIds)
+    
+    userLikes = likesData?.map(like => like.reply_id) || []
+  }
+  
+  // Process replies
+  return (data || []).map((reply: { id: string; likes_count: { count: number }[] | null; [key: string]: unknown }) => ({
+    ...reply,
+    likes_count: reply.likes_count?.[0]?.count || 0,
+    is_liked: userId ? userLikes.includes(reply.id) : false
+  })) as Reply[]
+}
+
+// Get a specific reply by ID (works at any nesting level)
+export const getReplyById = async (replyId: string, userId?: string): Promise<Reply | null> => {
+  const { data, error } = await supabase
+    .from('replies')
+    .select(`
+      *,
+      profiles (*),
+      likes_count:likes(count)
+    `)
+    .eq('id', replyId)
+    .single()
+  
+  if (error) return null
+  
+  // Get user like status if userId is provided
+  let isLiked = false
+  if (userId) {
+    const { data: likeData } = await supabase
+      .from('likes')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('reply_id', replyId)
+      .single()
+    
+    isLiked = !!likeData
+  }
+  
+  return {
+    ...data,
+    likes_count: data.likes_count?.[0]?.count || 0,
+    is_liked: isLiked
+  }
+}
+
+// Get all replies for a post (at any nesting level) - useful for building conversation threads
+export const getAllRepliesForPost = async (postId: string, userId?: string): Promise<Reply[]> => {
   const { data, error } = await supabase
     .from('replies')
     .select(`
@@ -611,11 +808,11 @@ export const getRepliesByPostId = async (postId: string, userId?: string): Promi
     const replyIds = data.map((reply: { id: string }) => reply.id)
     const { data: likesData } = await supabase
       .from('likes')
-      .select('post_id')
+      .select('reply_id')
       .eq('user_id', userId)
-      .in('post_id', replyIds)
+      .in('reply_id', replyIds)
     
-    userLikes = likesData?.map(like => like.post_id) || []
+    userLikes = likesData?.map(like => like.reply_id) || []
   }
   
   // Process replies
@@ -624,6 +821,22 @@ export const getRepliesByPostId = async (postId: string, userId?: string): Promi
     likes_count: reply.likes_count?.[0]?.count || 0,
     is_liked: userId ? userLikes.includes(reply.id) : false
   })) as Reply[]
+}
+
+// Get threaded replies (replies to replies) - DEPRECATED, use getRepliesToReply instead
+export const getThreadedReplies = async (postId: string, userId?: string): Promise<Reply[]> => {
+  // First get all direct replies to the post
+  const directReplies = await getRepliesByPostId(postId, userId)
+  
+  // Then get all replies to those replies (threaded replies)
+  const allReplies = [...directReplies]
+  
+  for (const reply of directReplies) {
+    const threadedReplies = await getRepliesToReply(reply.id, userId)
+    allReplies.push(...threadedReplies)
+  }
+  
+  return allReplies.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
 }
 
 export const deleteReply = async (userId: string, replyId: string) => {
@@ -727,4 +940,87 @@ export const deleteNotification = async (userId: string, notificationId: string)
     .eq('user_id', userId)
   
   if (error) throw error
+}
+
+// Impression functions
+export const createImpression = async (impression: {
+  post_id: string
+  user_id?: string | null
+}) => {
+  const { data, error } = await supabase
+    .from('impressions')
+    .insert(impression)
+    .select()
+    .single()
+  
+  if (error) throw error
+  return data
+}
+
+export const getImpressionCount = async (postId: string): Promise<number> => {
+  const { count, error } = await supabase
+    .from('impressions')
+    .select('*', { count: 'exact', head: true })
+    .eq('post_id', postId)
+  
+  if (error) throw error
+  return count || 0
+}
+
+export const getUniqueImpressionCount = async (postId: string): Promise<number> => {
+  const { data, error } = await supabase
+    .from('impressions')
+    .select('user_id')
+    .eq('post_id', postId)
+    .not('user_id', 'is', null)
+  
+  if (error) throw error
+  
+  // Count unique user_ids
+  const uniqueUserIds = new Set(data?.map(imp => imp.user_id))
+  return uniqueUserIds.size
+}
+
+// Featured Token functions
+export const getFeaturedTokens = async (limit = 6): Promise<FeaturedToken[]> => {
+  const { data, error } = await supabase
+    .rpc('get_active_featured_tokens', { limit_count: limit })
+  
+  if (error) {
+    console.error('Error fetching featured tokens:', error)
+    return []
+  }
+  
+  return data || []
+}
+
+export const createFeaturedToken = async (featuredToken: {
+  title?: string | null
+  image_url: string
+  destination_url: string
+  duration: number
+  price: number
+  signature: string
+  from_address: string
+}) => {
+  const response = await fetch('/api/featured-tokens', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: featuredToken.title,
+      imageUrl: featuredToken.image_url,
+      destinationUrl: featuredToken.destination_url,
+      duration: featuredToken.duration,
+      price: featuredToken.price,
+      signature: featuredToken.signature,
+      fromAddress: featuredToken.from_address,
+    }),
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json()
+    throw new Error(errorData.error || 'Failed to create featured token')
+  }
+
+  return await response.json()
 }

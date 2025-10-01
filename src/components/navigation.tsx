@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Grid3X3, User, LogOut, Settings, Bell, Search, BookOpen, Plus } from 'lucide-react'
+import { Home, Grid3X3, User, LogOut, Settings, Bell, Search, BookOpen, Plus, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { CreatePost } from '@/components/create-post'
@@ -19,6 +19,7 @@ interface NavigationProps {
   }
   onSignOut?: () => void
   onNotificationRead?: () => void
+  onPromoteClick?: () => void
 }
 
 const navigation = [
@@ -26,9 +27,10 @@ const navigation = [
   { name: 'Explore', href: '/explore', icon: Grid3X3 },
   { name: 'Search', href: '/search', icon: Search },
   { name: 'Notifications', href: '/notifications', icon: Bell },
+  { name: 'Promote', href: '#', icon: TrendingUp, isAction: true },
 ]
 
-export const Navigation = ({ currentUser, onSignOut, onNotificationRead }: NavigationProps) => {
+export const Navigation = ({ currentUser, onSignOut, onNotificationRead, onPromoteClick }: NavigationProps) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -187,6 +189,22 @@ export const Navigation = ({ currentUser, onSignOut, onNotificationRead }: Navig
           {navigation.map((item) => {
             const isActive = pathname === item.href
             const isNotifications = item.name === 'Notifications'
+            const isPromote = item.name === 'Promote'
+            
+            if (isPromote) {
+              return (
+                <li key={item.name}>
+                  <button
+                    onClick={onPromoteClick}
+                    className="flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-gray-300 hover:bg-white/5 hover:text-white w-full text-left"
+                  >
+                    <item.icon className="h-5 w-5" />
+                    <span>{item.name}</span>
+                  </button>
+                </li>
+              )
+            }
+            
             return (
               <li key={item.name}>
                 <Link
@@ -218,7 +236,7 @@ export const Navigation = ({ currentUser, onSignOut, onNotificationRead }: Navig
       {currentUser ? (
         <div className="p-4 relative">
           {/* Docs Menu Item */}
-          <div className="mb-4">
+          <div className="mb-2">
             <Link
               href="/docs"
               className={cn(

@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Heart, MessageCircle, Share, Check, ExternalLink, MoreHorizontal, Trash2, Coins, TrendingUp } from 'lucide-react'
+import { Heart, MessageCircle, Share, Check, ExternalLink, MoreHorizontal, Trash2, Coins, TrendingUp, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog'
 import { Post } from '@/lib/database'
 import { formatDate, formatNumber } from '@/lib/utils'
+import { useImpressionTracking } from '@/hooks/useImpressionTracking'
 
 interface PostCardProps {
   post: Post
@@ -28,6 +29,14 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isShared, setIsShared] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  
+  const impressionRef = useImpressionTracking({
+    postId: post.id,
+    userId: currentUserId,
+    enabled: true,
+    threshold: 0.5,
+    delay: 1000
+  })
 
   const handleLike = () => {
     if (isLiked) {
@@ -127,6 +136,7 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
 
   return (
     <article 
+      ref={impressionRef as React.RefObject<HTMLElement>}
       className="border-b border-gray-800 hover:bg-gray-900/50 transition-colors cursor-pointer overflow-hidden"
       onClick={handlePostCardClick}
     >
@@ -146,7 +156,9 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
           <div className="flex items-start justify-between mb-1 min-w-0">
             <div className="flex items-center space-x-2 min-w-0 flex-1 overflow-hidden">
               <span 
-                className="font-semibold text-white cursor-pointer hover:underline flex-shrink-0"
+                className={`font-semibold cursor-pointer hover:underline flex-shrink-0 ${
+                  post.is_promoted ? 'text-yellow-400' : 'text-white'
+                }`}
                 onClick={handleProfileClick}
                 data-prevent-navigation
                 style={{ 
@@ -253,7 +265,7 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
             </div>
           )}
 
-          <div className="flex items-center space-x-4 sm:space-x-6 text-gray-400">
+          <div className="flex items-center space-x-4 sm:space-x-6 text-gray-400 -ml-3">
             <Button
               variant="ghost"
               size="sm"
@@ -278,6 +290,11 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
               <MessageCircle className="h-5 w-5" />
               <span>{formatNumber(post.replies_count || 0)}</span>
             </Button>
+
+            <div className="flex items-center space-x-2 text-gray-400">
+              <BarChart3 className="h-5 w-5" />
+              <span>{formatNumber(post.impression_count || 0)}</span>
+            </div>
 
             <Button
               variant="ghost"

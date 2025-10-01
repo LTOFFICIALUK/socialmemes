@@ -21,9 +21,11 @@ interface CreateReplyProps {
     tokenName?: string
   }) => Promise<void>
   isSubmitting?: boolean
+  parentReplyId?: string
+  onCancel?: () => void
 }
 
-export const CreateReply = ({ currentUser, onSubmit, isSubmitting }: CreateReplyProps) => {
+export const CreateReply = ({ currentUser, onSubmit, isSubmitting, parentReplyId, onCancel }: CreateReplyProps) => {
   const [content, setContent] = useState('')
   const [image, setImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -178,7 +180,7 @@ export const CreateReply = ({ currentUser, onSubmit, isSubmitting }: CreateReply
           
           <div className="flex-1 relative">
             <textarea
-              placeholder="Post your reply"
+              placeholder={parentReplyId ? "Reply to this comment..." : "Post your reply"}
               value={content}
               onChange={handleTextareaChange}
               onDragEnter={handleDragEnter}
@@ -286,6 +288,16 @@ export const CreateReply = ({ currentUser, onSubmit, isSubmitting }: CreateReply
                 <div className="text-sm text-gray-500">
                   {content.length}/280
                 </div>
+                {onCancel && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={onCancel}
+                    className="px-4 rounded-full font-semibold text-gray-400 hover:text-white"
+                  >
+                    Cancel
+                  </Button>
+                )}
                 <Button
                   type="submit"
                   disabled={isDisabled}

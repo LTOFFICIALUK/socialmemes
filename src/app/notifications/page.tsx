@@ -258,7 +258,7 @@ export default function NotificationsPage() {
             </div>
             
             <div className="px-4 pb-4 pt-1">
-              <TrendingTokens limit={8} timePeriod="24 hours" />
+              <TrendingTokens limit={5} timePeriod="24 hours" />
             </div>
           </div>
         </div>

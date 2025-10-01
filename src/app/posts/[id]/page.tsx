@@ -7,9 +7,11 @@ import { Navigation } from '@/components/navigation'
 import { MobileNavigation } from '@/components/mobile-navigation'
 import { MobileMenuButton } from '@/components/mobile-menu-button'
 import { TrendingTokens } from '@/components/trending-tokens'
+import { FeaturedTokens } from '@/components/featured-tokens'
 import { SearchBar } from '@/components/search-bar'
 import { PostDetail } from '@/components/post-detail'
 import { PromotionModal } from '@/components/promotion-modal'
+import { FeaturedTokenModal } from '@/components/featured-token-modal'
 import { ToastContainer, useToast } from '@/components/ui/toast'
 import { supabase } from '@/lib/supabase'
 
@@ -17,10 +19,12 @@ export default function PostPage() {
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string } | undefined>(undefined)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [showPromotionModal, setShowPromotionModal] = useState(false)
+  const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
+  const [featuredTokensKey, setFeaturedTokensKey] = useState(0)
   const router = useRouter()
   const params = useParams()
   const postId = params.id as string
-  const { toasts, removeToast } = useToast()
+  const { toasts, removeToast, success } = useToast()
 
   useEffect(() => {
     // Get current user and their profile
@@ -105,7 +109,11 @@ export default function PostPage() {
       <div className="flex h-screen max-w-7xl mx-auto min-w-0">
         {/* Left Column - Navigation */}
         <div className="w-64 px-4 lg:px-8 h-screen overflow-y-auto hidden lg:block">
-          <Navigation currentUser={currentUser} onSignOut={handleSignOut} />
+          <Navigation 
+            currentUser={currentUser} 
+            onSignOut={handleSignOut}
+            onPromoteClick={() => setShowFeaturedTokenModal(true)}
+          />
         </div>
         
         {/* Center Column - Post Detail */}
@@ -153,9 +161,11 @@ export default function PostPage() {
             </div>
             
             <div className="px-4 pb-4 pt-1">
-              <TrendingTokens limit={8} timePeriod="24 hours" />
+              <TrendingTokens limit={5} timePeriod="24 hours" />
             </div>
           </div>
+          
+          <FeaturedTokens key={featuredTokensKey} limit={6} />
         </div>
       </div>
       
@@ -170,11 +180,25 @@ export default function PostPage() {
         }}
       />
       
+      {/* Featured Token Modal */}
+      <FeaturedTokenModal
+        isOpen={showFeaturedTokenModal}
+        onClose={() => setShowFeaturedTokenModal(false)}
+        onSuccess={() => {
+          setFeaturedTokensKey(prev => prev + 1)
+          success('Featured token promoted successfully!')
+        }}
+      />
+      
       {/* Toast Notifications */}
       <ToastContainer toasts={toasts} onClose={removeToast} />
       
       {/* Mobile Navigation */}
-      <MobileNavigation currentUser={currentUser} onSignOut={handleSignOut} />
+      <MobileNavigation 
+        currentUser={currentUser} 
+        onSignOut={handleSignOut}
+        onPromoteClick={() => setShowFeaturedTokenModal(true)}
+      />
     </div>
   )
 }
