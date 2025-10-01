@@ -637,6 +637,72 @@ export const getTrendingTokens = async (limit = 5, timePeriod = '24 hours'): Pro
   }
 }
 
+// Server-side function to check if trending tokens exist
+export const hasTrendingTokens = async (): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase
+      .from('posts')
+      .select('id')
+      .not('token_symbol', 'is', null)
+      .neq('token_symbol', '')
+      .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+      .limit(1)
+    
+    if (error) {
+      console.error('Error checking for trending tokens:', error)
+      return false
+    }
+    
+    return data && data.length > 0
+  } catch (error) {
+    console.error('Error checking for trending tokens:', error)
+    return false
+  }
+}
+
+// Server-side function to get trending tokens data with images
+export const getTrendingTokensWithImages = async (limit = 5, timePeriod = '24 hours'): Promise<{
+  tokens: TrendingToken[]
+  tokenImages: Record<string, string>
+}> => {
+  try {
+    const tokens = await getTrendingTokens(limit, timePeriod)
+    
+    // Fetch token images for tokens with addresses in parallel
+    const imagePromises = tokens
+      .filter(token => token.token_address)
+      .map(async (token) => {
+        try {
+          const response = await fetch(`https://datapi.jup.ag/v1/assets/search?query=${token.token_address}`)
+          if (!response.ok) return null
+          
+          const data = await response.json()
+          if (data && data.length > 0 && data[0].icon) {
+            return { address: token.token_address!, imageUrl: data[0].icon }
+          }
+          return null
+        } catch (error) {
+          console.error('Error fetching token image:', error)
+          return null
+        }
+      })
+    
+    const imageResults = await Promise.all(imagePromises)
+    const tokenImages: Record<string, string> = {}
+    
+    imageResults.forEach(result => {
+      if (result) {
+        tokenImages[result.address] = result.imageUrl
+      }
+    })
+    
+    return { tokens, tokenImages }
+  } catch (error) {
+    console.error('Error fetching trending tokens with images:', error)
+    return { tokens: [], tokenImages: {} }
+  }
+}
+
 // Post functions - get single post by ID
 export const getPostById = async (postId: string, userId?: string): Promise<Post> => {
   const { data, error } = await supabase

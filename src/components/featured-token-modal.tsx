@@ -459,7 +459,7 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
 
           <p className="text-xs text-gray-400 text-center mt-3">
             By clicking Pay with Phantom, you&apos;re indicating that you have read and agree to the{' '}
-            <a href="#" className="text-blue-400 hover:underline">Terms and Advertising Guidelines</a>.
+            <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">Terms and Advertising Guidelines</a>.
           </p>
         </div>
       </div>

@@ -1,84 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { TrendingUp, ExternalLink, Coins } from 'lucide-react'
-import { getTrendingTokens, TrendingToken } from '@/lib/database'
+import { TrendingToken } from '@/lib/database'
 import { formatNumber, getBestDexScreenerUrl } from '@/lib/utils'
 
 interface TrendingTokensProps {
-  limit?: number
-  timePeriod?: string
+  trendingTokens: TrendingToken[]
+  tokenImages: Record<string, string>
 }
 
-export const TrendingTokens = ({ limit = 5, timePeriod = '24 hours' }: TrendingTokensProps) => {
-  const [trendingTokens, setTrendingTokens] = useState<TrendingToken[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [tokenImages, setTokenImages] = useState<Record<string, string>>({})
-
-  const fetchTokenImage = async (tokenAddress: string): Promise<string | null> => {
-    try {
-      const response = await fetch(`https://datapi.jup.ag/v1/assets/search?query=${tokenAddress}`)
-      if (!response.ok) return null
-      
-      const data = await response.json()
-      if (data && data.length > 0 && data[0].icon) {
-        return data[0].icon
-      }
-      return null
-    } catch (error) {
-      console.error('Error fetching token image:', error)
-      return null
-    }
-  }
-
-  useEffect(() => {
-    const loadTrendingTokens = async () => {
-      try {
-        setIsLoading(true)
-        setError(null)
-        
-        // Load tokens and images in parallel for maximum speed
-        const tokens = await getTrendingTokens(limit, timePeriod)
-        setTrendingTokens(tokens)
-        
-        // Fetch token images for tokens with addresses in parallel
-        const imagePromises = tokens
-          .filter(token => token.token_address)
-          .map(async (token) => {
-            const imageUrl = await fetchTokenImage(token.token_address!)
-            if (imageUrl) {
-              // Preload the image for instant display
-              const img = new Image()
-              img.src = imageUrl
-              
-              return { address: token.token_address!, imageUrl }
-            }
-            return null
-          })
-        
-        const imageResults = await Promise.all(imagePromises)
-        const images: Record<string, string> = {}
-        
-        imageResults.forEach(result => {
-          if (result) {
-            images[result.address] = result.imageUrl
-          }
-        })
-        
-        setTokenImages(images)
-      } catch (err) {
-        console.error('Error loading trending tokens:', err)
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load trending tokens'
-        setError(errorMessage)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadTrendingTokens()
-  }, [limit, timePeriod])
-
+export const TrendingTokens = ({ trendingTokens, tokenImages }: TrendingTokensProps) => {
   const handleTokenClick = async (token: TrendingToken) => {
     if (token.token_address) {
       try {
@@ -123,20 +54,6 @@ export const TrendingTokens = ({ limit = 5, timePeriod = '24 hours' }: TrendingT
       case 0: return 'text-yellow-400' // Gold for 1st place
       default: return 'text-white' // Default white for others
     }
-  }
-
-  if (isLoading) {
-    return null
-  }
-
-  if (error) {
-    return (
-      <div>
-        <div className="bg-red-900/20 border border-red-800 rounded-lg p-4">
-          <p className="text-red-400 text-sm">{error}</p>
-        </div>
-      </div>
-    )
   }
 
   if (trendingTokens.length === 0) {

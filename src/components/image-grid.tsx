@@ -20,12 +20,15 @@ export const ImageGrid = ({ currentUserId }: ImageGridProps) => {
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadingRef = useRef<HTMLDivElement | null>(null)
 
-  const loadPosts = async (reset = false) => {
+  const loadPosts = useCallback(async (reset = false) => {
     try {
       setIsLoading(true)
       const newOffset = reset ? 0 : offset
+      console.log('Loading posts with userId:', currentUserId, 'offset:', newOffset)
+      
       // Load fewer posts at a time for better performance
       const allPosts = await getPosts(currentUserId, 20, newOffset)
+      console.log('Fetched posts:', allPosts.length, 'posts')
       
       // Filter for posts with images only
       const postsWithImages = allPosts.filter(post => 
@@ -33,6 +36,7 @@ export const ImageGrid = ({ currentUserId }: ImageGridProps) => {
         post.image_url.trim() !== '' && 
         post.image_url !== null
       )
+      console.log('Posts with images:', postsWithImages.length)
       
       if (reset) {
         setPosts(postsWithImages)
@@ -45,16 +49,17 @@ export const ImageGrid = ({ currentUserId }: ImageGridProps) => {
       setHasMore(allPosts.length === 20)
     } catch (error) {
       console.error('Error loading posts:', error)
+      // Set hasMore to false to stop infinite loading
+      setHasMore(false)
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [currentUserId, offset])
 
   useEffect(() => {
-    if (currentUserId) {
-      loadPosts(true)
-    }
-  }, [currentUserId]) // eslint-disable-line react-hooks/exhaustive-deps
+    // Load posts even if currentUserId is undefined (for public posts)
+    loadPosts(true)
+  }, [currentUserId, loadPosts])
 
   // Cleanup observer on unmount
   useEffect(() => {
@@ -75,7 +80,7 @@ export const ImageGrid = ({ currentUserId }: ImageGridProps) => {
       }
     })
     if (node) observerRef.current.observe(node)
-  }, [isLoading, hasMore]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isLoading, hasMore, loadPosts])
 
   const handleImageClick = (post: Post) => {
     router.push(`/posts/${post.id}`)

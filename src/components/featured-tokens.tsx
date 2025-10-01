@@ -172,9 +172,8 @@ export const FeaturedTokens = ({ limit = 6 }: FeaturedTokensProps) => {
                 >
                 <div
                   onClick={() => handleTokenClick(token.destination_url)}
-                  className="relative w-full h-full rounded-lg overflow-hidden cursor-pointer group border-4 transition-all duration-300"
+                  className="relative w-full h-full rounded-lg overflow-hidden cursor-pointer group border border-gray-800 transition-all duration-300"
                   style={{ 
-                    borderColor: '#facc15',
                     backgroundColor: '#1f2937' // bg-gray-800 equivalent
                   }}
                   role="button"

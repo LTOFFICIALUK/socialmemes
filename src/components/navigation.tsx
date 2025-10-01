@@ -288,26 +288,35 @@ export const Navigation = ({ currentUser, onSignOut, onNotificationRead, onPromo
 
           {/* Profile Dropdown */}
           {isProfileOpen && (
-            <div className="absolute bottom-full left-4 right-4 mb-2 bg-black border border-gray-800 rounded-lg shadow-lg py-2">
-              <Link
-                href={`/profile/${currentUser.username || 'user'}`}
-                className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white"
+            <>
+              {/* Backdrop */}
+              <div 
+                className="fixed inset-0 z-40"
                 onClick={() => setIsProfileOpen(false)}
-              >
-                <User className="h-4 w-4" />
-                <span>Profile</span>
-              </Link>
-              <button
-                onClick={() => {
-                  onSignOut?.()
-                  setIsProfileOpen(false)
-                }}
-                className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white w-full text-left"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Sign out</span>
-              </button>
-            </div>
+              />
+              
+              {/* Menu */}
+              <div className="absolute top-4 right-0 bg-black border border-gray-800 rounded-lg shadow-lg py-2 z-50 w-48">
+                <Link
+                  href={`/profile/${currentUser.username || 'user'}`}
+                  className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white"
+                  onClick={() => setIsProfileOpen(false)}
+                >
+                  <User className="h-4 w-4" />
+                  <span>Profile</span>
+                </Link>
+                <button
+                  onClick={() => {
+                    onSignOut?.()
+                    setIsProfileOpen(false)
+                  }}
+                  className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white w-full text-left"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Sign out</span>
+                </button>
+              </div>
+            </>
           )}
         </div>
       ) : (

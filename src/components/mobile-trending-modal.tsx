@@ -1,10 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { X, TrendingUp, Coins } from 'lucide-react'
-import { TrendingTokens } from '@/components/trending-tokens'
+import { TrendingTokensSection } from '@/components/trending-tokens-section'
 import { FeaturedTokens } from '@/components/featured-tokens'
-import { supabase } from '@/lib/supabase'
 
 interface MobileTrendingModalProps {
   isOpen: boolean
@@ -12,32 +10,6 @@ interface MobileTrendingModalProps {
 }
 
 export const MobileTrendingModal = ({ isOpen, onClose }: MobileTrendingModalProps) => {
-  const [hasTokens, setHasTokens] = useState<boolean | null>(null)
-
-  useEffect(() => {
-    const checkForTokens = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('posts')
-          .select('id')
-          .not('token_symbol', 'is', null)
-          .neq('token_symbol', '')
-          .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-          .limit(1)
-        
-        if (!error) {
-          setHasTokens(data && data.length > 0)
-        }
-      } catch (error) {
-        console.error('Error checking for tokens:', error)
-        setHasTokens(false)
-      }
-    }
-
-    if (isOpen) {
-      checkForTokens()
-    }
-  }, [isOpen])
 
   if (!isOpen) return null
 
@@ -81,17 +53,13 @@ export const MobileTrendingModal = ({ isOpen, onClose }: MobileTrendingModalProp
           </div>
 
           {/* Trending Tokens Section */}
-          {hasTokens && (
-            <div>
-              <div className="flex items-center space-x-2 mb-3">
-                <TrendingUp className="h-5 w-5 text-green-400" />
-                <h3 className="text-md font-semibold text-white">Trending Tokens</h3>
-              </div>
-              <div className="bg-black rounded-xl border border-gray-800 p-4">
-                <TrendingTokens limit={5} timePeriod="24 hours" />
-              </div>
+          <div>
+            <div className="flex items-center space-x-2 mb-3">
+              <TrendingUp className="h-5 w-5 text-green-400" />
+              <h3 className="text-md font-semibold text-white">Trending Tokens</h3>
             </div>
-          )}
+            <TrendingTokensSection />
+          </div>
         </div>
       </div>
     </div>
