@@ -16,8 +16,10 @@ import {
   Shield,
   Heart,
   ArrowLeft,
-  ArrowRight
+  ArrowRight,
+  Home
 } from 'lucide-react'
+import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { MobileMenuButton } from '@/components/mobile-menu-button'
 
@@ -1119,6 +1121,16 @@ const DocsPage = () => {
               </div>
               
               <nav className="space-y-2">
+                <Link 
+                  href="/"
+                  className="w-full flex items-center justify-between px-3 py-2 text-left rounded-lg transition-colors text-sm font-medium text-gray-300 hover:bg-gray-900/50 hover:text-white cursor-pointer"
+                >
+                  <div className="flex items-center space-x-3">
+                    <Home className="h-4 w-4 flex-shrink-0" />
+                    <span className="flex-1 truncate">Home</span>
+                  </div>
+                </Link>
+                
                 {docSections.filter(section => !['platform-whitepaper', 'product-roadmap'].includes(section.id)).map(section => renderSection(section))}
               </nav>
             </div>
