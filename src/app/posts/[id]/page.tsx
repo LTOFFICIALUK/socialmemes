@@ -12,6 +12,7 @@ import { SearchBar } from '@/components/search-bar'
 import { PostDetail } from '@/components/post-detail'
 import { PromotionModal } from '@/components/promotion-modal'
 import { FeaturedTokenModal } from '@/components/featured-token-modal'
+import { MobileTrendingModal } from '@/components/mobile-trending-modal'
 import { ToastContainer, useToast } from '@/components/ui/toast'
 import { supabase } from '@/lib/supabase'
 
@@ -20,6 +21,7 @@ export default function PostPage() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [showPromotionModal, setShowPromotionModal] = useState(false)
   const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
+  const [showTrendingModal, setShowTrendingModal] = useState(false)
   const [featuredTokensKey, setFeaturedTokensKey] = useState(0)
   const router = useRouter()
   const params = useParams()
@@ -133,7 +135,12 @@ export default function PostPage() {
               </div>
               {/* Mobile Menu Button */}
               <div className="lg:hidden">
-                <MobileMenuButton currentUser={currentUser} onSignOut={handleSignOut} />
+                <MobileMenuButton 
+                  currentUser={currentUser} 
+                  onSignOut={handleSignOut}
+                  onPromoteClick={() => setShowFeaturedTokenModal(true)}
+                  onTrendingClick={() => setShowTrendingModal(true)}
+                />
               </div>
             </div>
           </div>
@@ -188,6 +195,12 @@ export default function PostPage() {
           setFeaturedTokensKey(prev => prev + 1)
           success('Featured token promoted successfully!')
         }}
+      />
+      
+      {/* Mobile Trending Modal */}
+      <MobileTrendingModal
+        isOpen={showTrendingModal}
+        onClose={() => setShowTrendingModal(false)}
       />
       
       {/* Toast Notifications */}

@@ -10,6 +10,7 @@ import { TrendingTokens } from '@/components/trending-tokens'
 import { FeaturedTokens } from '@/components/featured-tokens'
 import { SearchBar } from '@/components/search-bar'
 import { FeaturedTokenModal } from '@/components/featured-token-modal'
+import { MobileTrendingModal } from '@/components/mobile-trending-modal'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ToastContainer, useToast } from '@/components/ui/toast'
@@ -38,6 +39,7 @@ export default function ProfilePage() {
   const [showFollowingModal, setShowFollowingModal] = useState(false)
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
   const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
+  const [showTrendingModal, setShowTrendingModal] = useState(false)
   const [featuredTokensKey, setFeaturedTokensKey] = useState(0)
   const { toasts, removeToast, success } = useToast()
 
@@ -278,7 +280,12 @@ export default function ProfilePage() {
             </h1>
             {/* Mobile Menu Button */}
             <div className="lg:hidden">
-              <MobileMenuButton currentUser={currentUser} onSignOut={handleSignOut} />
+              <MobileMenuButton 
+                currentUser={currentUser} 
+                onSignOut={handleSignOut}
+                onPromoteClick={() => setShowFeaturedTokenModal(true)}
+                onTrendingClick={() => setShowTrendingModal(true)}
+              />
             </div>
           </div>
           
@@ -441,6 +448,12 @@ export default function ProfilePage() {
           setFeaturedTokensKey(prev => prev + 1)
           success('Featured token promoted successfully!')
         }}
+      />
+      
+      {/* Mobile Trending Modal */}
+      <MobileTrendingModal
+        isOpen={showTrendingModal}
+        onClose={() => setShowTrendingModal(false)}
       />
       
       {/* Toast Notifications */}

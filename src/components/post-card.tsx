@@ -30,6 +30,9 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
   const [isShared, setIsShared] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   
+  // Check if promotion is currently active
+  const isPromotionActive = post.is_promoted && post.promotion_end && new Date(post.promotion_end) > new Date()
+  
   const impressionRef = useImpressionTracking({
     postId: post.id,
     userId: currentUserId,
@@ -157,7 +160,7 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
             <div className="flex items-center space-x-2 min-w-0 flex-1 overflow-hidden">
               <span 
                 className={`font-semibold cursor-pointer hover:underline flex-shrink-0 ${
-                  post.is_promoted ? 'text-yellow-400' : 'text-white'
+                  isPromotionActive ? 'text-yellow-400' : 'text-white'
                 }`}
                 onClick={handleProfileClick}
                 data-prevent-navigation
@@ -175,8 +178,8 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
               <time className="text-gray-400 text-sm flex-shrink-0">
                 {formatDate(post.created_at)}
               </time>
-              {/* Promoted badge */}
-              {post.is_promoted && (
+              {/* Promoted badge - only show for active promotions */}
+              {isPromotionActive && (
                 <>
                   <span className="text-gray-400 text-sm flex-shrink-0">·</span>
                   <Badge variant="secondary" className="bg-green-600 text-white text-xs px-2 py-0.5 flex-shrink-0">

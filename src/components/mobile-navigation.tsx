@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Grid3X3, Bell, User, Search, TrendingUp } from 'lucide-react'
+import { Home, Grid3X3, Bell, User, Search } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getUnreadNotificationCount } from '@/lib/database'
 import { supabase } from '@/lib/supabase'
@@ -24,7 +24,6 @@ const navigation = [
   { name: 'Explore', href: '/explore', icon: Grid3X3 },
   { name: 'Search', href: '/search', icon: Search },
   { name: 'Notifications', href: '/notifications', icon: Bell },
-  { name: 'Promote', href: '#', icon: TrendingUp, isAction: true },
 ]
 
 export const MobileNavigation = ({ currentUser, onSignOut, onPromoteClick }: MobileNavigationProps) => {
@@ -108,20 +107,6 @@ export const MobileNavigation = ({ currentUser, onSignOut, onPromoteClick }: Mob
         {navigation.map((item) => {
           const isActive = pathname === item.href
           const isNotifications = item.name === 'Notifications'
-          const isPromote = item.name === 'Promote'
-          
-          if (isPromote) {
-            return (
-              <button
-                key={item.name}
-                onClick={onPromoteClick}
-                className="flex flex-col items-center justify-center p-2 rounded-lg transition-colors text-gray-400 hover:text-white min-w-0 flex-1"
-              >
-                <item.icon className="h-6 w-6" />
-                <span className="text-xs mt-1 truncate">{item.name}</span>
-              </button>
-            )
-          }
           
           return (
             <Link

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { MoreVertical, BookOpen, LogOut } from 'lucide-react'
+import { MoreVertical, BookOpen, LogOut, TrendingUp, BarChart3 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface MobileMenuButtonProps {
@@ -14,9 +14,11 @@ interface MobileMenuButtonProps {
     avatar_url?: string
   }
   onSignOut?: () => void
+  onPromoteClick?: () => void
+  onTrendingClick?: () => void
 }
 
-export const MobileMenuButton = ({ currentUser, onSignOut }: MobileMenuButtonProps) => {
+export const MobileMenuButton = ({ currentUser, onSignOut, onPromoteClick, onTrendingClick }: MobileMenuButtonProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [buttonRect, setButtonRect] = useState<DOMRect | null>(null)
   const [mounted, setMounted] = useState(false)
@@ -65,6 +67,34 @@ export const MobileMenuButton = ({ currentUser, onSignOut }: MobileMenuButtonPro
           position: 'fixed'
         }}
       >
+        {/* Promote Token Button */}
+        {currentUser && onPromoteClick && (
+          <button
+            onClick={() => {
+              onPromoteClick()
+              setIsMenuOpen(false)
+            }}
+            className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 w-full text-left hover:bg-white/5 hover:text-white"
+          >
+            <TrendingUp className="h-4 w-4" />
+            <span>Promote a Token</span>
+          </button>
+        )}
+
+        {/* Trending Tokens Button */}
+        {onTrendingClick && (
+          <button
+            onClick={() => {
+              onTrendingClick()
+              setIsMenuOpen(false)
+            }}
+            className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 w-full text-left hover:bg-white/5 hover:text-white"
+          >
+            <BarChart3 className="h-4 w-4" />
+            <span>Trending Tokens</span>
+          </button>
+        )}
+
         {/* Docs Link */}
         <Link
           href="/docs"
@@ -72,7 +102,7 @@ export const MobileMenuButton = ({ currentUser, onSignOut }: MobileMenuButtonPro
             "flex items-center space-x-3 px-4 py-2 text-sm",
             pathname === '/docs'
               ? "text-white bg-white bg-opacity-5"
-              : "text-gray-300"
+              : "text-gray-300 hover:bg-white/5 hover:text-white"
           )}
           onClick={() => setIsMenuOpen(false)}
         >
@@ -84,7 +114,7 @@ export const MobileMenuButton = ({ currentUser, onSignOut }: MobileMenuButtonPro
         {currentUser && (
           <button
             onClick={handleSignOut}
-            className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 w-full text-left"
+            className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 w-full text-left hover:bg-white/5 hover:text-white"
           >
             <LogOut className="h-4 w-4" />
             <span>Sign out</span>

@@ -163,32 +163,45 @@ export const getPosts = async (userId?: string, limit = 20, offset = 0): Promise
       replies_count:replies(count)
     `
     
-    // Get regular posts (exclude promoted posts to avoid duplicates)
-    const regularQuery = supabase
+    // Get regular posts (include expired promoted posts, exclude active promoted posts to avoid duplicates)
+    const now = new Date().toISOString()
+    
+    // Query for regular posts: never promoted OR promoted but expired
+    const { data: regularPosts, error: regularError } = await supabase
       .from('posts')
       .select(selectQuery)
-      .or('is_promoted.is.null,is_promoted.eq.false')
+      .or(`is_promoted.is.null,is_promoted.eq.false,promotion_end.lt.${now}`)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
-
-    const { data: regularPosts, error: regularError } = await regularQuery
     
     if (regularError) {
       console.error('Error fetching regular posts:', regularError.message)
       throw new Error(`Failed to fetch posts: ${regularError.message}`)
     }
 
-    // Get active promoted posts
-    const now = new Date().toISOString()
+    // Get active promoted posts (only currently active promotions)
+    // Must have is_promoted=true AND promotion_end is in the future
     const { data: promotedPosts, error: promotedError } = await supabase
       .from('posts')
       .select(selectQuery)
       .eq('is_promoted', true)
+      .not('promotion_end', 'is', null)
       .gte('promotion_end', now)
       .order('promotion_start', { ascending: false })
 
     if (promotedError) {
       console.warn('Error fetching promoted posts:', promotedError.message)
+    }
+    
+    // Debug logging
+    console.log('Current time:', now)
+    console.log('Regular posts count:', regularPosts?.length || 0)
+    console.log('Active promoted posts count:', promotedPosts?.length || 0)
+    if (promotedPosts && promotedPosts.length > 0) {
+      console.log('Active promoted posts:', promotedPosts.map((p: { id: string; promotion_end: string | null }) => ({
+        id: p.id,
+        promotion_end: p.promotion_end
+      })))
     }
 
     // Get all user likes in a single query if userId is provided
@@ -228,9 +241,14 @@ export const getPosts = async (userId?: string, limit = 20, offset = 0): Promise
       impression_count: post.impression_count || 0
     }))
     
-    // Mix promoted posts every 10 posts
+    // Mix promoted posts every 10 posts, but ensure promoted posts always show
     const mixedPosts: Post[] = []
     const promotedPostsCopy = [...processedPromotedPosts]
+    
+    // If there are no regular posts, just return promoted posts
+    if (processedRegularPosts.length === 0) {
+      return processedPromotedPosts as Post[]
+    }
     
     for (let i = 0; i < processedRegularPosts.length; i++) {
       // Add regular post
@@ -243,6 +261,12 @@ export const getPosts = async (userId?: string, limit = 20, offset = 0): Promise
           mixedPosts.push(promotedPost)
         }
       }
+    }
+    
+    // If we have remaining promoted posts and no regular posts to mix them with,
+    // add them at the end
+    if (promotedPostsCopy.length > 0) {
+      mixedPosts.push(...promotedPostsCopy)
     }
     
     return mixedPosts as Post[]

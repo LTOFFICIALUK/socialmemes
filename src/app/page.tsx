@@ -12,6 +12,7 @@ import { FeaturedTokens } from '@/components/featured-tokens'
 import { SearchBar } from '@/components/search-bar'
 import { PromotionModal } from '@/components/promotion-modal'
 import { FeaturedTokenModal } from '@/components/featured-token-modal'
+import { MobileTrendingModal } from '@/components/mobile-trending-modal'
 import { ToastContainer, useToast } from '@/components/ui/toast'
 import { Post } from '@/lib/database'
 import { getPosts, createPost as createPostDB } from '@/lib/database'
@@ -74,6 +75,7 @@ export default function Home() {
   const [showPromotionModal, setShowPromotionModal] = useState(false)
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null)
   const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
+  const [showTrendingModal, setShowTrendingModal] = useState(false)
   const [featuredTokensKey, setFeaturedTokensKey] = useState(0)
   const router = useRouter()
   const { toasts, removeToast, success, error: showError } = useToast()
@@ -297,7 +299,12 @@ export default function Home() {
             <h1 className="text-xl font-bold text-white">Home</h1>
             {/* Mobile Menu Button */}
             <div className="lg:hidden">
-              <MobileMenuButton currentUser={currentUser} onSignOut={handleSignOut} />
+              <MobileMenuButton 
+                currentUser={currentUser} 
+                onSignOut={handleSignOut}
+                onPromoteClick={() => setShowFeaturedTokenModal(true)}
+                onTrendingClick={() => setShowTrendingModal(true)}
+              />
             </div>
           </div>
           
@@ -351,6 +358,12 @@ export default function Home() {
           setFeaturedTokensKey(prev => prev + 1)
           success('Featured token promoted successfully!')
         }}
+      />
+      
+      {/* Mobile Trending Modal */}
+      <MobileTrendingModal
+        isOpen={showTrendingModal}
+        onClose={() => setShowTrendingModal(false)}
       />
       
       {/* Toast Notifications */}

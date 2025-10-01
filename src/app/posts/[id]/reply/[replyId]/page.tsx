@@ -10,6 +10,7 @@ import { TrendingTokens } from '@/components/trending-tokens'
 import { SearchBar } from '@/components/search-bar'
 import { ReplyDetail } from '@/components/reply-detail'
 import { PromotionModal } from '@/components/promotion-modal'
+import { MobileTrendingModal } from '@/components/mobile-trending-modal'
 import { ToastContainer, useToast } from '@/components/ui/toast'
 import { supabase } from '@/lib/supabase'
 
@@ -17,6 +18,7 @@ export default function ReplyPage() {
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string } | undefined>(undefined)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [showPromotionModal, setShowPromotionModal] = useState(false)
+  const [showTrendingModal, setShowTrendingModal] = useState(false)
   const router = useRouter()
   const params = useParams()
   const postId = params.id as string
@@ -123,7 +125,15 @@ export default function ReplyPage() {
               </div>
               {/* Mobile Menu Button */}
               <div className="lg:hidden">
-                <MobileMenuButton currentUser={currentUser} onSignOut={handleSignOut} />
+                <MobileMenuButton 
+                  currentUser={currentUser} 
+                  onSignOut={handleSignOut}
+                  onPromoteClick={() => {
+                    // Navigate to home page where promotion is available
+                    router.push('/')
+                  }}
+                  onTrendingClick={() => setShowTrendingModal(true)}
+                />
               </div>
             </div>
           </div>
@@ -147,6 +157,12 @@ export default function ReplyPage() {
           </div>
         </div>
       </div>
+      
+      {/* Mobile Trending Modal */}
+      <MobileTrendingModal
+        isOpen={showTrendingModal}
+        onClose={() => setShowTrendingModal(false)}
+      />
     </div>
   )
 }

@@ -10,6 +10,7 @@ import { TrendingTokens } from '@/components/trending-tokens'
 import { FeaturedTokens } from '@/components/featured-tokens'
 import { SearchBar } from '@/components/search-bar'
 import { FeaturedTokenModal } from '@/components/featured-token-modal'
+import { MobileTrendingModal } from '@/components/mobile-trending-modal'
 import { ToastContainer, useToast } from '@/components/ui/toast'
 import { supabase } from '@/lib/supabase'
 
@@ -64,6 +65,7 @@ export default function Explore() {
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string } | undefined>(undefined)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
+  const [showTrendingModal, setShowTrendingModal] = useState(false)
   const [featuredTokensKey, setFeaturedTokensKey] = useState(0)
   const router = useRouter()
   const { toasts, removeToast, success } = useToast()
@@ -165,7 +167,12 @@ export default function Explore() {
               </div>
               {/* Mobile Menu Button */}
               <div className="lg:hidden">
-                <MobileMenuButton currentUser={currentUser} onSignOut={handleSignOut} />
+                <MobileMenuButton 
+                  currentUser={currentUser} 
+                  onSignOut={handleSignOut}
+                  onPromoteClick={() => setShowFeaturedTokenModal(true)}
+                  onTrendingClick={() => setShowTrendingModal(true)}
+                />
               </div>
             </div>
           </div>
@@ -195,6 +202,12 @@ export default function Explore() {
           setFeaturedTokensKey(prev => prev + 1)
           success('Featured token promoted successfully!')
         }}
+      />
+      
+      {/* Mobile Trending Modal */}
+      <MobileTrendingModal
+        isOpen={showTrendingModal}
+        onClose={() => setShowTrendingModal(false)}
       />
       
       {/* Toast Notifications */}

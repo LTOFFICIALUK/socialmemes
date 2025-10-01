@@ -10,6 +10,7 @@ import { MobileMenuButton } from '@/components/mobile-menu-button'
 import { SearchBar } from '@/components/search-bar'
 import { TrendingTokens } from '@/components/trending-tokens'
 import { NotificationItem } from '@/components/notification-item'
+import { MobileTrendingModal } from '@/components/mobile-trending-modal'
 import { getNotifications, markNotificationAsRead, deleteNotification, markAllNotificationsAsRead } from '@/lib/database'
 import { Notification } from '@/lib/database'
 import { supabase } from '@/lib/supabase'
@@ -18,6 +19,7 @@ export default function NotificationsPage() {
   const router = useRouter()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [showTrendingModal, setShowTrendingModal] = useState(false)
   const [isMarkingAllRead, setIsMarkingAllRead] = useState(false)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string } | undefined>(undefined)
@@ -211,7 +213,15 @@ export default function NotificationsPage() {
                 )}
                 {/* Mobile Menu Button */}
                 <div className="lg:hidden">
-                  <MobileMenuButton currentUser={currentUser} onSignOut={handleSignOut} />
+                  <MobileMenuButton 
+                    currentUser={currentUser} 
+                    onSignOut={handleSignOut}
+                    onPromoteClick={() => {
+                      // Navigate to home page where promotion is available
+                      router.push('/')
+                    }}
+                    onTrendingClick={() => setShowTrendingModal(true)}
+                  />
                 </div>
               </div>
             </div>
@@ -263,6 +273,12 @@ export default function NotificationsPage() {
           </div>
         </div>
       </div>
+      
+      {/* Mobile Trending Modal */}
+      <MobileTrendingModal
+        isOpen={showTrendingModal}
+        onClose={() => setShowTrendingModal(false)}
+      />
       
       {/* Mobile Navigation */}
       <MobileNavigation currentUser={currentUser} onSignOut={handleSignOut} />
