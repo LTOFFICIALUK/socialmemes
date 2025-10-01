@@ -12,6 +12,8 @@ export const FeaturedTokens = ({ limit = 6 }: FeaturedTokensProps) => {
   const [isLoading, setIsLoading] = useState(true)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [touchEnd, setTouchEnd] = useState<number | null>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
@@ -70,6 +72,40 @@ export const FeaturedTokens = ({ limit = 6 }: FeaturedTokensProps) => {
     setIsHovered(false)
   }
 
+  // Touch event handlers for mobile swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null)
+    setTouchStart(e.targetTouches[0].clientX)
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return
+    
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > 50
+    const isRightSwipe = distance < -50
+
+    if (isLeftSwipe && featuredTokens.length > 1) {
+      // Swipe left - go to next token
+      setCurrentIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % featuredTokens.length
+        return nextIndex
+      })
+    }
+    
+    if (isRightSwipe && featuredTokens.length > 1) {
+      // Swipe right - go to previous token
+      setCurrentIndex((prevIndex) => {
+        const prevIndexValue = prevIndex - 1
+        return prevIndexValue < 0 ? featuredTokens.length - 1 : prevIndexValue
+      })
+    }
+  }
+
   if (isLoading) {
     return null
   }
@@ -95,6 +131,9 @@ export const FeaturedTokens = ({ limit = 6 }: FeaturedTokensProps) => {
               handleTokenClick(featuredTokens[0].destination_url)
             }
           }}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           <img
             src={featuredTokens[0].image_url}
@@ -113,6 +152,9 @@ export const FeaturedTokens = ({ limit = 6 }: FeaturedTokensProps) => {
           className="relative w-80 h-80 mx-auto overflow-hidden rounded-lg"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           <div
             className="flex transition-transform duration-500 ease-in-out h-full"
