@@ -30,7 +30,7 @@ const navigation = [
   { name: 'Promote', href: '#', icon: TrendingUp, isAction: true },
 ]
 
-export const Navigation = ({ currentUser, onSignOut, onNotificationRead, onPromoteClick }: NavigationProps) => {
+export const Navigation = ({ currentUser, onSignOut, onNotificationRead: _onNotificationRead, onPromoteClick }: NavigationProps) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)

@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react'
 import { ArrowLeft, Upload, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { getRevenueWalletAddress, solToLamports } from '@/lib/solana'
-import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js'
 import { supabase } from '@/lib/supabase'
 
 interface FeaturedTokenModalProps {

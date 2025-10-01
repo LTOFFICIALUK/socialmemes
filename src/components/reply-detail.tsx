@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Heart, MessageCircle, Share, Check, MoreHorizontal, Trash2, Coins, TrendingUp } from 'lucide-react'
+import { Heart, MessageCircle, Share, Coins } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog'
@@ -10,7 +10,7 @@ import { CreateReply } from '@/components/create-reply'
 import { ThreadedReply } from '@/components/threaded-reply'
 import { Post, Reply } from '@/lib/database'
 import { formatDate, formatNumber, getBestDexScreenerUrl } from '@/lib/utils'
-import { getPostById, likePost, unlikePost, likeReply, unlikeReply, deletePost, createReply, getRepliesByPostId, getRepliesToReply, getReplyById, getAllRepliesForPost } from '@/lib/database'
+import { getPostById, likePost, unlikePost, likeReply, unlikeReply, deletePost, createReply, getAllRepliesForPost, getRepliesToReply } from '@/lib/database'
 import { supabase } from '@/lib/supabase'
 
 interface ReplyDetailProps {
@@ -26,7 +26,7 @@ export const ReplyDetail = ({ postId, replyId, currentUser, onPromote }: ReplyDe
   const [reply, setReply] = useState<Reply | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isLiked, setIsLiked] = useState(false)
-  const [likesCount, setLikesCount] = useState(0)
+  const [_likesCount, setLikesCount] = useState(0)
   const [showDeleteMenu, setShowDeleteMenu] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -111,7 +111,7 @@ export const ReplyDetail = ({ postId, replyId, currentUser, onPromote }: ReplyDe
   }
 
   // Legacy function for backward compatibility (now uses the optimized version)
-  const buildConversationThread = async (targetReply: Reply) => {
+  const _buildConversationThread = async (targetReply: Reply) => {
     try {
       setIsLoadingThread(true)
       
@@ -134,7 +134,7 @@ export const ReplyDetail = ({ postId, replyId, currentUser, onPromote }: ReplyDe
     }
   }, [postId, replyId, currentUser.id])
 
-  const handleLike = async () => {
+  const _handleLike = async () => {
     if (!reply) return
 
     try {
@@ -152,7 +152,7 @@ export const ReplyDetail = ({ postId, replyId, currentUser, onPromote }: ReplyDe
     }
   }
 
-  const handleTokenClick = () => {
+  const _handleTokenClick = () => {
     if (reply?.dex_screener_url) {
       window.open(reply.dex_screener_url, '_blank', 'noopener,noreferrer')
     }
@@ -162,12 +162,12 @@ export const ReplyDetail = ({ postId, replyId, currentUser, onPromote }: ReplyDe
     router.push(`/profile/${username}`)
   }
 
-  const handleDeleteClick = () => {
+  const _handleDeleteClick = () => {
     setShowDeleteDialog(true)
     setShowDeleteMenu(false)
   }
 
-  const handlePromoteClick = () => {
+  const _handlePromoteClick = () => {
     onPromote?.(postId)
     setShowDeleteMenu(false)
   }
@@ -188,7 +188,7 @@ export const ReplyDetail = ({ postId, replyId, currentUser, onPromote }: ReplyDe
     }
   }
 
-  const handleShare = async () => {
+  const _handleShare = async () => {
     try {
       const replyUrl = `${window.location.origin}/posts/${postId}/reply/${replyId}`
       await navigator.clipboard.writeText(replyUrl)

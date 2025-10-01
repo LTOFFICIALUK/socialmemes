@@ -165,7 +165,7 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white mb-4">Profile Not Found</h1>
-          <p className="text-gray-400">The user you're looking for doesn't exist.</p>
+          <p className="text-gray-400">The user you&apos;re looking for doesn&apos;t exist.</p>
         </div>
       </div>
     )

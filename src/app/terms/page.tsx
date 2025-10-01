@@ -95,7 +95,7 @@ export default function TermsPage() {
                 Users retain ownership of their original content but grant us a license to display and distribute it on our platform.
               </p>
               <p>
-                Users must not upload content that infringes on others' intellectual property rights.
+                Users must not upload content that infringes on others&apos; intellectual property rights.
               </p>
               <p>
                 We respect copyright laws and will respond to valid DMCA takedown requests.
@@ -122,7 +122,7 @@ export default function TermsPage() {
             <h2 className="text-2xl font-semibold mb-4 text-white">7. Disclaimers</h2>
             <div className="space-y-4 text-gray-300">
               <p>
-                Social Memes is provided "as is" without warranties of any kind. We do not guarantee uninterrupted service or error-free operation.
+                Social Memes is provided &quot;as is&quot; without warranties of any kind. We do not guarantee uninterrupted service or error-free operation.
               </p>
               <p>
                 We are not responsible for losses incurred through platform use, including but not limited to trading losses, technical issues, or third-party actions.

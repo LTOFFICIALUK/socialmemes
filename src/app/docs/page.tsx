@@ -21,7 +21,6 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
-import { MobileMenuButton } from '@/components/mobile-menu-button'
 
 interface DocSection {
   id: string

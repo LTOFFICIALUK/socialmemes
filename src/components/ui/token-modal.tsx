@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { X, Loader2, Coins, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -86,7 +86,7 @@ export const TokenModal = ({ isOpen, onClose, onTokenSelect, currentToken, onTok
       
       // DexScreener doesn't provide logos in token-pairs endpoint
       // Use a fallback logo service for common tokens or generate a placeholder
-      const getTokenLogo = (symbol: string, address: string) => {
+      const getTokenLogo = (symbol: string, _address: string) => {
         // Try CoinGecko API for token logos
         const symbolLower = symbol.toLowerCase()
         

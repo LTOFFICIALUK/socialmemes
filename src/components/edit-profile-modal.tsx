@@ -3,10 +3,9 @@
 import { useState, useRef } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Profile, updateProfile } from '@/lib/database'
 import { supabase } from '@/lib/supabase'
-import { X, Upload, Camera } from 'lucide-react'
+import { X, Camera } from 'lucide-react'
 
 interface EditProfileModalProps {
   isOpen: boolean

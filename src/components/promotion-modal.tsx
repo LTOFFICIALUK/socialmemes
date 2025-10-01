@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ArrowLeft, TrendingUp } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { getRevenueWalletAddress, solToLamports } from '@/lib/solana'
 import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js'

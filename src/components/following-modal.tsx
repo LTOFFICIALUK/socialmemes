@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Profile, isFollowing, followUser, unfollowUser } from '@/lib/database'
+import { Profile, followUser, unfollowUser } from '@/lib/database'
 import { UserPlus, UserMinus, X } from 'lucide-react'
 
 interface FollowingModalProps {

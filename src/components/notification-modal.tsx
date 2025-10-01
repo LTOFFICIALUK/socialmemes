@@ -55,7 +55,7 @@ export const NotificationModal = ({ isOpen, onClose, userId, onNotificationRead 
     }
   }
 
-  const handleDeleteNotification = async (notificationId: string) => {
+  const _handleDeleteNotification = async (notificationId: string) => {
     try {
       await deleteNotification(userId, notificationId)
       setNotifications(prev => prev.filter(n => n.id !== notificationId))

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Heart, MessageCircle, Share, Check, ExternalLink, MoreHorizontal, Trash2, Coins, TrendingUp, BarChart3 } from 'lucide-react'
+import { Heart, MessageCircle, Share, Check, MoreHorizontal, Trash2, Coins, TrendingUp, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -53,7 +53,7 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
     }
   }
 
-  const handleTokenClick = () => {
+  const _handleTokenClick = () => {
     if (post.dex_screener_url) {
       window.open(post.dex_screener_url, '_blank', 'noopener,noreferrer')
     }

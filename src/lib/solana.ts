@@ -1,4 +1,4 @@
-import { Connection, PublicKey, Transaction } from '@solana/web3.js'
+import { Connection, PublicKey } from '@solana/web3.js'
 
 // Revenue wallet address (hardcoded as it can't be manipulated)
 export const REVENUE_WALLET_ADDRESS = 'Eo7ckS6V3ojYkmkBpp29nfb12r8vfbgpCGxh1Ldw7Eu'

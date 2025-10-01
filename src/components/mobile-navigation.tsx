@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Grid3X3, Bell, User, Search } from 'lucide-react'
+import { Home, Grid3X3, Bell, Search } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getUnreadNotificationCount } from '@/lib/database'
 import { supabase } from '@/lib/supabase'
@@ -26,7 +26,7 @@ const navigation = [
   { name: 'Notifications', href: '/notifications', icon: Bell },
 ]
 
-export const MobileNavigation = ({ currentUser, onSignOut, onPromoteClick }: MobileNavigationProps) => {
+export const MobileNavigation = ({ currentUser, onSignOut: _onSignOut, onPromoteClick: _onPromoteClick }: MobileNavigationProps) => {
   const [unreadCount, setUnreadCount] = useState(0)
   const pathname = usePathname()
 

@@ -10,7 +10,7 @@ import { CreateReply } from '@/components/create-reply'
 import { ThreadedReply } from '@/components/threaded-reply'
 import { Post, Reply } from '@/lib/database'
 import { formatDate, formatNumber, getBestDexScreenerUrl } from '@/lib/utils'
-import { getPostById, likePost, unlikePost, deletePost, createReply, getRepliesByPostId, getRepliesToReply } from '@/lib/database'
+import { getPostById, likePost, unlikePost, deletePost, createReply, getRepliesByPostId } from '@/lib/database'
 import { supabase } from '@/lib/supabase'
 import { useImpressionTrackingImmediate } from '@/hooks/useImpressionTrackingImmediate'
 

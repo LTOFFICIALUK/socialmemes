@@ -16,8 +16,8 @@ interface NotificationItemProps {
 export const NotificationItem = ({ 
   notification, 
   onMarkAsRead, 
-  onDelete, 
-  showActions = true 
+  onDelete: _onDelete, 
+  showActions: _showActions = true 
 }: NotificationItemProps) => {
   const getNotificationIcon = (type: string) => {
     switch (type) {

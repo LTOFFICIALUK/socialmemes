@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Heart, ExternalLink } from 'lucide-react'
+import { Heart } from 'lucide-react'
 import { Post } from '@/lib/database'
 import { getPosts } from '@/lib/database'
 import { Loader2 } from 'lucide-react'

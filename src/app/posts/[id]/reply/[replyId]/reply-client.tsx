@@ -83,7 +83,7 @@ export function ReplyClient({ trendingTokens, tokenImages }: ReplyClientProps) {
     getUser()
   }, [router])
 
-  const handlePromotePost = (postId: string) => {
+  const handlePromotePost = (_postId: string) => {
     setShowPromotionModal(true)
   }
 

@@ -178,12 +178,12 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
               <div className="space-y-4 p-4">
                 {posts.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-400">No posts found for "{query}"</p>
+                    <p className="text-gray-400">No posts found for &quot;{query}&quot;</p>
                   </div>
                 ) : (
                   <>
                     <p className="text-gray-400 text-sm">
-                      Found {posts.length} result{posts.length !== 1 ? 's' : ''} for "{query}"
+                      Found {posts.length} result{posts.length !== 1 ? 's' : ''} for &quot;{query}&quot;
                     </p>
                     {posts.map((post) => (
                       <PostCard

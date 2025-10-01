@@ -10,7 +10,7 @@ interface SearchBarProps {
   onChange?: (value: string) => void
 }
 
-export const SearchBar = ({ onSearch, placeholder = "Search", value, onChange }: SearchBarProps) => {
+export const SearchBar = ({ onSearch: _onSearch, placeholder = "Search", value, onChange }: SearchBarProps) => {
   const [internalQuery, setInternalQuery] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   

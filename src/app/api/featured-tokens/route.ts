@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import { verifyPayment } from '@/lib/solana'
 
 const MAX_FEATURED_TOKENS = 8
 
@@ -44,8 +43,7 @@ export async function POST(request: NextRequest) {
       destinationUrl, 
       duration, 
       price, 
-      signature, 
-      fromAddress 
+      signature
     } = await request.json()
 
     // Validate required fields

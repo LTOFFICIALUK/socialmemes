@@ -454,7 +454,7 @@ export const getTopFollowers = async (userId: string, limit = 10): Promise<Profi
   return followersWithCounts
     .sort((a, b) => b.followerCount - a.followerCount)
     .slice(0, limit)
-    .map(({ followerCount, ...profile }) => profile)
+    .map(({ followerCount: _followerCount, ...profile }) => profile)
 }
 
 export const getFollowing = async (userId: string): Promise<Profile[]> => {

@@ -19,7 +19,7 @@ interface ThreadedReplyProps {
   isInConversationThread?: boolean // New prop to control styling
 }
 
-export const ThreadedReply = ({ reply, currentUser, onPromote, depth = 0, maxDepth = 10, isInConversationThread = false }: ThreadedReplyProps) => {
+export const ThreadedReply = ({ reply, currentUser, onPromote: _onPromote, depth: _depth = 0, maxDepth: _maxDepth = 10, isInConversationThread = false }: ThreadedReplyProps) => {
   const router = useRouter()
   const [isLiked, setIsLiked] = useState(reply.is_liked)
   const [likesCount, setLikesCount] = useState(reply.likes_count)

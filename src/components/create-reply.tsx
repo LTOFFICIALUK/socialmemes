@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Image, X, Loader2, Coins, Send } from 'lucide-react'
+import { Image, X, Loader2, Coins } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { TokenModal } from '@/components/ui/token-modal'

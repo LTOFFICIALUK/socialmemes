@@ -1,8 +1,8 @@
 'use client'
 
-import { TrendingUp, ExternalLink, Coins } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import { TrendingToken } from '@/lib/database'
-import { formatNumber, getBestDexScreenerUrl } from '@/lib/utils'
+import { getBestDexScreenerUrl } from '@/lib/utils'
 
 interface TrendingTokensProps {
   trendingTokens: TrendingToken[]
@@ -40,7 +40,7 @@ export const TrendingTokens = ({ trendingTokens, tokenImages }: TrendingTokensPr
     return '🪙'
   }
 
-  const getTrendingScore = (score: number): string => {
+  const _getTrendingScore = (score: number): string => {
     if (score >= 50) return '+500%'
     if (score >= 30) return '+300%'
     if (score >= 20) return '+200%'
@@ -63,7 +63,7 @@ export const TrendingTokens = ({ trendingTokens, tokenImages }: TrendingTokensPr
   return (
     <div>
       <div className="space-y-3">
-        {trendingTokens.map((token, index) => (
+        {trendingTokens.map((token, _index) => (
           <div 
             key={`${token.token_symbol}-${token.token_address}`}
             className="flex items-center space-x-3 cursor-pointer group"
@@ -91,7 +91,7 @@ export const TrendingTokens = ({ trendingTokens, tokenImages }: TrendingTokensPr
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2">
-                <p className={`text-sm font-medium truncate ${getRankTextColor(index)}`}>
+                <p className={`text-sm font-medium truncate ${getRankTextColor(_index)}`}>
                   ${token.token_symbol}
                 </p>
                 {token.token_address && (
