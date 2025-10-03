@@ -1,31 +1,17 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { useRouter, useParams } from 'next/navigation'
-
-export default function RefRedirectPage() {
-  const router = useRouter()
-  const params = useParams()
-  const code = params.code as string
-  const [isRedirecting, setIsRedirecting] = useState(false)
-
-  useEffect(() => {
-    if (code) {
-      setIsRedirecting(true)
-      // Redirect to signup page with the referral code as a query parameter
-      router.push(`/auth/signup?ref=${encodeURIComponent(code)}`)
-    } else {
-      setIsRedirecting(true)
-      // If no code, redirect to signup page
-      router.push('/auth/signup')
-    }
-  }, [code, router])
-
+export default function RefRedirectPage({ params }: { params: { code: string } }) {
+  const { code } = params
+  
   return (
     <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="text-white">
-        {isRedirecting ? 'Redirecting...' : 'Loading...'}
-        {code && <div className="text-sm text-gray-400 mt-2">Referral code: {code}</div>}
+      <div className="text-white text-center">
+        <h1 className="text-2xl font-bold mb-4">Referral Redirect</h1>
+        <p className="mb-4">Referral code: {code}</p>
+        <a 
+          href={`/auth/signup?ref=${encodeURIComponent(code)}`}
+          className="bg-white text-black px-6 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+        >
+          Go to Signup
+        </a>
       </div>
     </div>
   )
