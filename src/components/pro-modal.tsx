@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Crown, Check, Zap, Star, X } from 'lucide-react'
+import { Crown, Check, Zap, Star, X, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
+import { AlphaChatSettings } from '@/components/alpha-chat-settings'
 
 interface ProModalProps {
   isOpen: boolean
@@ -61,9 +62,10 @@ const proFeatures = [
 ]
 
 export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
-  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string; pro?: boolean } | null>(null)
+  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string; pro?: boolean; alpha_chat_enabled?: boolean } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubscribing, setIsSubscribing] = useState(false)
+  const [showAlphaSettings, setShowAlphaSettings] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -164,9 +166,20 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
             {/* Pro Status Check */}
             {currentUser.pro && (
               <div className="mb-6 p-4 bg-green-500/20 border border-green-500/30 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <Crown className="h-5 w-5 text-green-500" />
-                  <span className="text-green-500 font-medium">You&apos;re already a Pro member!</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Crown className="h-5 w-5 text-green-500" />
+                    <span className="text-green-500 font-medium">You&apos;re already a Pro member!</span>
+                  </div>
+                  <Button
+                    onClick={() => setShowAlphaSettings(true)}
+                    variant="outline"
+                    size="sm"
+                    className="bg-black border-0 text-white hover:bg-gray-800"
+                  >
+                    <Settings className="h-4 w-4 mr-1" />
+                    Alpha Chat Settings
+                  </Button>
                 </div>
               </div>
             )}
@@ -273,6 +286,21 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
           </div>
         )}
       </div>
+      
+      {/* Alpha Chat Settings Modal */}
+      {showAlphaSettings && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60 flex items-center justify-center p-4">
+          <div className="bg-gray-900 rounded-lg w-full max-w-md relative">
+            <button
+              onClick={() => setShowAlphaSettings(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <AlphaChatSettings onClose={() => setShowAlphaSettings(false)} />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

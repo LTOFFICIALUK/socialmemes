@@ -28,6 +28,14 @@ export type Reply = {
 }
 export type Follow = Database['public']['Tables']['follows']['Row']
 
+export type AlphaChatMember = Database['public']['Tables']['alpha_chat_members']['Row']
+
+export type AlphaChatMessage = Database['public']['Tables']['alpha_chat_messages']['Row'] & {
+  profiles: Profile
+  likes_count: number
+  is_liked: boolean
+}
+
 export type Notification = Database['public']['Tables']['notifications']['Row'] & {
   actor: Profile
   post?: Post
@@ -1113,4 +1121,125 @@ export const createFeaturedToken = async (featuredToken: {
   }
 
   return await response.json()
+}
+
+// Alpha Chat Functions
+
+// Check if user has active alpha subscription to a specific owner
+export const hasActiveAlphaSubscription = async (ownerId: string, subscriberId: string): Promise<boolean> => {
+  const { data, error } = await supabase
+    .from('alpha_chat_members')
+    .select('id')
+    .eq('alpha_chat_owner_id', ownerId)
+    .eq('subscriber_id', subscriberId)
+    .eq('status', 'active')
+    .gt('expires_at', new Date().toISOString())
+    .single()
+  
+  return !error && !!data
+}
+
+// Get alpha subscription status for a user
+export const getAlphaSubscriptionStatus = async (ownerId: string, subscriberId: string): Promise<string> => {
+  const { data, error } = await supabase
+    .from('alpha_chat_members')
+    .select('status')
+    .eq('alpha_chat_owner_id', ownerId)
+    .eq('subscriber_id', subscriberId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+  
+  if (error || !data) return 'none'
+  return data.status
+}
+
+// Get alpha chat messages for a specific owner
+export const getAlphaChatMessages = async (ownerId: string, userId?: string): Promise<AlphaChatMessage[]> => {
+  const { data, error } = await supabase
+    .from('alpha_chat_messages')
+    .select(`
+      *,
+      author:profiles!alpha_chat_messages_author_id_fkey (*),
+      likes_count:likes(count)
+    `)
+    .eq('alpha_chat_owner_id', ownerId)
+    .order('created_at', { ascending: false })
+  
+  if (error) throw error
+  
+  // Get user likes if userId is provided
+  let userLikes: string[] = []
+  if (userId && data && data.length > 0) {
+    const messageIds = data.map((message: { id: string }) => message.id)
+    const { data: likesData } = await supabase
+      .from('likes')
+      .select('post_id')
+      .eq('user_id', userId)
+      .in('post_id', messageIds)
+    
+    userLikes = likesData?.map(like => like.post_id) || []
+  }
+  
+  return (data || []).map((message: { id: string; likes_count: { count: number }[] | null; author: Record<string, unknown>; [key: string]: unknown }) => ({
+    ...message,
+    profiles: message.author, // Map author to profiles for consistency
+    likes_count: message.likes_count?.[0]?.count || 0,
+    is_liked: userId ? userLikes.includes(message.id) : false
+  })) as unknown as AlphaChatMessage[]
+}
+
+// Create alpha chat message
+export const createAlphaChatMessage = async (message: {
+  alpha_chat_owner_id: string
+  author_id: string
+  content?: string
+  image_url?: string
+  token_symbol?: string
+  token_address?: string
+  token_name?: string
+  dex_screener_url?: string
+}): Promise<AlphaChatMessage> => {
+  const { data, error } = await supabase
+    .from('alpha_chat_messages')
+    .insert(message)
+    .select(`
+      *,
+      author:profiles!alpha_chat_messages_author_id_fkey (*)
+    `)
+    .single()
+  
+  if (error) throw error
+  
+  return {
+    ...data,
+    profiles: data.author, // Map author to profiles for consistency
+    likes_count: 0,
+    is_liked: false
+  } as AlphaChatMessage
+}
+
+// Get alpha chat subscriber count
+export const getAlphaChatSubscriberCount = async (ownerId: string): Promise<number> => {
+  const { count, error } = await supabase
+    .from('alpha_chat_members')
+    .select('*', { count: 'exact', head: true })
+    .eq('alpha_chat_owner_id', ownerId)
+    .eq('status', 'active')
+    .gt('expires_at', new Date().toISOString())
+  
+  if (error) throw error
+  return count || 0
+}
+
+// Check if user is pro (can create alpha chat)
+export const isProUser = async (userId: string): Promise<boolean> => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('pro')
+    .eq('id', userId)
+    .single()
+  
+  if (error) return false
+  return data?.pro || false
 }

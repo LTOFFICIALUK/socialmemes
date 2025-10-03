@@ -14,12 +14,14 @@ import { MobileTrendingModal } from '@/components/mobile-trending-modal'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ToastContainer, useToast } from '@/components/ui/toast'
-import { Post, Profile, TrendingToken, getProfileByUsername, getPostsByUser, isFollowing, followUser, unfollowUser, getTopFollowers, getFollowing, getFollowerCount, getFollowingCount } from '@/lib/database'
+import { Post, Profile, TrendingToken, AlphaChatMessage, getProfileByUsername, getPostsByUser, isFollowing, followUser, unfollowUser, getTopFollowers, getFollowing, getFollowerCount, getFollowingCount, getAlphaChatMessages, hasActiveAlphaSubscription } from '@/lib/database'
 import { supabase } from '@/lib/supabase'
 import { Users, UserPlus, UserMinus, Settings, Crown } from 'lucide-react'
 import { FollowersModal } from '@/components/followers-modal'
 import { FollowingModal } from '@/components/following-modal'
 import { EditProfileModal } from '@/components/edit-profile-modal'
+import { CreatePost } from '@/components/create-post'
+import { AlphaChatSubscriptionModal } from '@/components/alpha-chat-subscription-modal'
 
 interface ProfileClientProps {
   trendingTokens: TrendingToken[]
@@ -32,6 +34,7 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
   
   const [profile, setProfile] = useState<Profile | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
+  const [alphaMessages, setAlphaMessages] = useState<AlphaChatMessage[]>([])
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string } | undefined>(undefined)
   const [isFollowingUser, setIsFollowingUser] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -46,6 +49,10 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
   const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
   const [showTrendingModal, setShowTrendingModal] = useState(false)
   const [featuredTokensKey, setFeaturedTokensKey] = useState(0)
+  const [activeTab, setActiveTab] = useState<'posts' | 'alpha'>('posts')
+  const [hasAlphaAccess, setHasAlphaAccess] = useState(false)
+  const [isLoadingAlpha, setIsLoadingAlpha] = useState(false)
+  const [showAlphaSubscriptionModal, setShowAlphaSubscriptionModal] = useState(false)
   const { toasts, removeToast, success } = useToast()
 
   const loadProfile = async () => {
@@ -107,10 +114,114 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
       setFollowerCount(followerCountData)
       setFollowingCount(followingCountData)
 
+      // Check alpha chat access if user is pro
+      if (profileData.pro && currentUserProfile) {
+        const alphaAccess = await hasActiveAlphaSubscription(profileData.id, currentUserProfile.id)
+        setHasAlphaAccess(alphaAccess || currentUserProfile.id === profileData.id)
+      }
+
     } catch (error) {
       console.error('Error loading profile:', error)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const loadAlphaMessages = async () => {
+    if (!profile || !currentUser) return
+    
+    try {
+      setIsLoadingAlpha(true)
+      
+      // Get current session for authorization
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error('No active session')
+      }
+
+      const response = await fetch(`/api/alpha-chat/${profile.id}/messages`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch alpha messages')
+      }
+
+      const data = await response.json()
+      setAlphaMessages(data.messages)
+    } catch (error) {
+      console.error('Error loading alpha messages:', error)
+    } finally {
+      setIsLoadingAlpha(false)
+    }
+  }
+
+  const handleCreateAlphaPost = async (data: {
+    content?: string
+    image?: File
+    tokenSymbol?: string
+    tokenAddress?: string
+    tokenName?: string
+  }) => {
+    if (!profile || !currentUser) return
+
+    try {
+      let imageUrl: string | undefined
+
+      // Upload image if provided
+      if (data.image) {
+        const formData = new FormData()
+        formData.append('file', data.image)
+        formData.append('userId', currentUser.id)
+
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload image')
+        }
+
+        const uploadResult = await uploadResponse.json()
+        imageUrl = uploadResult.url
+      }
+
+      // Get current session for authorization
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error('No active session')
+      }
+
+      // Create the alpha message
+      const response = await fetch(`/api/alpha-chat/${profile.id}/messages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: data.content,
+          image_url: imageUrl,
+          token_symbol: data.tokenSymbol,
+          token_address: data.tokenAddress,
+          token_name: data.tokenName,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to create alpha message')
+      }
+
+      // Reload messages
+      await loadAlphaMessages()
+      success('Alpha message posted successfully!')
+    } catch (error) {
+      console.error('Error creating alpha message:', error)
+      throw error
     }
   }
 
@@ -119,6 +230,12 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
       loadProfile()
     }
   }, [username])
+
+  useEffect(() => {
+    if (activeTab === 'alpha' && profile && currentUser && hasAlphaAccess) {
+      loadAlphaMessages()
+    }
+  }, [activeTab, profile, currentUser, hasAlphaAccess])
 
   const handleFollow = async () => {
     if (!currentUser || !profile || isFollowingLoading) return
@@ -301,12 +418,119 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
               </div>
             </div>
             
-            {/* Posts */}
-            <Feed
-              posts={posts}
-              currentUserId={currentUser?.id}
-              isLoading={false}
-            />
+            {/* Tab Navigation - Only show if user is pro and has alpha chat enabled */}
+            {profile.pro && profile.alpha_chat_enabled && (
+              <div className="border-b border-gray-800">
+                <div className="flex justify-between">
+                  <button
+                    onClick={() => setActiveTab('posts')}
+                    className={`flex-1 py-3 text-sm font-medium transition-colors ${
+                      activeTab === 'posts'
+                        ? 'text-white'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    Posts
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('alpha')}
+                    className={`flex-1 py-3 text-sm font-medium transition-colors ${
+                      activeTab === 'alpha'
+                        ? 'text-white'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    Alpha
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {/* Content based on active tab */}
+            {activeTab === 'posts' ? (
+              <Feed
+                posts={posts}
+                currentUserId={currentUser?.id}
+                isLoading={false}
+              />
+            ) : (
+              <>
+                {!hasAlphaAccess ? (
+                  <div className="text-center py-12 px-4">
+                    <h3 className="text-xl font-semibold text-white mb-2">Alpha Chat Access Required</h3>
+                    <p className="text-gray-400 mb-6">
+                      Subscribe to {profile.username}&apos;s alpha chat to access exclusive content and discussions.
+                    </p>
+                    <Button 
+                      onClick={() => setShowAlphaSubscriptionModal(true)}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      Subscribe to Alpha Chat
+                    </Button>
+                  </div>
+                ) : isLoadingAlpha ? (
+                  <div className="flex items-center justify-center py-12 px-4">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+                    <span className="ml-3 text-gray-400">Loading alpha messages...</span>
+                  </div>
+                ) : alphaMessages.length === 0 ? (
+                  <>
+                    <div className="bg-black border-b border-gray-800">
+                      {currentUser && (
+                        <CreatePost
+                          currentUser={currentUser}
+                          onSubmit={handleCreateAlphaPost}
+                        />
+                      )}
+                    </div>
+                    <div className="text-center py-12 px-4">
+                      <h3 className="text-xl font-semibold text-white mb-2">No Alpha Messages Yet</h3>
+                      <p className="text-gray-400">
+                        Be the first to post in {profile.username}&apos;s alpha chat!
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="bg-black border-b border-gray-800">
+                      {currentUser && (
+                        <CreatePost
+                          currentUser={currentUser}
+                          onSubmit={handleCreateAlphaPost}
+                        />
+                      )}
+                    </div>
+                    <Feed
+                      posts={alphaMessages.map((message) => ({
+                        id: message.id,
+                        user_id: message.author_id,
+                        content: message.content,
+                        image_url: message.image_url,
+                        token_symbol: message.token_symbol,
+                        token_address: message.token_address,
+                        token_name: message.token_name,
+                        dex_screener_url: message.dex_screener_url,
+                        created_at: message.created_at,
+                        updated_at: message.updated_at || message.created_at,
+                        profiles: message.profiles,
+                        likes_count: message.likes_count,
+                        is_liked: message.is_liked,
+                        replies_count: 0,
+                        impression_count: 0,
+                        is_promoted: false,
+                        promotion_start: null,
+                        promotion_end: null,
+                        promotion_amount_sol: null,
+                        promotion_price: null,
+                        payment_tx_hash: null
+                      }))}
+                      currentUserId={currentUser?.id}
+                      isLoading={false}
+                    />
+                  </>
+                )}
+              </>
+            )}
           </div>
         </div>
         
@@ -362,6 +586,18 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
       <MobileTrendingModal
         isOpen={showTrendingModal}
         onClose={() => setShowTrendingModal(false)}
+      />
+      
+      <AlphaChatSubscriptionModal
+        isOpen={showAlphaSubscriptionModal}
+        onClose={() => setShowAlphaSubscriptionModal(false)}
+        ownerUsername={profile.username}
+        ownerId={profile.id}
+        onSubscriptionSuccess={() => {
+          setHasAlphaAccess(true)
+          loadAlphaMessages()
+          success('Alpha chat subscription activated!')
+        }}
       />
       
       <ToastContainer toasts={toasts} onClose={removeToast} />

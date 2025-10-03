@@ -27,6 +27,7 @@ export interface Database {
           referral_link: string | null
           referred_by: string | null
           pro: boolean
+          alpha_chat_enabled: boolean
           created_at: string
           updated_at: string
         }
@@ -41,6 +42,7 @@ export interface Database {
           referral_link?: string | null
           referred_by?: string | null
           pro?: boolean
+          alpha_chat_enabled?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -55,6 +57,7 @@ export interface Database {
           referral_link?: string | null
           referred_by?: string | null
           pro?: boolean
+          alpha_chat_enabled?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -223,6 +226,85 @@ export interface Database {
           reply_id?: string | null
           is_read?: boolean
           created_at?: string
+        }
+      }
+      alpha_chat_members: {
+        Row: {
+          id: string
+          alpha_chat_owner_id: string
+          subscriber_id: string
+          subscription_price_sol: number
+          subscription_duration_months: number
+          payment_tx_hash: string | null
+          status: 'pending' | 'active' | 'expired' | 'cancelled'
+          created_at: string
+          activated_at: string | null
+          expires_at: string | null
+        }
+        Insert: {
+          id?: string
+          alpha_chat_owner_id: string
+          subscriber_id: string
+          subscription_price_sol: number
+          subscription_duration_months: number
+          payment_tx_hash?: string | null
+          status?: 'pending' | 'active' | 'expired' | 'cancelled'
+          created_at?: string
+          activated_at?: string | null
+          expires_at?: string | null
+        }
+        Update: {
+          id?: string
+          alpha_chat_owner_id?: string
+          subscriber_id?: string
+          subscription_price_sol?: number
+          subscription_duration_months?: number
+          payment_tx_hash?: string | null
+          status?: 'pending' | 'active' | 'expired' | 'cancelled'
+          created_at?: string
+          activated_at?: string | null
+          expires_at?: string | null
+        }
+      }
+      alpha_chat_messages: {
+        Row: {
+          id: string
+          alpha_chat_owner_id: string
+          author_id: string
+          content: string | null
+          image_url: string | null
+          token_symbol: string | null
+          token_address: string | null
+          token_name: string | null
+          dex_screener_url: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          alpha_chat_owner_id: string
+          author_id: string
+          content?: string | null
+          image_url?: string | null
+          token_symbol?: string | null
+          token_address?: string | null
+          token_name?: string | null
+          dex_screener_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          alpha_chat_owner_id?: string
+          author_id?: string
+          content?: string | null
+          image_url?: string | null
+          token_symbol?: string | null
+          token_address?: string | null
+          token_name?: string | null
+          dex_screener_url?: string | null
+          created_at?: string
+          updated_at?: string
         }
       }
     }
