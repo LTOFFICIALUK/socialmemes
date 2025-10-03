@@ -16,6 +16,8 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 export async function POST(request: Request) {
   try {
     const { userId, referralCode } = await request.json()
+    
+    console.log('Referral tracking API called with:', { userId, referralCode })
 
     if (!userId) {
       return NextResponse.json(
@@ -69,6 +71,7 @@ export async function POST(request: Request) {
 
     // Start a transaction-like operation
     // Step 1: Update the referred user's profile with referrer_id
+    console.log('Updating profile for user:', userId, 'with referrer:', referrerId)
     const { error: profileUpdateError } = await supabase
       .from('profiles')
       .update({ referred_by: referrerId })
@@ -77,10 +80,12 @@ export async function POST(request: Request) {
     if (profileUpdateError) {
       console.error('Error updating profile:', profileUpdateError)
       return NextResponse.json(
-        { error: 'Failed to update profile' },
+        { error: 'Failed to update profile', details: profileUpdateError },
         { status: 500 }
       )
     }
+    
+    console.log('Profile updated successfully')
 
     // Step 2: Insert into referrals table
     const { error: referralInsertError } = await supabase
