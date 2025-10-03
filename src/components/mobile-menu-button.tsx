@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { MoreVertical, BookOpen, LogOut, TrendingUp, BarChart3 } from 'lucide-react'
+import { MoreVertical, BookOpen, LogOut, TrendingUp, BarChart3, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface MobileMenuButtonProps {
@@ -93,6 +93,23 @@ export const MobileMenuButton = ({ currentUser, onSignOut, onPromoteClick, onTre
             <BarChart3 className="h-4 w-4" />
             <span>Trending Tokens</span>
           </button>
+        )}
+
+        {/* Referrals Link */}
+        {currentUser && (
+          <Link
+            href="/referrals"
+            className={cn(
+              "flex items-center space-x-3 px-4 py-2 text-sm",
+              pathname === '/referrals'
+                ? "text-white bg-white bg-opacity-5"
+                : "text-gray-300 hover:bg-white/5 hover:text-white"
+            )}
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <Users className="h-4 w-4" />
+            <span>Referrals</span>
+          </Link>
         )}
 
         {/* Docs Link */}

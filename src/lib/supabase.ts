@@ -23,6 +23,9 @@ export interface Database {
           bio: string | null
           avatar_url: string | null
           banner_url: string | null
+          referral_code: string | null
+          referral_link: string | null
+          referred_by: string | null
           created_at: string
           updated_at: string
         }
@@ -33,6 +36,9 @@ export interface Database {
           bio?: string | null
           avatar_url?: string | null
           banner_url?: string | null
+          referral_code?: string | null
+          referral_link?: string | null
+          referred_by?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -43,6 +49,9 @@ export interface Database {
           bio?: string | null
           avatar_url?: string | null
           banner_url?: string | null
+          referral_code?: string | null
+          referral_link?: string | null
+          referred_by?: string | null
           created_at?: string
           updated_at?: string
         }

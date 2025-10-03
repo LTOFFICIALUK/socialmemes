@@ -1,23 +1,35 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
 import AuthFooter from '@/components/auth-footer'
 
-export default function SignUpPage() {
+function SignUpForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
+  const [referralCode, setReferralCode] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [validationErrors, setValidationErrors] = useState<{[key: string]: boolean}>({})
   const [usernameError, setUsernameError] = useState('')
+  const [referralCodeError, setReferralCodeError] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Handle referral code from URL parameter
+  useEffect(() => {
+    const refCode = searchParams.get('ref')
+    if (refCode) {
+      setReferralCode(refCode.toUpperCase())
+      checkReferralCode(refCode)
+    }
+  }, [searchParams])
 
   const checkUsernameAvailability = async (usernameToCheck: string) => {
     if (!usernameToCheck.trim()) {
@@ -43,12 +55,37 @@ export default function SignUpPage() {
     }
   }
 
+  const checkReferralCode = async (codeToCheck: string) => {
+    if (!codeToCheck.trim()) {
+      setReferralCodeError('')
+      return
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('referral_code')
+        .eq('referral_code', codeToCheck.trim().toUpperCase())
+        .single()
+
+      if (error && error.code === 'PGRST116') {
+        // No rows returned - referral code doesn't exist
+        setReferralCodeError('Referral code not found')
+      } else if (data) {
+        setReferralCodeError('')
+      }
+    } catch {
+      // Ignore errors for now - we'll handle them on form submission
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
     setSuccess('')
     setUsernameError('')
+    setReferralCodeError('')
     setValidationErrors({})
 
     // Validate required fields
@@ -57,7 +94,7 @@ export default function SignUpPage() {
     if (!email.trim()) errors.email = true
     if (!password.trim()) errors.password = true
 
-    if (Object.keys(errors).length > 0 || usernameError) {
+    if (Object.keys(errors).length > 0 || usernameError || referralCodeError) {
       setValidationErrors(errors)
       setIsLoading(false)
       return
@@ -70,6 +107,7 @@ export default function SignUpPage() {
         options: {
           data: {
             username,
+            referral_code: referralCode.trim() || null,
           },
           emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/signin`
         }
@@ -95,6 +133,7 @@ export default function SignUpPage() {
         setEmail('')
         setPassword('')
         setUsername('')
+        setReferralCode('')
         // Redirect after a short delay
         setTimeout(() => {
           router.push('/')
@@ -200,6 +239,33 @@ export default function SignUpPage() {
                   <p className="mt-1 text-sm text-red-500">Password is required</p>
                 )}
               </div>
+              <div>
+                <label htmlFor="referralCode" className="block text-sm font-medium text-white">
+                  Referral Code <span className="text-gray-400 text-xs">(Optional)</span>
+                </label>
+                <Input
+                  id="referralCode"
+                  name="referralCode"
+                  type="text"
+                  value={referralCode}
+                  onChange={(e) => {
+                    setReferralCode(e.target.value.toUpperCase())
+                    if (referralCodeError) {
+                      setReferralCodeError('')
+                    }
+                    // Check referral code validity after a short delay
+                    const timeoutId = setTimeout(() => {
+                      checkReferralCode(e.target.value)
+                    }, 500)
+                    return () => clearTimeout(timeoutId)
+                  }}
+                  className={`mt-1 border-gray-700 focus-visible:border-gray-600 ${referralCodeError ? 'border-red-500' : ''}`}
+                  placeholder="Enter referral code"
+                />
+                {referralCodeError && (
+                  <p className="mt-1 text-sm text-red-500">{referralCodeError}</p>
+                )}
+              </div>
             </div>
 
             {error && (
@@ -228,5 +294,17 @@ export default function SignUpPage() {
         <AuthFooter />
       </div>
     </div>
+  )
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    }>
+      <SignUpForm />
+    </Suspense>
   )
 }

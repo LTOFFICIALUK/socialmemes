@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Grid3X3, User, LogOut, Settings, Bell, Search, BookOpen, Plus, TrendingUp } from 'lucide-react'
+import { Home, Grid3X3, User, LogOut, Settings, Bell, Search, BookOpen, Plus, TrendingUp, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { CreatePost } from '@/components/create-post'
@@ -27,6 +27,7 @@ const navigation = [
   { name: 'Explore', href: '/explore', icon: Grid3X3 },
   { name: 'Search', href: '/search', icon: Search },
   { name: 'Notifications', href: '/notifications', icon: Bell },
+  { name: 'Referrals', href: '/referrals', icon: Users },
   { name: 'Promote', href: '#', icon: TrendingUp, isAction: true },
 ]
 
