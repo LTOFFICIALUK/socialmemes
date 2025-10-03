@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ArrowLeft, Upload, X } from 'lucide-react'
+import { ArrowLeft, Upload, X, Crown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 
@@ -30,9 +30,23 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
   const [activeCount, setActiveCount] = useState(0)
   const [isCheckingCapacity, setIsCheckingCapacity] = useState(true)
   const [isDragging, setIsDragging] = useState(false)
+  const [isProUser, setIsProUser] = useState(false)
 
-  const totalCost = calculatePrice(selectedDuration)
+  const basePrice = calculatePrice(selectedDuration)
+  const discount = isProUser ? 0.2 : 0 // 20% discount for Pro users
+  const totalCost = basePrice * (1 - discount)
+  const savings = basePrice - totalCost
   const isAtCapacity = activeCount >= MAX_FEATURED_TOKENS
+
+  // Debug logging
+  console.log('Featured Token Modal - Pricing:', { 
+    selectedDuration, 
+    basePrice, 
+    isProUser, 
+    discount, 
+    totalCost, 
+    savings 
+  })
 
   useEffect(() => {
     if (isOpen) {
@@ -43,6 +57,7 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
       setImagePreview(null)
       setSelectedDuration(1)
       checkCapacity()
+      checkProStatus()
     }
   }, [isOpen])
 
@@ -58,6 +73,26 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
       console.error('Error checking capacity:', error)
     } finally {
       setIsCheckingCapacity(false)
+    }
+  }
+
+  const checkProStatus = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('pro')
+          .eq('id', user.id)
+          .single()
+        
+        console.log('Featured Token Modal - Pro status check:', { user: user.id, profile, isPro: profile?.pro })
+        const proStatus = profile?.pro || false
+        console.log('Setting isProUser to:', proStatus)
+        setIsProUser(proStatus)
+      }
+    } catch (error) {
+      console.error('Error checking Pro status:', error)
     }
   }
 
@@ -269,7 +304,7 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-black border border-gray-700 rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-black border border-gray-700 rounded-xl max-w-md w-full max-h-[95vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-700 sticky top-0 bg-black z-10">
           <div className="flex items-center space-x-3">
@@ -408,15 +443,32 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
           )}
 
           {/* Total Cost */}
-          <div className="flex justify-between items-center p-4 bg-gray-900 rounded-lg border border-gray-700">
+          <div className="flex justify-between items-center p-4 bg-gray-900 rounded-lg border-2 border-green-500/30">
             <div>
               <div className="text-sm text-gray-400">Total Cost</div>
-              <div className="text-2xl font-bold text-white">
-                {totalCost} SOL
-              </div>
-              <div className="text-xs text-gray-500 mt-1">
-                2 SOL per day
-              </div>
+              {isProUser ? (
+                <div>
+                  <div className="text-sm text-gray-400 line-through">
+                    {basePrice.toFixed(2)} SOL
+                  </div>
+                  <div className="text-2xl font-bold text-white">
+                    {totalCost.toFixed(2)} SOL
+                  </div>
+                  <div className="flex items-center space-x-1 text-sm text-green-400">
+                    <Crown className="h-3 w-3" />
+                    <span>Pro discount applied - Save {savings.toFixed(2)} SOL (20% off)</span>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <div className="text-2xl font-bold text-white">
+                    {totalCost.toFixed(2)} SOL
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    2 SOL per day
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

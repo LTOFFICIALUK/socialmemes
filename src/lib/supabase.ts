@@ -26,6 +26,7 @@ export interface Database {
           referral_code: string | null
           referral_link: string | null
           referred_by: string | null
+          pro: boolean
           created_at: string
           updated_at: string
         }
@@ -39,6 +40,7 @@ export interface Database {
           referral_code?: string | null
           referral_link?: string | null
           referred_by?: string | null
+          pro?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -52,6 +54,7 @@ export interface Database {
           referral_code?: string | null
           referral_link?: string | null
           referred_by?: string | null
+          pro?: boolean
           created_at?: string
           updated_at?: string
         }

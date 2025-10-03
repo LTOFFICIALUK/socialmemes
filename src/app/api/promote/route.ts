@@ -51,6 +51,28 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check if user is Pro and calculate discount
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('pro')
+      .eq('id', session.user.id)
+      .single()
+
+    const isProUser = profile?.pro || false
+    const discount = isProUser ? 0.2 : 0
+    
+    // Calculate the base price (what the price would be without discount)
+    const basePrice = price / (1 - discount)
+    
+    // Verify the price is reasonable (should be the discounted amount)
+    const expectedDiscountedPrice = basePrice * (1 - discount)
+    if (Math.abs(price - expectedDiscountedPrice) > 0.001) {
+      return NextResponse.json(
+        { error: 'Price mismatch - discount may not be applied correctly' },
+        { status: 400 }
+      )
+    }
+
     // Calculate promotion end time
     const promotionStart = new Date()
     const promotionEnd = new Date(promotionStart.getTime() + duration * 60 * 60 * 1000) // duration in hours

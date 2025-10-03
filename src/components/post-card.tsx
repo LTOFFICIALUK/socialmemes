@@ -160,7 +160,8 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
             <div className="flex items-center space-x-2 min-w-0 flex-1 overflow-hidden">
               <span 
                 className={`font-semibold cursor-pointer hover:underline flex-shrink-0 ${
-                  isPromotionActive ? 'text-yellow-400' : 'text-white'
+                  isPromotionActive ? 'text-yellow-400' : 
+                  post.profiles?.pro ? 'pro-username-gold' : 'text-white'
                 }`}
                 onClick={handleProfileClick}
                 data-prevent-navigation

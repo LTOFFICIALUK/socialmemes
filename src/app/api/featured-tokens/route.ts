@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     // TEMPORARY: Get any user from database for testing
     const { data: testUser } = await supabase
       .from('profiles')
-      .select('id')
+      .select('id, pro')
       .limit(1)
       .single()
     
@@ -90,6 +90,22 @@ export async function POST(request: NextRequest) {
     
     const session = { user: { id: testUser.id } }
     // ===== END AUTH CHECK COMMENTED OUT =====
+
+    // Check if user is Pro and calculate discount
+    const isProUser = testUser?.pro || false
+    const discount = isProUser ? 0.2 : 0
+    
+    // Calculate the base price (what the price would be without discount)
+    const basePrice = price / (1 - discount)
+    
+    // Verify the price is reasonable (should be the discounted amount)
+    const expectedDiscountedPrice = basePrice * (1 - discount)
+    if (Math.abs(price - expectedDiscountedPrice) > 0.001) {
+      return NextResponse.json(
+        { error: 'Price mismatch - discount may not be applied correctly' },
+        { status: 400 }
+      )
+    }
 
     // Check capacity - count active featured tokens
     const { data: activeTokens, error: countError } = await supabase

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Grid3X3, User, LogOut, Settings, Bell, Search, BookOpen, Plus, TrendingUp, Users } from 'lucide-react'
+import { Home, Grid3X3, User, LogOut, Settings, Bell, Search, BookOpen, Plus, TrendingUp, Users, Crown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { CreatePost } from '@/components/create-post'
@@ -20,6 +20,7 @@ interface NavigationProps {
   onSignOut?: () => void
   onNotificationRead?: () => void
   onPromoteClick?: () => void
+  onProClick?: () => void
 }
 
 const navigation = [
@@ -27,11 +28,12 @@ const navigation = [
   { name: 'Explore', href: '/explore', icon: Grid3X3 },
   { name: 'Search', href: '/search', icon: Search },
   { name: 'Notifications', href: '/notifications', icon: Bell },
+  { name: 'Pro', href: '#', icon: Crown, isAction: true },
   { name: 'Referrals', href: '/referrals', icon: Users },
   { name: 'Promote', href: '#', icon: TrendingUp, isAction: true },
 ]
 
-export const Navigation = ({ currentUser, onSignOut, onNotificationRead: _onNotificationRead, onPromoteClick }: NavigationProps) => {
+export const Navigation = ({ currentUser, onSignOut, onPromoteClick, onProClick }: NavigationProps) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -191,12 +193,27 @@ export const Navigation = ({ currentUser, onSignOut, onNotificationRead: _onNoti
             const isActive = pathname === item.href
             const isNotifications = item.name === 'Notifications'
             const isPromote = item.name === 'Promote'
+            const isPro = item.name === 'Pro'
             
             if (isPromote) {
               return (
                 <li key={item.name}>
                   <button
                     onClick={onPromoteClick}
+                    className="flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-gray-300 hover:bg-white/5 hover:text-white w-full text-left"
+                  >
+                    <item.icon className="h-5 w-5" />
+                    <span>{item.name}</span>
+                  </button>
+                </li>
+              )
+            }
+            
+            if (isPro) {
+              return (
+                <li key={item.name}>
+                  <button
+                    onClick={onProClick}
                     className="flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-gray-300 hover:bg-white/5 hover:text-white w-full text-left"
                   >
                     <item.icon className="h-5 w-5" />

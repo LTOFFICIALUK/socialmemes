@@ -7,7 +7,7 @@ interface ProfilePageProps {
   }
 }
 
-export default async function ProfilePage({ params: _params }: ProfilePageProps) {
+export default async function ProfilePage({ params }: ProfilePageProps) {
   // Fetch trending tokens data server-side
   const trendingData = await getTrendingTokensWithImages(5, '24 hours')
 

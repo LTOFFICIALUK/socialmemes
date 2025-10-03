@@ -26,7 +26,7 @@ const navigation = [
   { name: 'Notifications', href: '/notifications', icon: Bell },
 ]
 
-export const MobileNavigation = ({ currentUser, onSignOut: _onSignOut, onPromoteClick: _onPromoteClick }: MobileNavigationProps) => {
+export const MobileNavigation = ({ currentUser }: MobileNavigationProps) => {
   const [unreadCount, setUnreadCount] = useState(0)
   const pathname = usePathname()
 

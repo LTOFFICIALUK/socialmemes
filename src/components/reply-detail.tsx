@@ -338,7 +338,9 @@ export const ReplyDetail = ({ postId, replyId, currentUser, onPromote }: ReplyDe
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center space-x-2">
                 <span 
-                  className="font-semibold text-white cursor-pointer hover:underline"
+                  className={`font-semibold cursor-pointer hover:underline ${
+                    post.profiles?.pro ? 'pro-username-gold' : 'text-white'
+                  }`}
                   onClick={(e) => {
                     e.stopPropagation()
                     handleProfileClick(post.profiles?.username || '')

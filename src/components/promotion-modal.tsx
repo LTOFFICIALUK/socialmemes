@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Crown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { getRevenueWalletAddress, solToLamports } from '@/lib/solana'
 import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js'
+import { supabase } from '@/lib/supabase'
 
 interface PromotionModalProps {
   isOpen: boolean
@@ -23,14 +24,37 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
   const [selectedDuration, setSelectedDuration] = useState(24) // Default to 1 day
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [isProUser, setIsProUser] = useState(false)
 
-  const totalCost = calculatePrice(selectedDuration)
+  const basePrice = calculatePrice(selectedDuration)
+  const discount = isProUser ? 0.2 : 0 // 20% discount for Pro users
+  const totalCost = basePrice * (1 - discount)
+  const savings = basePrice - totalCost
 
   useEffect(() => {
     if (isOpen) {
       setErrorMessage('')
+      checkProStatus()
     }
   }, [isOpen])
+
+  const checkProStatus = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('pro')
+          .eq('id', user.id)
+          .single()
+        
+        console.log('Post Promotion Modal - Pro status check:', { user: user.id, profile, isPro: profile?.pro })
+        setIsProUser(profile?.pro || false)
+      }
+    } catch (error) {
+      console.error('Error checking Pro status:', error)
+    }
+  }
 
   const handlePromote = async () => {
     setIsLoading(true)
@@ -183,9 +207,24 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
                   : `${Math.floor(selectedDuration / 24)} days`
                 }
               </div>
-              <div className="text-2xl font-bold text-white">
-                {totalCost} SOL
-              </div>
+              {isProUser ? (
+                <div>
+                  <div className="text-sm text-gray-400 line-through">
+                    {basePrice.toFixed(2)} SOL
+                  </div>
+                  <div className="text-2xl font-bold text-white">
+                    {totalCost.toFixed(2)} SOL
+                  </div>
+                  <div className="flex items-center space-x-1 text-sm text-green-400">
+                    <Crown className="h-3 w-3" />
+                    <span>Pro discount applied - Save {savings.toFixed(2)} SOL (20% off)</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-2xl font-bold text-white">
+                  {totalCost.toFixed(2)} SOL
+                </div>
+              )}
             </div>
           </div>
         </div>

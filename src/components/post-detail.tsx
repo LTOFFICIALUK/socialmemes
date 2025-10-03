@@ -277,7 +277,9 @@ export const PostDetail = ({ postId, currentUser, onPromote }: PostDetailProps) 
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center space-x-2">
                 <span 
-                  className="font-semibold text-white cursor-pointer hover:underline"
+                  className={`font-semibold cursor-pointer hover:underline ${
+                    post.profiles?.pro ? 'pro-username-gold' : 'text-white'
+                  }`}
                   onClick={() => handleProfileClick(post.profiles?.username || '')}
                   style={{ 
                     maxWidth: post.token_symbol ? '120px' : '200px',

@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ToastContainer, useToast } from '@/components/ui/toast'
 import { Post, Profile, TrendingToken, getProfileByUsername, getPostsByUser, isFollowing, followUser, unfollowUser, getTopFollowers, getFollowing, getFollowerCount, getFollowingCount } from '@/lib/database'
 import { supabase } from '@/lib/supabase'
-import { Users, UserPlus, UserMinus, Settings } from 'lucide-react'
+import { Users, UserPlus, UserMinus, Settings, Crown } from 'lucide-react'
 import { FollowersModal } from '@/components/followers-modal'
 import { FollowingModal } from '@/components/following-modal'
 import { EditProfileModal } from '@/components/edit-profile-modal'
@@ -203,6 +203,17 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
           
           {/* Profile Content - Scrollable */}
           <div className="flex-1 overflow-y-auto min-w-0">
+            {/* Profile Banner */}
+            {profile.banner_url && (
+              <div className="w-full">
+                <img
+                  src={profile.banner_url}
+                  alt={`${profile.username}'s banner`}
+                  className="w-full h-auto object-contain"
+                />
+              </div>
+            )}
+            
             {/* Profile Header */}
             <div className="bg-black border-b border-gray-800 p-6">
               <div className="flex items-start space-x-4">
@@ -214,8 +225,17 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
                 </Avatar>
                 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <h2 className="text-2xl font-bold text-white truncate">{profile.username}</h2>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <h2 className={`text-2xl font-bold truncate ${
+                        profile.pro ? 'pro-username-gold' : 'text-white'
+                      }`}>
+                        {profile.username}
+                      </h2>
+                      {profile.pro && (
+                        <Crown className="h-5 w-5 text-yellow-500" />
+                      )}
+                    </div>
                     {isOwnProfile && (
                       <Button
                         variant="outline"

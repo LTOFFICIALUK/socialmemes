@@ -317,3 +317,31 @@ input:-moz-autofill {
 .wallet-adapter-modal-button-close:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
+
+/* Pro Username Gold Shimmer Effect */
+@keyframes goldShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.pro-username-gold {
+  background: linear-gradient(
+    90deg,
+    #fbbf24 0%,
+    #f59e0b 25%,
+    #d97706 50%,
+    #f59e0b 75%,
+    #fbbf24 100%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: goldShimmer 3s ease-in-out infinite;
+  font-weight: 600;
+  cursor: pointer;
+}

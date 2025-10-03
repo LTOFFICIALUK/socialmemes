@@ -11,6 +11,7 @@ import { TrendingTokensSectionWithData } from '@/components/trending-tokens-sect
 import { FeaturedTokens } from '@/components/featured-tokens'
 import { SearchBar } from '@/components/search-bar'
 import { PromotionModal } from '@/components/promotion-modal'
+import { ProModal } from '@/components/pro-modal'
 import { FeaturedTokenModal } from '@/components/featured-token-modal'
 import { MobileTrendingModal } from '@/components/mobile-trending-modal'
 import { ToastContainer, useToast } from '@/components/ui/toast'
@@ -31,6 +32,7 @@ export function HomeClient({ trendingTokens, tokenImages }: HomeClientProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [showPromotionModal, setShowPromotionModal] = useState(false)
+  const [showProModal, setShowProModal] = useState(false)
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null)
   const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
   const [showTrendingModal, setShowTrendingModal] = useState(false)
@@ -247,6 +249,7 @@ export function HomeClient({ trendingTokens, tokenImages }: HomeClientProps) {
             currentUser={currentUser} 
             onSignOut={handleSignOut}
             onPromoteClick={() => setShowFeaturedTokenModal(true)}
+            onProClick={() => setShowProModal(true)}
           />
         </div>
         
@@ -309,6 +312,12 @@ export function HomeClient({ trendingTokens, tokenImages }: HomeClientProps) {
         onClose={() => setShowPromotionModal(false)}
         postId={selectedPostId || ''}
         onPromote={handlePromoteConfirm}
+      />
+      
+      {/* Pro Modal */}
+      <ProModal
+        isOpen={showProModal}
+        onClose={() => setShowProModal(false)}
       />
       
       {/* Featured Token Modal */}
