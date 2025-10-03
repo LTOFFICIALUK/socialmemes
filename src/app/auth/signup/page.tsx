@@ -267,9 +267,6 @@ function SignUpForm() {
                   className={`mt-1 border-gray-700 focus-visible:border-gray-600 ${referralCodeError ? 'border-red-500' : ''} ${isReferralCodeFromUrl ? 'bg-gray-800 text-gray-400 cursor-not-allowed' : ''}`}
                   placeholder="Enter referral code"
                 />
-                {isReferralCodeFromUrl && (
-                  <p className="mt-1 text-sm text-gray-400">Referral code from link - cannot be modified</p>
-                )}
                 {referralCodeError && (
                   <p className="mt-1 text-sm text-red-500">{referralCodeError}</p>
                 )}

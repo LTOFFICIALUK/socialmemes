@@ -50,16 +50,10 @@ export const ReferralsClient = () => {
           return
         }
 
-        setCurrentUser({
-          id: user.id,
-          username: user.user_metadata?.username || 'user',
-          avatar_url: user.user_metadata?.avatar_url
-        })
-
         // Get user profile with referral data
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('id, username, referral_code, referral_link')
+          .select('id, username, referral_code, referral_link, avatar_url')
           .eq('id', user.id)
           .single()
 
@@ -70,6 +64,13 @@ export const ReferralsClient = () => {
         }
 
         setProfile(profileData)
+        
+        // Set current user with fresh profile data from database
+        setCurrentUser({
+          id: user.id,
+          username: profileData.username,
+          avatar_url: profileData.avatar_url
+        })
 
         // Get referral statistics
         const { data: statsData } = await supabase
