@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Copy, Share2, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -37,7 +36,7 @@ export const ReferralsClient = () => {
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
   const [copiedLink, setCopiedLink] = useState(false)
-  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string } | undefined>(undefined)
   const router = useRouter()
 
   useEffect(() => {
@@ -51,7 +50,11 @@ export const ReferralsClient = () => {
           return
         }
 
-        setCurrentUser(user)
+        setCurrentUser({
+          id: user.id,
+          username: user.user_metadata?.username || 'user',
+          avatar_url: user.user_metadata?.avatar_url
+        })
 
         // Get user profile with referral data
         const { data: profileData, error: profileError } = await supabase
@@ -122,23 +125,6 @@ export const ReferralsClient = () => {
     }
   }
 
-  const handleShare = async () => {
-    if (!profile) return
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Join me on Social Memes!',
-          text: `Join me on Social Memes and start sharing memes! Use my referral code: ${profile.referral_code}`,
-          url: profile.referral_link,
-        })
-      } catch (err) {
-        console.error('Error sharing:', err)
-      }
-    } else {
-      // Fallback to copying link
-      handleCopyLink()
-    }
-  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
