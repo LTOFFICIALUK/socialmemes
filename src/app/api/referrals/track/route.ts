@@ -2,10 +2,16 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-// Use service role client for admin operations
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
+// Create a Supabase client with anon key for server-side operations
+// Note: Make sure RLS policies allow these operations
+const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+  }
+})
 
 export async function POST(request: Request) {
   try {
@@ -24,7 +30,7 @@ export async function POST(request: Request) {
     }
 
     // Find the referrer by their referral code
-    const { data: referrerProfile, error: referrerError } = await supabaseAdmin
+    const { data: referrerProfile, error: referrerError } = await supabase
       .from('profiles')
       .select('id')
       .eq('referral_code', referralCode.toUpperCase().trim())
@@ -49,7 +55,7 @@ export async function POST(request: Request) {
     }
 
     // Check if referral already exists
-    const { data: existingReferral } = await supabaseAdmin
+    const { data: existingReferral } = await supabase
       .from('referrals')
       .select('id')
       .eq('referred_user_id', userId)
@@ -63,7 +69,7 @@ export async function POST(request: Request) {
 
     // Start a transaction-like operation
     // Step 1: Insert into referrals table
-    const { error: referralInsertError } = await supabaseAdmin
+    const { error: referralInsertError } = await supabase
       .from('referrals')
       .insert({
         referrer_id: referrerId,
@@ -79,7 +85,7 @@ export async function POST(request: Request) {
     }
 
     // Step 2: Check if referrer has referral_data
-    const { data: existingReferralData } = await supabaseAdmin
+    const { data: existingReferralData } = await supabase
       .from('referral_data')
       .select('*')
       .eq('user_id', referrerId)
@@ -87,7 +93,7 @@ export async function POST(request: Request) {
 
     if (existingReferralData) {
       // Update existing referral data
-      const { error: updateError } = await supabaseAdmin
+      const { error: updateError } = await supabase
         .from('referral_data')
         .update({
           total_referrals: existingReferralData.total_referrals + 1,
@@ -100,7 +106,7 @@ export async function POST(request: Request) {
       }
     } else {
       // Create new referral data entry
-      const { error: insertError } = await supabaseAdmin
+      const { error: insertError } = await supabase
         .from('referral_data')
         .insert({
           user_id: referrerId,
