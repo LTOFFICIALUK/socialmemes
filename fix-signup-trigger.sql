@@ -1,4 +1,5 @@
--- Update the handle_new_user trigger to handle the new referral tables
+-- Fix the handle_new_user trigger to remove references to non-existent tables
+-- This fixes the "Database error saving new user" issue when signing up with referral codes
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$

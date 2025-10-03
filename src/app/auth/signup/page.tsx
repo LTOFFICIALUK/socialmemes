@@ -109,7 +109,7 @@ function SignUpForm() {
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data: signUpData, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -134,7 +134,35 @@ function SignUpForm() {
         } else {
           setError(error.message)
         }
-      } else {
+      } else if (signUpData.user) {
+        // Track referral if a referral code was provided
+        if (referralCode.trim()) {
+          try {
+            const response = await fetch('/api/referrals/track', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                userId: signUpData.user.id,
+                referralCode: referralCode.trim()
+              })
+            })
+
+            const result = await response.json()
+            
+            if (!response.ok) {
+              console.error('Failed to track referral:', result.error)
+              // Don't show error to user - account was created successfully
+            } else {
+              console.log('Referral tracked successfully:', result)
+            }
+          } catch (referralError) {
+            console.error('Error tracking referral:', referralError)
+            // Don't show error to user - account was created successfully
+          }
+        }
+
         // Show success message
         setSuccess('Account created successfully! Please check your email to verify your account.')
         // Clear form
