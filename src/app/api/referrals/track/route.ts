@@ -68,7 +68,21 @@ export async function POST(request: Request) {
     }
 
     // Start a transaction-like operation
-    // Step 1: Insert into referrals table
+    // Step 1: Update the referred user's profile with referrer_id
+    const { error: profileUpdateError } = await supabase
+      .from('profiles')
+      .update({ referred_by: referrerId })
+      .eq('id', userId)
+
+    if (profileUpdateError) {
+      console.error('Error updating profile:', profileUpdateError)
+      return NextResponse.json(
+        { error: 'Failed to update profile' },
+        { status: 500 }
+      )
+    }
+
+    // Step 2: Insert into referrals table
     const { error: referralInsertError } = await supabase
       .from('referrals')
       .insert({
@@ -84,7 +98,7 @@ export async function POST(request: Request) {
       )
     }
 
-    // Step 2: Check if referrer has referral_data
+    // Step 3: Check if referrer has referral_data
     const { data: existingReferralData } = await supabase
       .from('referral_data')
       .select('*')
