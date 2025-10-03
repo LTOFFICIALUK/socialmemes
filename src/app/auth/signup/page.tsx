@@ -44,16 +44,19 @@ function SignUpForm() {
         .from('profiles')
         .select('username')
         .eq('username', usernameToCheck.trim())
-        .single()
 
-      if (error && error.code === 'PGRST116') {
-        // No rows returned - username is available
-        setUsernameError('')
-      } else if (data) {
-        setUsernameError('This username is already taken')
+      if (error) {
+        console.error('Error checking username availability:', error)
+        return
       }
-    } catch {
-      // Ignore errors for now - we'll handle them on form submission
+
+      if (data && data.length > 0) {
+        setUsernameError('This username is already taken')
+      } else {
+        setUsernameError('')
+      }
+    } catch (error) {
+      console.error('Error checking username availability:', error)
     }
   }
 
@@ -68,16 +71,19 @@ function SignUpForm() {
         .from('profiles')
         .select('referral_code')
         .eq('referral_code', codeToCheck.trim().toUpperCase())
-        .single()
 
-      if (error && error.code === 'PGRST116') {
-        // No rows returned - referral code doesn't exist
-        setReferralCodeError('Referral code not found')
-      } else if (data) {
-        setReferralCodeError('')
+      if (error) {
+        console.error('Error checking referral code:', error)
+        return
       }
-    } catch {
-      // Ignore errors for now - we'll handle them on form submission
+
+      if (data && data.length > 0) {
+        setReferralCodeError('')
+      } else {
+        setReferralCodeError('Referral code not found')
+      }
+    } catch (error) {
+      console.error('Error checking referral code:', error)
     }
   }
 
