@@ -265,6 +265,7 @@ export function HomeClient({ trendingTokens, tokenImages }: HomeClientProps) {
                 onSignOut={handleSignOut}
                 onPromoteClick={() => setShowFeaturedTokenModal(true)}
                 onTrendingClick={() => setShowTrendingModal(true)}
+                onProClick={() => setShowProModal(true)}
               />
             </div>
           </div>

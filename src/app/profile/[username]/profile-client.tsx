@@ -22,6 +22,7 @@ import { FollowingModal } from '@/components/following-modal'
 import { EditProfileModal } from '@/components/edit-profile-modal'
 import { CreatePost } from '@/components/create-post'
 import { AlphaChatSubscriptionModal } from '@/components/alpha-chat-subscription-modal'
+import { ProModal } from '@/components/pro-modal'
 
 interface ProfileClientProps {
   trendingTokens: TrendingToken[]
@@ -48,6 +49,7 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
   const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
   const [showTrendingModal, setShowTrendingModal] = useState(false)
+  const [showProModal, setShowProModal] = useState(false)
   const [featuredTokensKey, setFeaturedTokensKey] = useState(0)
   const [activeTab, setActiveTab] = useState<'posts' | 'alpha'>('posts')
   const [hasAlphaAccess, setHasAlphaAccess] = useState(false)
@@ -314,6 +316,7 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
                 onSignOut={handleSignOut}
                 onPromoteClick={() => setShowFeaturedTokenModal(true)}
                 onTrendingClick={() => setShowTrendingModal(true)}
+                onProClick={() => setShowProModal(true)}
               />
             </div>
           </div>
@@ -353,7 +356,7 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
                         <Crown className="h-5 w-5 text-yellow-500" />
                       )}
                     </div>
-                    {isOwnProfile && (
+                    {isOwnProfile ? (
                       <Button
                         variant="outline"
                         size="sm"
@@ -362,6 +365,28 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
                       >
                         <Settings className="h-4 w-4 mr-1" />
                         Edit
+                      </Button>
+                    ) : currentUser && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleFollow}
+                        disabled={isFollowingLoading}
+                        className="border-white text-white hover:bg-gray-800"
+                      >
+                        {isFollowingLoading ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        ) : isFollowingUser ? (
+                          <>
+                            <UserMinus className="h-4 w-4 mr-1" />
+                            Unfollow
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus className="h-4 w-4 mr-1" />
+                            Follow
+                          </>
+                        )}
                       </Button>
                     )}
                   </div>
@@ -388,32 +413,6 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
                       <span>following</span>
                     </button>
                   </div>
-                  
-                  {!isOwnProfile && currentUser && (
-                    <Button
-                      onClick={handleFollow}
-                      disabled={isFollowingLoading}
-                      className={`${
-                        isFollowingUser 
-                          ? 'bg-gray-700 hover:bg-gray-600 text-white' 
-                          : 'bg-green-600 hover:bg-green-700 text-white'
-                      }`}
-                    >
-                      {isFollowingLoading ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      ) : isFollowingUser ? (
-                        <>
-                          <UserMinus className="h-4 w-4 mr-1" />
-                          Unfollow
-                        </>
-                      ) : (
-                        <>
-                          <UserPlus className="h-4 w-4 mr-1" />
-                          Follow
-                        </>
-                      )}
-                    </Button>
-                  )}
                 </div>
               </div>
             </div>
@@ -518,11 +517,19 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
                         replies_count: 0,
                         impression_count: 0,
                         is_promoted: false,
+                        is_alpha_chat_message: true, // Flag to identify alpha chat messages
                         promotion_start: null,
                         promotion_end: null,
                         promotion_amount_sol: null,
                         promotion_price: null,
-                        payment_tx_hash: null
+                        payment_tx_hash: null,
+                        // Reaction data
+                        fire_count: message.fire_count || 0,
+                        is_fire_reacted: message.is_fire_reacted || false,
+                        diamond_count: message.diamond_count || 0,
+                        is_diamond_reacted: message.is_diamond_reacted || false,
+                        money_count: message.money_count || 0,
+                        is_money_reacted: message.is_money_reacted || false
                       }))}
                       currentUserId={currentUser?.id}
                       isLoading={false}
@@ -598,6 +605,11 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
           loadAlphaMessages()
           success('Alpha chat subscription activated!')
         }}
+      />
+      
+      <ProModal
+        isOpen={showProModal}
+        onClose={() => setShowProModal(false)}
       />
       
       <ToastContainer toasts={toasts} onClose={removeToast} />

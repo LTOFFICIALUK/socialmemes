@@ -11,6 +11,7 @@ import { FeaturedTokens } from '@/components/featured-tokens'
 import { SearchBar } from '@/components/search-bar'
 import { FeaturedTokenModal } from '@/components/featured-token-modal'
 import { MobileTrendingModal } from '@/components/mobile-trending-modal'
+import { ProModal } from '@/components/pro-modal'
 import { ToastContainer, useToast } from '@/components/ui/toast'
 import { supabase } from '@/lib/supabase'
 import { TrendingToken } from '@/lib/database'
@@ -25,6 +26,7 @@ export function ExploreClient({ trendingTokens, tokenImages }: ExploreClientProp
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
   const [showTrendingModal, setShowTrendingModal] = useState(false)
+  const [showProModal, setShowProModal] = useState(false)
   const [featuredTokensKey, setFeaturedTokensKey] = useState(0)
   const router = useRouter()
   const { toasts, removeToast, success } = useToast()
@@ -127,6 +129,7 @@ export function ExploreClient({ trendingTokens, tokenImages }: ExploreClientProp
                 onSignOut={handleSignOut}
                 onPromoteClick={() => setShowFeaturedTokenModal(true)}
                 onTrendingClick={() => setShowTrendingModal(true)}
+                onProClick={() => setShowProModal(true)}
               />
             </div>
           </div>
@@ -167,6 +170,12 @@ export function ExploreClient({ trendingTokens, tokenImages }: ExploreClientProp
       <MobileTrendingModal
         isOpen={showTrendingModal}
         onClose={() => setShowTrendingModal(false)}
+      />
+      
+      {/* Pro Modal */}
+      <ProModal
+        isOpen={showProModal}
+        onClose={() => setShowProModal(false)}
       />
       
       {/* Toast Notifications */}

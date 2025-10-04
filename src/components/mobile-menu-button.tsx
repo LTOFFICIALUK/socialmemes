@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { MoreVertical, BookOpen, LogOut, TrendingUp, BarChart3, Users } from 'lucide-react'
+import { MoreVertical, BookOpen, LogOut, TrendingUp, BarChart3, Users, Crown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface MobileMenuButtonProps {
@@ -16,9 +16,10 @@ interface MobileMenuButtonProps {
   onSignOut?: () => void
   onPromoteClick?: () => void
   onTrendingClick?: () => void
+  onProClick?: () => void
 }
 
-export const MobileMenuButton = ({ currentUser, onSignOut, onPromoteClick, onTrendingClick }: MobileMenuButtonProps) => {
+export const MobileMenuButton = ({ currentUser, onSignOut, onPromoteClick, onTrendingClick, onProClick }: MobileMenuButtonProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [buttonRect, setButtonRect] = useState<DOMRect | null>(null)
   const [mounted, setMounted] = useState(false)
@@ -67,6 +68,20 @@ export const MobileMenuButton = ({ currentUser, onSignOut, onPromoteClick, onTre
           position: 'fixed'
         }}
       >
+        {/* Pro Button */}
+        {onProClick && (
+          <button
+            onClick={() => {
+              onProClick()
+              setIsMenuOpen(false)
+            }}
+            className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 w-full text-left hover:bg-white/5 hover:text-white"
+          >
+            <Crown className="h-4 w-4" />
+            <span>Pro</span>
+          </button>
+        )}
+
         {/* Promote Token Button */}
         {currentUser && onPromoteClick && (
           <button

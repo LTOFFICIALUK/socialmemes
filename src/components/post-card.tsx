@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Heart, MessageCircle, Share, Check, MoreHorizontal, Trash2, Coins, TrendingUp, BarChart3 } from 'lucide-react'
+import { Heart, MessageCircle, Share, Check, MoreHorizontal, Trash2, Coins, TrendingUp, BarChart3, Flame, Gem, DollarSign } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -30,6 +30,14 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
   const [isShared, setIsShared] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   
+  // Reaction states for alpha chat messages
+  const [fireCount, setFireCount] = useState((post as any).fire_count || 0)
+  const [isFireReacted, setIsFireReacted] = useState((post as any).is_fire_reacted || false)
+  const [diamondCount, setDiamondCount] = useState((post as any).diamond_count || 0)
+  const [isDiamondReacted, setIsDiamondReacted] = useState((post as any).is_diamond_reacted || false)
+  const [moneyCount, setMoneyCount] = useState((post as any).money_count || 0)
+  const [isMoneyReacted, setIsMoneyReacted] = useState((post as any).is_money_reacted || false)
+  
   // Check if promotion is currently active
   const isPromotionActive = post.is_promoted && post.promotion_end && new Date(post.promotion_end) > new Date()
   
@@ -53,6 +61,47 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
     }
   }
 
+  // Reaction handlers for alpha chat messages - using database functions like the like function
+  const handleFireReaction = async () => {
+    if (!currentUserId) return
+
+    try {
+      const { reactFireAlphaChatMessage } = await import('@/lib/database')
+      const result = await reactFireAlphaChatMessage(currentUserId, post.id)
+      setFireCount(result.fire_count)
+      setIsFireReacted(prev => !prev)
+    } catch (error) {
+      console.error('Error reacting with fire:', error)
+    }
+  }
+
+
+  const handleDiamondReaction = async () => {
+    if (!currentUserId) return
+
+    try {
+      const { reactDiamondAlphaChatMessage } = await import('@/lib/database')
+      const result = await reactDiamondAlphaChatMessage(currentUserId, post.id)
+      setDiamondCount(result.diamond_count)
+      setIsDiamondReacted(prev => !prev)
+    } catch (error) {
+      console.error('Error reacting with diamond:', error)
+    }
+  }
+
+  const handleMoneyReaction = async () => {
+    if (!currentUserId) return
+
+    try {
+      const { reactMoneyAlphaChatMessage } = await import('@/lib/database')
+      const result = await reactMoneyAlphaChatMessage(currentUserId, post.id)
+      setMoneyCount(result.money_count)
+      setIsMoneyReacted(prev => !prev)
+    } catch (error) {
+      console.error('Error reacting with money:', error)
+    }
+  }
+
   const _handleTokenClick = () => {
     if (post.dex_screener_url) {
       window.open(post.dex_screener_url, '_blank', 'noopener,noreferrer')
@@ -70,6 +119,11 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
   }
 
   const handlePostCardClick = (e: React.MouseEvent) => {
+    // Don't navigate for alpha chat messages
+    if (post.is_alpha_chat_message) {
+      return
+    }
+    
     // Only navigate if the click wasn't on an interactive element
     const target = e.target as HTMLElement
     const isInteractiveElement = target.closest('button, a, [role="button"]') || 
@@ -284,38 +338,94 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
               <span>{formatNumber(likesCount)}</span>
             </Button>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex items-center space-x-2 hover:text-blue-500"
-              onClick={handlePostClick}
-              data-prevent-navigation
-            >
-              <MessageCircle className="h-5 w-5" />
-              <span>{formatNumber(post.replies_count || 0)}</span>
-            </Button>
+            {/* Additional reaction buttons for alpha chat messages */}
+            {post.is_alpha_chat_message && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`flex items-center space-x-1 ${
+                    isFireReacted ? 'text-orange-500' : 'hover:text-orange-500'
+                  }`}
+                  disabled={!currentUserId}
+                  data-prevent-navigation
+                  onClick={handleFireReaction}
+                >
+                  <Flame className={`h-4 w-4 ${isFireReacted ? 'fill-current' : ''}`} />
+                  <span>{formatNumber(fireCount)}</span>
+                </Button>
 
-            <div className="flex items-center space-x-2 text-gray-400">
-              <BarChart3 className="h-5 w-5" />
-              <span>{formatNumber(post.impression_count || 0)}</span>
-            </div>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`flex items-center space-x-2 ${
-                isShared ? 'text-green-500' : 'hover:text-green-500'
-              }`}
-              onClick={handleShare}
-              data-prevent-navigation
-            >
-              {isShared ? (
-                <Check className="h-5 w-5" />
-              ) : (
-                <Share className="h-5 w-5" />
-              )}
-              <span>{isShared ? 'Copied!' : 'Share'}</span>
-            </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`flex items-center space-x-1 ${
+                    isDiamondReacted ? 'text-purple-500' : 'hover:text-purple-500'
+                  }`}
+                  disabled={!currentUserId}
+                  data-prevent-navigation
+                  onClick={handleDiamondReaction}
+                >
+                  <Gem className={`h-4 w-4 ${isDiamondReacted ? 'stroke-current' : ''}`} />
+                  <span>{formatNumber(diamondCount)}</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`flex items-center space-x-1 ${
+                    isMoneyReacted ? 'text-green-600' : 'hover:text-green-600'
+                  }`}
+                  disabled={!currentUserId}
+                  data-prevent-navigation
+                  onClick={handleMoneyReaction}
+                >
+                  <DollarSign className={`h-4 w-4 ${isMoneyReacted ? 'stroke-current' : ''}`} />
+                  <span>{formatNumber(moneyCount)}</span>
+                </Button>
+              </>
+            )}
+
+            {/* Hide comment button for alpha chat messages */}
+            {!post.is_alpha_chat_message && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center space-x-2 hover:text-blue-500"
+                onClick={handlePostClick}
+                data-prevent-navigation
+              >
+                <MessageCircle className="h-5 w-5" />
+                <span>{formatNumber(post.replies_count || 0)}</span>
+              </Button>
+            )}
+
+            {/* Hide impressions and share buttons for alpha chat messages */}
+            {!post.is_alpha_chat_message && (
+              <>
+                <div className="flex items-center space-x-2 text-gray-400">
+                  <BarChart3 className="h-5 w-5" />
+                  <span>{formatNumber(post.impression_count || 0)}</span>
+                </div>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`flex items-center space-x-2 ${
+                    isShared ? 'text-green-500' : 'hover:text-green-500'
+                  }`}
+                  onClick={handleShare}
+                  data-prevent-navigation
+                >
+                  {isShared ? (
+                    <Check className="h-5 w-5" />
+                  ) : (
+                    <Share className="h-5 w-5" />
+                  )}
+                  <span>{isShared ? 'Copied!' : 'Share'}</span>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

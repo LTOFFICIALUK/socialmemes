@@ -61,7 +61,7 @@ export async function GET(
       .eq('subscriber_id', userId)
       .order('created_at', { ascending: false })
       .limit(1)
-      .single()
+      .maybeSingle() // Use maybeSingle() to handle no subscription gracefully
 
     let subscriptionStatus = 'none'
     let isSubscribed = false

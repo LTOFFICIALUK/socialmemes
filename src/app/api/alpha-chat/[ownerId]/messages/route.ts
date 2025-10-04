@@ -55,7 +55,7 @@ export async function GET(
       )
     }
 
-    // Get alpha chat messages
+    // Get alpha chat messages using the authenticated client
     console.log('Fetching alpha chat messages for owner:', ownerId, 'user:', userId)
     const { data: messages, error } = await supabaseWithAuth
       .from('alpha_chat_messages')
@@ -65,7 +65,7 @@ export async function GET(
       `)
       .eq('alpha_chat_owner_id', ownerId)
       .order('created_at', { ascending: false })
-
+    
     if (error) {
       console.error('Error fetching alpha chat messages:', error)
       return NextResponse.json(
@@ -74,12 +74,30 @@ export async function GET(
       )
     }
 
-    // Process messages (no likes functionality for alpha chat)
-    const processedMessages = (messages || []).map((message: { author: Record<string, unknown>; [key: string]: unknown }) => ({
+    // Process messages with likes and reaction data
+    const processedMessages = (messages || []).map((message: { 
+      id: string; 
+      likes_count: number; 
+      liked_by: string[]; 
+      fire_count: number;
+      fire_reacted_by: string[];
+      diamond_count: number;
+      diamond_reacted_by: string[];
+      money_count: number;
+      money_reacted_by: string[];
+      author: Record<string, unknown>; 
+      [key: string]: unknown 
+    }) => ({
       ...message,
       profiles: message.author, // Map author to profiles for consistency
-      likes_count: 0,
-      is_liked: false
+      likes_count: message.likes_count || 0,
+      is_liked: userId ? message.liked_by?.includes(userId) || false : false,
+      fire_count: message.fire_count || 0,
+      is_fire_reacted: userId ? message.fire_reacted_by?.includes(userId) || false : false,
+      diamond_count: message.diamond_count || 0,
+      is_diamond_reacted: userId ? message.diamond_reacted_by?.includes(userId) || false : false,
+      money_count: message.money_count || 0,
+      is_money_reacted: userId ? message.money_reacted_by?.includes(userId) || false : false
     }))
 
     return NextResponse.json({
@@ -214,8 +232,11 @@ async function checkAlphaChatAccess(ownerId: string, userId: string, supabaseCli
     .eq('subscriber_id', userId)
     .eq('status', 'active')
     .gt('expires_at', new Date().toISOString())
-    .single()
+    .maybeSingle() // Use maybeSingle() instead of single() to handle no results gracefully
   
   console.log('Alpha chat access query result:', { data, error })
+  
+  // Return true if we have data and no error, false otherwise
+  // maybeSingle() returns null for data when no record is found, which is not an error
   return !error && !!data
 }

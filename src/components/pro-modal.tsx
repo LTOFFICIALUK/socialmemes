@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Crown, Check, Zap, Star, X, Settings } from 'lucide-react'
+import { Crown, Check, Zap, Star, X, Settings, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
 import { AlphaChatSettings } from '@/components/alpha-chat-settings'
+import { useToast, ToastContainer } from '@/components/ui/toast'
 
 interface ProModalProps {
   isOpen: boolean
@@ -62,11 +64,14 @@ const proFeatures = [
 ]
 
 export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
-  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string; pro?: boolean; alpha_chat_enabled?: boolean } | null>(null)
+  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string; pro?: boolean; alpha_chat_enabled?: boolean; payout_wallet_address?: string } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubscribing, setIsSubscribing] = useState(false)
   const [showAlphaSettings, setShowAlphaSettings] = useState(false)
+  const [payoutWalletAddress, setPayoutWalletAddress] = useState('')
+  const [isSavingWallet, setIsSavingWallet] = useState(false)
   const router = useRouter()
+  const { toasts, success, error, removeToast } = useToast()
 
   useEffect(() => {
     if (isOpen) {
@@ -86,6 +91,7 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
           .single()
         
         setCurrentUser({ ...user, ...profile })
+        setPayoutWalletAddress(profile?.payout_wallet_address || '')
       }
     } catch (error) {
       console.error('Error fetching user:', error)
@@ -122,12 +128,45 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
       // Success - refresh user data and close modal
       await getCurrentUser()
       onClose()
-      alert('Pro subscription activated successfully!')
+      success('Pro subscription activated successfully!')
     } catch (error) {
       console.error('Error subscribing to Pro:', error)
-      alert('Failed to process subscription. Please try again.')
+      error('Failed to process subscription', 'Please try again.')
     } finally {
       setIsSubscribing(false)
+    }
+  }
+
+  const handleSaveWalletAddress = async () => {
+    try {
+      setIsSavingWallet(true)
+      
+      if (!currentUser) {
+        throw new Error('User not authenticated')
+      }
+
+      // Basic validation for Solana wallet address
+      if (payoutWalletAddress && payoutWalletAddress.length < 32) {
+        throw new Error('Please enter a valid Solana wallet address')
+      }
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({ payout_wallet_address: payoutWalletAddress || null })
+        .eq('id', currentUser.id)
+
+      if (error) {
+        throw new Error(error.message)
+      }
+
+      // Update local state
+      setCurrentUser(prev => prev ? { ...prev, payout_wallet_address: payoutWalletAddress } : null)
+      success('Payout wallet address saved successfully!')
+    } catch (err) {
+      console.error('Error saving wallet address:', err)
+      error('Failed to save wallet address', err instanceof Error ? err.message : 'Please try again.')
+    } finally {
+      setIsSavingWallet(false)
     }
   }
 
@@ -165,21 +204,59 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
           <div className="p-6">
             {/* Pro Status Check */}
             {currentUser.pro && (
-              <div className="mb-6 p-4 bg-green-500/20 border border-green-500/30 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Crown className="h-5 w-5 text-green-500" />
-                    <span className="text-green-500 font-medium">You&apos;re already a Pro member!</span>
+              <div className="mb-6 space-y-4">
+                <div className="p-4 bg-green-500/20 border border-green-500/30 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Crown className="h-5 w-5 text-green-500" />
+                      <span className="text-green-500 font-medium">You&apos;re already a Pro member!</span>
+                    </div>
+                    <Button
+                      onClick={() => setShowAlphaSettings(true)}
+                      variant="outline"
+                      size="sm"
+                      className="bg-black border-0 text-white hover:bg-gray-800"
+                    >
+                      <Settings className="h-4 w-4 mr-1" />
+                      Alpha Chat Settings
+                    </Button>
                   </div>
-                  <Button
-                    onClick={() => setShowAlphaSettings(true)}
-                    variant="outline"
-                    size="sm"
-                    className="bg-black border-0 text-white hover:bg-gray-800"
-                  >
-                    <Settings className="h-4 w-4 mr-1" />
-                    Alpha Chat Settings
-                  </Button>
+                </div>
+
+                {/* Payout Wallet Address */}
+                <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <Wallet className="h-5 w-5 text-blue-400" />
+                    <div>
+                      <h4 className="font-medium text-white">Payout Wallet Address</h4>
+                      <p className="text-sm text-gray-400">
+                        Set your Solana wallet address to receive subscription payments
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <Input
+                      value={payoutWalletAddress}
+                      onChange={(e) => setPayoutWalletAddress(e.target.value)}
+                      placeholder="Enter your Solana wallet address (e.g., 9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM)"
+                      className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+                    />
+                    <Button
+                      onClick={handleSaveWalletAddress}
+                      disabled={isSavingWallet}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      {isSavingWallet ? (
+                        <div className="flex items-center space-x-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          <span>Saving...</span>
+                        </div>
+                      ) : (
+                        'Save Wallet Address'
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
@@ -301,6 +378,8 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
           </div>
         </div>
       )}
+      
+      <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   )
 }

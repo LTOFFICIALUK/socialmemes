@@ -1,13 +1,16 @@
 import { supabase } from './supabase'
 import { Database } from './supabase'
 
-export type Profile = Database['public']['Tables']['profiles']['Row']
+export type Profile = Database['public']['Tables']['profiles']['Row'] & {
+  payout_wallet_address?: string | null
+}
 export type Post = Database['public']['Tables']['posts']['Row'] & {
   profiles: Profile
   likes_count: number
   replies_count: number
   is_liked: boolean
   impression_count: number
+  is_alpha_chat_message?: boolean // Optional flag to identify alpha chat messages
 }
 export type Reply = {
   id: string
@@ -1134,7 +1137,7 @@ export const hasActiveAlphaSubscription = async (ownerId: string, subscriberId: 
     .eq('subscriber_id', subscriberId)
     .eq('status', 'active')
     .gt('expires_at', new Date().toISOString())
-    .single()
+    .maybeSingle() // Use maybeSingle() to handle no subscription gracefully
   
   return !error && !!data
 }
@@ -1148,7 +1151,7 @@ export const getAlphaSubscriptionStatus = async (ownerId: string, subscriberId: 
     .eq('subscriber_id', subscriberId)
     .order('created_at', { ascending: false })
     .limit(1)
-    .single()
+    .maybeSingle() // Use maybeSingle() to handle no subscription gracefully
   
   if (error || !data) return 'none'
   return data.status
@@ -1160,32 +1163,24 @@ export const getAlphaChatMessages = async (ownerId: string, userId?: string): Pr
     .from('alpha_chat_messages')
     .select(`
       *,
-      author:profiles!alpha_chat_messages_author_id_fkey (*),
-      likes_count:likes(count)
+      author:profiles!alpha_chat_messages_author_id_fkey (*)
     `)
     .eq('alpha_chat_owner_id', ownerId)
     .order('created_at', { ascending: false })
   
   if (error) throw error
   
-  // Get user likes if userId is provided
-  let userLikes: string[] = []
-  if (userId && data && data.length > 0) {
-    const messageIds = data.map((message: { id: string }) => message.id)
-    const { data: likesData } = await supabase
-      .from('likes')
-      .select('post_id')
-      .eq('user_id', userId)
-      .in('post_id', messageIds)
-    
-    userLikes = likesData?.map(like => like.post_id) || []
-  }
-  
-  return (data || []).map((message: { id: string; likes_count: { count: number }[] | null; author: Record<string, unknown>; [key: string]: unknown }) => ({
+  return (data || []).map((message: { 
+    id: string; 
+    likes_count: number; 
+    liked_by: string[]; 
+    author: Record<string, unknown>; 
+    [key: string]: unknown 
+  }) => ({
     ...message,
     profiles: message.author, // Map author to profiles for consistency
-    likes_count: message.likes_count?.[0]?.count || 0,
-    is_liked: userId ? userLikes.includes(message.id) : false
+    likes_count: message.likes_count || 0,
+    is_liked: userId ? message.liked_by?.includes(userId) || false : false
   })) as unknown as AlphaChatMessage[]
 }
 
@@ -1242,4 +1237,90 @@ export const isProUser = async (userId: string): Promise<boolean> => {
   
   if (error) return false
   return data?.pro || false
+}
+
+// Get alpha chat owner's payout wallet address
+export const getAlphaChatPayoutWallet = async (ownerId: string): Promise<string | null> => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('payout_wallet_address')
+    .eq('id', ownerId)
+    .single()
+  
+  if (error) return null
+  return data?.payout_wallet_address || null
+}
+
+// Check if alpha chat owner has payout wallet configured
+export const hasAlphaChatPayoutWallet = async (ownerId: string): Promise<boolean> => {
+  const walletAddress = await getAlphaChatPayoutWallet(ownerId)
+  return walletAddress !== null && walletAddress.length > 0
+}
+
+// Alpha chat message likes functions
+export const likeAlphaChatMessage = async (userId: string, messageId: string) => {
+  const { data, error } = await supabase
+    .rpc('like_alpha_chat_message', {
+      p_user_id: userId,
+      p_message_id: messageId
+    })
+  
+  if (error) throw error
+  return { likes_count: data }
+}
+
+export const unlikeAlphaChatMessage = async (userId: string, messageId: string) => {
+  const { data, error } = await supabase
+    .rpc('unlike_alpha_chat_message', {
+      p_user_id: userId,
+      p_message_id: messageId
+    })
+  
+  if (error) throw error
+  return { likes_count: data }
+}
+
+// Alpha chat reaction functions
+export const reactFireAlphaChatMessage = async (userId: string, messageId: string) => {
+  const { data, error } = await supabase
+    .rpc('react_fire_alpha_chat_message', {
+      p_user_id: userId,
+      p_message_id: messageId
+    })
+  
+  if (error) throw error
+  return { fire_count: data }
+}
+
+export const reactThumbsDownAlphaChatMessage = async (userId: string, messageId: string) => {
+  const { data, error } = await supabase
+    .rpc('react_thumbs_down_alpha_chat_message', {
+      p_user_id: userId,
+      p_message_id: messageId
+    })
+  
+  if (error) throw error
+  return { thumbs_down_count: data }
+}
+
+export const reactDiamondAlphaChatMessage = async (userId: string, messageId: string) => {
+  const { data, error } = await supabase
+    .rpc('react_diamond_alpha_chat_message', {
+      p_user_id: userId,
+      p_message_id: messageId
+    })
+  
+  if (error) throw error
+  return { diamond_count: data }
+}
+
+export const reactMoneyAlphaChatMessage = async (userId: string, messageId: string) => {
+  const { data, error } = await supabase
+    .rpc('react_money_alpha_chat_message', {
+      p_user_id: userId,
+      p_message_id: messageId
+    })
+  
+  if (error) throw error
+  return { money_count: data }
 }

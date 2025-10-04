@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
 import { PostCard } from './post-card'
 import { Post } from '@/lib/database'
-import { likePost, unlikePost } from '@/lib/database'
+import { likePost, unlikePost, likeAlphaChatMessage, unlikeAlphaChatMessage } from '@/lib/database'
 
 interface FeedProps {
   posts: Post[]
@@ -14,15 +14,24 @@ interface FeedProps {
   isLoading?: boolean
   onDeletePost?: (postId: string) => void
   onPromotePost?: (postId: string) => void
+  onAlphaChatMessageLiked?: () => void // Callback to refresh alpha chat messages
 }
 
-export const Feed = ({ posts, currentUserId, onLoadMore, hasMore, isLoading, onDeletePost, onPromotePost }: FeedProps) => {
+export const Feed = ({ posts, currentUserId, onLoadMore, hasMore, isLoading, onDeletePost, onPromotePost, onAlphaChatMessageLiked }: FeedProps) => {
 
   const handleLike = async (postId: string) => {
     if (!currentUserId) return
 
     try {
-      await likePost(currentUserId, postId)
+      // Find the post to check if it's an alpha chat message
+      const post = posts.find(p => p.id === postId)
+      
+      if (post?.is_alpha_chat_message) {
+        await likeAlphaChatMessage(currentUserId, postId)
+        // Don't refresh the page - the UI is updated optimistically by PostCard
+      } else {
+        await likePost(currentUserId, postId)
+      }
     } catch (error) {
       console.error('Error liking post:', error)
     }
@@ -32,7 +41,14 @@ export const Feed = ({ posts, currentUserId, onLoadMore, hasMore, isLoading, onD
     if (!currentUserId) return
 
     try {
-      await unlikePost(currentUserId, postId)
+      // Find the post to check if it's an alpha chat message
+      const post = posts.find(p => p.id === postId)
+      if (post?.is_alpha_chat_message) {
+        await unlikeAlphaChatMessage(currentUserId, postId)
+        // Don't refresh the page - the UI is updated optimistically by PostCard
+      } else {
+        await unlikePost(currentUserId, postId)
+      }
     } catch (error) {
       console.error('Error unliking post:', error)
     }
