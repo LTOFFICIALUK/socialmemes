@@ -10,6 +10,8 @@ import { TrendingTokensSectionWithData } from '@/components/trending-tokens-sect
 import { FeaturedTokens } from '@/components/featured-tokens'
 import { NotificationItem } from '@/components/notification-item'
 import { MobileTrendingModal } from '@/components/mobile-trending-modal'
+import { ProModal } from '@/components/pro-modal'
+import { FeaturedTokenModal } from '@/components/featured-token-modal'
 import { Button } from '@/components/ui/button'
 import { ToastContainer, useToast } from '@/components/ui/toast'
 import { getNotifications, markNotificationAsRead, deleteNotification, markAllNotificationsAsRead } from '@/lib/database'
@@ -27,6 +29,8 @@ export function NotificationsClient({ trendingTokens, tokenImages }: Notificatio
   const [isLoading, setIsLoading] = useState(true)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [showTrendingModal, setShowTrendingModal] = useState(false)
+  const [showProModal, setShowProModal] = useState(false)
+  const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
   const router = useRouter()
   const { toasts, removeToast, success, error: showError } = useToast()
 
@@ -182,7 +186,8 @@ export function NotificationsClient({ trendingTokens, tokenImages }: Notificatio
           <Navigation 
             currentUser={currentUser} 
             onSignOut={handleSignOut}
-            onPromoteClick={() => {}}
+            onPromoteClick={() => setShowFeaturedTokenModal(true)}
+            onProClick={() => setShowProModal(true)}
           />
         </div>
         
@@ -214,8 +219,9 @@ export function NotificationsClient({ trendingTokens, tokenImages }: Notificatio
                 <MobileMenuButton 
                   currentUser={currentUser} 
                   onSignOut={handleSignOut}
-                  onPromoteClick={() => {}}
+                  onPromoteClick={() => setShowFeaturedTokenModal(true)}
                   onTrendingClick={() => setShowTrendingModal(true)}
+                  onProClick={() => setShowProModal(true)}
                 />
               </div>
             </div>
@@ -268,6 +274,19 @@ export function NotificationsClient({ trendingTokens, tokenImages }: Notificatio
         onClose={() => setShowTrendingModal(false)}
       />
       
+      {/* Pro Modal */}
+      <ProModal
+        isOpen={showProModal}
+        onClose={() => setShowProModal(false)}
+      />
+      
+      {/* Featured Token Modal */}
+      <FeaturedTokenModal
+        isOpen={showFeaturedTokenModal}
+        onClose={() => setShowFeaturedTokenModal(false)}
+        currentUser={currentUser}
+      />
+      
       {/* Toast Notifications */}
       <ToastContainer toasts={toasts} onClose={removeToast} />
       
@@ -275,7 +294,7 @@ export function NotificationsClient({ trendingTokens, tokenImages }: Notificatio
       <MobileNavigation 
         currentUser={currentUser} 
         onSignOut={handleSignOut}
-        onPromoteClick={() => {}}
+        onPromoteClick={() => setShowFeaturedTokenModal(true)}
       />
     </div>
   )

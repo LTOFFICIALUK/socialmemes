@@ -8,6 +8,10 @@ import { Badge } from '@/components/ui/badge'
 import { supabase } from '@/lib/supabase'
 import { Navigation } from '@/components/navigation'
 import { MobileNavigation } from '@/components/mobile-navigation'
+import { MobileMenuButton } from '@/components/mobile-menu-button'
+import { ProModal } from '@/components/pro-modal'
+import { FeaturedTokenModal } from '@/components/featured-token-modal'
+import { MobileTrendingModal } from '@/components/mobile-trending-modal'
 
 interface Profile {
   id: string
@@ -37,6 +41,9 @@ export const ReferralsClient = () => {
   const [copied, setCopied] = useState(false)
   const [copiedLink, setCopiedLink] = useState(false)
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string } | undefined>(undefined)
+  const [showProModal, setShowProModal] = useState(false)
+  const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
+  const [showTrendingModal, setShowTrendingModal] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -160,6 +167,8 @@ export const ReferralsClient = () => {
             <Navigation 
               currentUser={currentUser} 
               onSignOut={handleSignOut}
+              onPromoteClick={() => setShowFeaturedTokenModal(true)}
+              onProClick={() => setShowProModal(true)}
             />
           </div>
           
@@ -189,6 +198,8 @@ export const ReferralsClient = () => {
             <Navigation 
               currentUser={currentUser} 
               onSignOut={handleSignOut}
+              onPromoteClick={() => setShowFeaturedTokenModal(true)}
+              onProClick={() => setShowProModal(true)}
             />
           </div>
           
@@ -226,6 +237,16 @@ export const ReferralsClient = () => {
             <div>
               <h1 className="text-xl font-bold text-white">Referral Analytics</h1>
               <p className="text-sm text-gray-400">Track your referral performance and earnings</p>
+            </div>
+            {/* Mobile Menu Button */}
+            <div className="lg:hidden">
+              <MobileMenuButton 
+                currentUser={currentUser} 
+                onSignOut={handleSignOut}
+                onPromoteClick={() => setShowFeaturedTokenModal(true)}
+                onTrendingClick={() => setShowTrendingModal(true)}
+                onProClick={() => setShowProModal(true)}
+              />
             </div>
           </div>
           
@@ -377,8 +398,31 @@ export const ReferralsClient = () => {
         </div>
       </div>
       
+      {/* Pro Modal */}
+      <ProModal
+        isOpen={showProModal}
+        onClose={() => setShowProModal(false)}
+      />
+      
+      {/* Featured Token Modal */}
+      <FeaturedTokenModal
+        isOpen={showFeaturedTokenModal}
+        onClose={() => setShowFeaturedTokenModal(false)}
+        currentUser={currentUser}
+      />
+      
+      {/* Mobile Trending Modal */}
+      <MobileTrendingModal
+        isOpen={showTrendingModal}
+        onClose={() => setShowTrendingModal(false)}
+      />
+      
       {/* Mobile Navigation */}
-      <MobileNavigation currentUser={currentUser} onSignOut={handleSignOut} />
+      <MobileNavigation 
+        currentUser={currentUser} 
+        onSignOut={handleSignOut}
+        onPromoteClick={() => setShowFeaturedTokenModal(true)}
+      />
     </div>
   )
 }

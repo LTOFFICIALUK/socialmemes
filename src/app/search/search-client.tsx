@@ -151,6 +151,7 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
             currentUser={currentUser} 
             onSignOut={handleSignOut}
             onPromoteClick={() => setShowFeaturedTokenModal(true)}
+            onProClick={() => setShowProModal(true)}
           />
         </div>
         

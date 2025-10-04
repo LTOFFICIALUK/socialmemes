@@ -11,6 +11,8 @@ import { FeaturedTokens } from '@/components/featured-tokens'
 import { SearchBar } from '@/components/search-bar'
 import { ReplyDetail } from '@/components/reply-detail'
 import { PromotionModal } from '@/components/promotion-modal'
+import { ProModal } from '@/components/pro-modal'
+import { FeaturedTokenModal } from '@/components/featured-token-modal'
 import { MobileTrendingModal } from '@/components/mobile-trending-modal'
 import { ToastContainer, useToast } from '@/components/ui/toast'
 import { supabase } from '@/lib/supabase'
@@ -26,6 +28,8 @@ export function ReplyClient({ trendingTokens, tokenImages }: ReplyClientProps) {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [showPromotionModal, setShowPromotionModal] = useState(false)
   const [showTrendingModal, setShowTrendingModal] = useState(false)
+  const [showProModal, setShowProModal] = useState(false)
+  const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
   const router = useRouter()
   const params = useParams()
   const postId = params.id as string
@@ -124,7 +128,8 @@ export function ReplyClient({ trendingTokens, tokenImages }: ReplyClientProps) {
           <Navigation 
             currentUser={currentUser} 
             onSignOut={handleSignOut}
-            onPromoteClick={() => {}}
+            onPromoteClick={() => setShowFeaturedTokenModal(true)}
+            onProClick={() => setShowProModal(true)}
           />
         </div>
         
@@ -147,8 +152,9 @@ export function ReplyClient({ trendingTokens, tokenImages }: ReplyClientProps) {
               <MobileMenuButton 
                 currentUser={currentUser} 
                 onSignOut={handleSignOut}
-                onPromoteClick={() => {}}
+                onPromoteClick={() => setShowFeaturedTokenModal(true)}
                 onTrendingClick={() => setShowTrendingModal(true)}
+                onProClick={() => setShowProModal(true)}
               />
             </div>
           </div>
@@ -188,6 +194,19 @@ export function ReplyClient({ trendingTokens, tokenImages }: ReplyClientProps) {
         onPromote={handlePromoteConfirm}
       />
       
+      {/* Pro Modal */}
+      <ProModal
+        isOpen={showProModal}
+        onClose={() => setShowProModal(false)}
+      />
+      
+      {/* Featured Token Modal */}
+      <FeaturedTokenModal
+        isOpen={showFeaturedTokenModal}
+        onClose={() => setShowFeaturedTokenModal(false)}
+        currentUser={currentUser}
+      />
+      
       {/* Mobile Trending Modal */}
       <MobileTrendingModal
         isOpen={showTrendingModal}
@@ -201,7 +220,7 @@ export function ReplyClient({ trendingTokens, tokenImages }: ReplyClientProps) {
       <MobileNavigation 
         currentUser={currentUser} 
         onSignOut={handleSignOut}
-        onPromoteClick={() => {}}
+        onPromoteClick={() => setShowFeaturedTokenModal(true)}
       />
     </div>
   )

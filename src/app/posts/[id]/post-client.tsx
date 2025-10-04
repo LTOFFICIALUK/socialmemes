@@ -12,6 +12,7 @@ import { SearchBar } from '@/components/search-bar'
 import { PostDetail } from '@/components/post-detail'
 import { PromotionModal } from '@/components/promotion-modal'
 import { FeaturedTokenModal } from '@/components/featured-token-modal'
+import { ProModal } from '@/components/pro-modal'
 import { MobileTrendingModal } from '@/components/mobile-trending-modal'
 import { ToastContainer, useToast } from '@/components/ui/toast'
 import { supabase } from '@/lib/supabase'
@@ -28,6 +29,7 @@ export function PostClient({ trendingTokens, tokenImages }: PostClientProps) {
   const [showPromotionModal, setShowPromotionModal] = useState(false)
   const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
   const [showTrendingModal, setShowTrendingModal] = useState(false)
+  const [showProModal, setShowProModal] = useState(false)
   const [featuredTokensKey, setFeaturedTokensKey] = useState(0)
   const router = useRouter()
   const params = useParams()
@@ -127,6 +129,7 @@ export function PostClient({ trendingTokens, tokenImages }: PostClientProps) {
             currentUser={currentUser} 
             onSignOut={handleSignOut}
             onPromoteClick={() => setShowFeaturedTokenModal(true)}
+            onProClick={() => setShowProModal(true)}
           />
         </div>
         
@@ -151,6 +154,7 @@ export function PostClient({ trendingTokens, tokenImages }: PostClientProps) {
                 onSignOut={handleSignOut}
                 onPromoteClick={() => setShowFeaturedTokenModal(true)}
                 onTrendingClick={() => setShowTrendingModal(true)}
+                onProClick={() => setShowProModal(true)}
               />
             </div>
           </div>
@@ -197,6 +201,12 @@ export function PostClient({ trendingTokens, tokenImages }: PostClientProps) {
           setFeaturedTokensKey(prev => prev + 1)
           success('Featured token promoted successfully!')
         }}
+      />
+      
+      {/* Pro Modal */}
+      <ProModal
+        isOpen={showProModal}
+        onClose={() => setShowProModal(false)}
       />
       
       {/* Mobile Trending Modal */}

@@ -114,6 +114,7 @@ export function ExploreClient({ trendingTokens, tokenImages }: ExploreClientProp
             currentUser={currentUser} 
             onSignOut={handleSignOut}
             onPromoteClick={() => setShowFeaturedTokenModal(true)}
+            onProClick={() => setShowProModal(true)}
           />
         </div>
         

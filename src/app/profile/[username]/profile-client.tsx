@@ -302,6 +302,7 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
             currentUser={currentUser} 
             onSignOut={handleSignOut}
             onPromoteClick={() => setShowFeaturedTokenModal(true)}
+            onProClick={() => setShowProModal(true)}
           />
         </div>
         
