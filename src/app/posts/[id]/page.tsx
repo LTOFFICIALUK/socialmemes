@@ -7,7 +7,7 @@ interface PostPageProps {
   }
 }
 
-export default async function PostPage({ params }: PostPageProps) {
+export default async function PostPage({ params: _params }: PostPageProps) {
   // Fetch trending tokens data server-side
   const trendingData = await getTrendingTokensWithImages(5, '24 hours')
 

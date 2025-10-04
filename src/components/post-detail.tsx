@@ -438,9 +438,6 @@ export const PostDetail = ({ postId, currentUser, onPromote }: PostDetailProps) 
               key={reply.id}
               reply={reply}
               currentUser={currentUser}
-              onPromote={onPromote}
-              depth={0}
-              maxDepth={10}
             />
           ))
         )}

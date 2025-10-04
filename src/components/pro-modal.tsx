@@ -129,8 +129,8 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
       await getCurrentUser()
       onClose()
       success('Pro subscription activated successfully!')
-    } catch (error) {
-      console.error('Error subscribing to Pro:', error)
+    } catch (err) {
+      console.error('Error subscribing to Pro:', err)
       error('Failed to process subscription', 'Please try again.')
     } finally {
       setIsSubscribing(false)

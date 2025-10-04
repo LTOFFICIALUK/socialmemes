@@ -101,7 +101,7 @@ export function NotificationsClient({ trendingTokens, tokenImages }: Notificatio
     if (currentUser?.id) {
       loadNotifications()
     }
-  }, [currentUser?.id])
+  }, [currentUser?.id, loadNotifications])
 
   const handleMarkAsRead = async (notificationId: string) => {
     if (!currentUser?.id) return

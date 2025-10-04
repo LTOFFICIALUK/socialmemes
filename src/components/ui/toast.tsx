@@ -35,6 +35,13 @@ export const Toast = ({ id, type, title, message, duration = 4000, onClose }: To
   
   const Icon = toastIcons[type]
 
+  const handleClose = useCallback(() => {
+    setIsLeaving(true)
+    setTimeout(() => {
+      onClose(id)
+    }, 300) // Match animation duration
+  }, [onClose, id])
+
   useEffect(() => {
     // Animate in
     const timer = setTimeout(() => setIsVisible(true), 100)
@@ -49,13 +56,6 @@ export const Toast = ({ id, type, title, message, duration = 4000, onClose }: To
       clearTimeout(autoCloseTimer)
     }
   }, [duration, handleClose])
-
-  const handleClose = useCallback(() => {
-    setIsLeaving(true)
-    setTimeout(() => {
-      onClose(id)
-    }, 300) // Match animation duration
-  }, [onClose, id])
 
   return (
     <div

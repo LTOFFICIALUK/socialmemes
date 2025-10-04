@@ -103,7 +103,7 @@ export const TokenModal = ({ isOpen, onClose, onTokenSelect, currentToken, onTok
         return commonLogos[symbolLower] || undefined
       }
       
-      const logoUrl = getTokenLogo(baseToken.symbol, baseToken.address)
+      const logoUrl = getTokenLogo(baseToken.symbol)
       
       const realTokenInfo: TokenInfo = {
         symbol: baseToken.symbol || 'UNKNOWN',
