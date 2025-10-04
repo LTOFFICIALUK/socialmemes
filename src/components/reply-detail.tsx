@@ -26,7 +26,7 @@ export const ReplyDetail = ({ postId, replyId, currentUser, onPromote }: ReplyDe
   const [reply, setReply] = useState<Reply | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isLiked, setIsLiked] = useState(false)
-  const [likesCount, setLikesCount] = useState(0)
+  const [_likesCount, setLikesCount] = useState(0)
   const [showDeleteMenu, setShowDeleteMenu] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -119,7 +119,7 @@ export const ReplyDetail = ({ postId, replyId, currentUser, onPromote }: ReplyDe
     }
   }, [postId, replyId, currentUser.id, loadData, loadThreadedReplies])
 
-  const _handleLike = async () => {
+  const handleLike = async () => {
     if (!reply) return
 
     try {

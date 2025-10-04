@@ -90,16 +90,6 @@ export const Navigation = ({ currentUser, onSignOut, onPromoteClick, onProClick 
     }
   }, [currentUser?.id])
 
-  // Listen for notification read events
-  useEffect(() => {
-    const handleNotificationRead = () => {
-      refreshUnreadCount()
-    }
-
-    window.addEventListener('notificationRead', handleNotificationRead)
-    return () => window.removeEventListener('notificationRead', handleNotificationRead)
-  }, [refreshUnreadCount])
-
   const refreshUnreadCount = useCallback(async () => {
     if (!currentUser?.id) return
     
@@ -110,6 +100,16 @@ export const Navigation = ({ currentUser, onSignOut, onPromoteClick, onProClick 
       console.error('Error fetching unread notification count:', error)
     }
   }, [currentUser?.id])
+
+  // Listen for notification read events
+  useEffect(() => {
+    const handleNotificationRead = () => {
+      refreshUnreadCount()
+    }
+
+    window.addEventListener('notificationRead', handleNotificationRead)
+    return () => window.removeEventListener('notificationRead', handleNotificationRead)
+  }, [refreshUnreadCount])
 
   const handleCreatePost = async (data: {
     content?: string

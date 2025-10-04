@@ -80,16 +80,6 @@ export const MobileNavigation = ({ currentUser }: MobileNavigationProps) => {
     }
   }, [currentUser?.id])
 
-  // Listen for notification read events
-  useEffect(() => {
-    const handleNotificationRead = () => {
-      refreshUnreadCount()
-    }
-
-    window.addEventListener('notificationRead', handleNotificationRead)
-    return () => window.removeEventListener('notificationRead', handleNotificationRead)
-  }, [refreshUnreadCount])
-
   const refreshUnreadCount = useCallback(async () => {
     if (!currentUser?.id) return
     
@@ -100,6 +90,16 @@ export const MobileNavigation = ({ currentUser }: MobileNavigationProps) => {
       console.error('Error fetching unread notification count:', error)
     }
   }, [currentUser?.id])
+
+  // Listen for notification read events
+  useEffect(() => {
+    const handleNotificationRead = () => {
+      refreshUnreadCount()
+    }
+
+    window.addEventListener('notificationRead', handleNotificationRead)
+    return () => window.removeEventListener('notificationRead', handleNotificationRead)
+  }, [refreshUnreadCount])
 
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 z-50">

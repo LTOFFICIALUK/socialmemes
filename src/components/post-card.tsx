@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog'
-import { Post, AlphaChatMessage } from '@/lib/database'
+import { Post } from '@/lib/database'
 import { formatDate, formatNumber } from '@/lib/utils'
 import { useImpressionTracking } from '@/hooks/useImpressionTracking'
 
@@ -31,12 +31,12 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
   const menuRef = useRef<HTMLDivElement>(null)
   
   // Reaction states for alpha chat messages
-  const [fireCount, setFireCount] = useState((post as AlphaChatMessage).fire_count || 0)
-  const [isFireReacted, setIsFireReacted] = useState((post as AlphaChatMessage).is_fire_reacted || false)
-  const [diamondCount, setDiamondCount] = useState((post as AlphaChatMessage).diamond_count || 0)
-  const [isDiamondReacted, setIsDiamondReacted] = useState((post as AlphaChatMessage).is_diamond_reacted || false)
-  const [moneyCount, setMoneyCount] = useState((post as AlphaChatMessage).money_count || 0)
-  const [isMoneyReacted, setIsMoneyReacted] = useState((post as AlphaChatMessage).is_money_reacted || false)
+  const [fireCount, setFireCount] = useState((post as Post & { fire_count?: number }).fire_count || 0)
+  const [isFireReacted, setIsFireReacted] = useState((post as Post & { is_fire_reacted?: boolean }).is_fire_reacted || false)
+  const [diamondCount, setDiamondCount] = useState((post as Post & { diamond_count?: number }).diamond_count || 0)
+  const [isDiamondReacted, setIsDiamondReacted] = useState((post as Post & { is_diamond_reacted?: boolean }).is_diamond_reacted || false)
+  const [moneyCount, setMoneyCount] = useState((post as Post & { money_count?: number }).money_count || 0)
+  const [isMoneyReacted, setIsMoneyReacted] = useState((post as Post & { is_money_reacted?: boolean }).is_money_reacted || false)
   
   // Check if promotion is currently active
   const isPromotionActive = post.is_promoted && post.promotion_end && new Date(post.promotion_end) > new Date()
