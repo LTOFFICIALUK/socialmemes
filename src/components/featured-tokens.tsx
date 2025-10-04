@@ -164,7 +164,7 @@ export const FeaturedTokens = ({ limit = 6 }: FeaturedTokensProps) => {
               height: '100%'
             }}
           >
-            {featuredTokens.map((token, _index) => {
+            {featuredTokens.map((token) => {
               return (
                 <div
                   key={token.id}

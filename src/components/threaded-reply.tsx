@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Heart, MessageCircle, Share, MoreHorizontal, Trash2, Coins } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -13,13 +13,10 @@ import { likeReply, unlikeReply, deletePost, getRepliesToReply } from '@/lib/dat
 interface ThreadedReplyProps {
   reply: Reply
   currentUser: { id: string; username: string; avatar_url?: string }
-  onPromote?: (postId: string) => void
-  depth?: number
-  maxDepth?: number
   isInConversationThread?: boolean // New prop to control styling
 }
 
-export const ThreadedReply = ({ reply, currentUser, onPromote: _onPromote, depth: _depth = 0, maxDepth: _maxDepth = 10, isInConversationThread = false }: ThreadedReplyProps) => {
+export const ThreadedReply = ({ reply, currentUser, isInConversationThread = false }: ThreadedReplyProps) => {
   const router = useRouter()
   const [isLiked, setIsLiked] = useState(reply.is_liked)
   const [likesCount, setLikesCount] = useState(reply.likes_count)
@@ -30,7 +27,7 @@ export const ThreadedReply = ({ reply, currentUser, onPromote: _onPromote, depth
   const [isLoadingReplies, setIsLoadingReplies] = useState(true) // Start as loading
   const menuRef = useRef<HTMLDivElement>(null)
 
-  const loadThreadedReplies = async () => {
+  const loadThreadedReplies = useCallback(async () => {
     try {
       setIsLoadingReplies(true)
       const replies = await getRepliesToReply(reply.id, currentUser.id)
@@ -43,12 +40,12 @@ export const ThreadedReply = ({ reply, currentUser, onPromote: _onPromote, depth
     } finally {
       setIsLoadingReplies(false)
     }
-  }
+  }, [reply.id, currentUser.id])
 
   // Load reply count on mount
   useEffect(() => {
     loadThreadedReplies()
-  }, [reply.id, currentUser.id])
+  }, [loadThreadedReplies])
 
   const handleLike = async () => {
     try {

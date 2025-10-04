@@ -37,6 +37,12 @@ export type AlphaChatMessage = Database['public']['Tables']['alpha_chat_messages
   profiles: Profile
   likes_count: number
   is_liked: boolean
+  fire_count: number
+  is_fire_reacted: boolean
+  diamond_count: number
+  is_diamond_reacted: boolean
+  money_count: number
+  is_money_reacted: boolean
 }
 
 export type Notification = Database['public']['Tables']['notifications']['Row'] & {
@@ -465,7 +471,7 @@ export const getTopFollowers = async (userId: string, limit = 10): Promise<Profi
   return followersWithCounts
     .sort((a, b) => b.followerCount - a.followerCount)
     .slice(0, limit)
-    .map(({ followerCount: _followerCount, ...profile }) => profile)
+    .map(({ followerCount, ...profile }) => profile)
 }
 
 export const getFollowing = async (userId: string): Promise<Profile[]> => {

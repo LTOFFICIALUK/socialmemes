@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, Grid3X3, User, LogOut, Settings, Bell, Search, BookOpen, Plus, TrendingUp, Users, Crown } from 'lucide-react'
@@ -98,9 +98,9 @@ export const Navigation = ({ currentUser, onSignOut, onPromoteClick, onProClick 
 
     window.addEventListener('notificationRead', handleNotificationRead)
     return () => window.removeEventListener('notificationRead', handleNotificationRead)
-  }, [])
+  }, [refreshUnreadCount])
 
-  const refreshUnreadCount = async () => {
+  const refreshUnreadCount = useCallback(async () => {
     if (!currentUser?.id) return
     
     try {
@@ -109,7 +109,7 @@ export const Navigation = ({ currentUser, onSignOut, onPromoteClick, onProClick 
     } catch (error) {
       console.error('Error fetching unread notification count:', error)
     }
-  }
+  }, [currentUser?.id])
 
   const handleCreatePost = async (data: {
     content?: string

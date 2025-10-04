@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Heart, MessageCircle, Share, Coins } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -26,7 +26,7 @@ export const ReplyDetail = ({ postId, replyId, currentUser, onPromote }: ReplyDe
   const [reply, setReply] = useState<Reply | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isLiked, setIsLiked] = useState(false)
-  const [_likesCount, setLikesCount] = useState(0)
+  const [likesCount, setLikesCount] = useState(0)
   const [showDeleteMenu, setShowDeleteMenu] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -37,7 +37,7 @@ export const ReplyDetail = ({ postId, replyId, currentUser, onPromote }: ReplyDe
   const [isLoadingThread, setIsLoadingThread] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setIsLoading(true)
       
@@ -64,9 +64,9 @@ export const ReplyDetail = ({ postId, replyId, currentUser, onPromote }: ReplyDe
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [postId, replyId, currentUser.id])
 
-  const loadThreadedReplies = async (replyId: string) => {
+  const loadThreadedReplies = useCallback(async (replyId: string) => {
     try {
       setIsLoadingThreadedReplies(true)
       const replies = await getRepliesToReply(replyId, currentUser.id)
@@ -76,7 +76,7 @@ export const ReplyDetail = ({ postId, replyId, currentUser, onPromote }: ReplyDe
     } finally {
       setIsLoadingThreadedReplies(false)
     }
-  }
+  }, [currentUser.id])
 
   const buildConversationThreadFromReplies = (targetReply: Reply, allReplies: Reply[]) => {
     try {
@@ -110,21 +110,6 @@ export const ReplyDetail = ({ postId, replyId, currentUser, onPromote }: ReplyDe
     }
   }
 
-  // Legacy function for backward compatibility (now uses the optimized version)
-  const _buildConversationThread = async (targetReply: Reply) => {
-    try {
-      setIsLoadingThread(true)
-      
-      // Load all replies for the post in a single query
-      const allReplies = await getAllRepliesForPost(postId, currentUser.id)
-      
-      // Use the optimized function
-      buildConversationThreadFromReplies(targetReply, allReplies)
-    } catch (error) {
-      console.error('Error building conversation thread:', error)
-      setIsLoadingThread(false)
-    }
-  }
 
   useEffect(() => {
     if (postId && replyId && currentUser.id) {
@@ -132,7 +117,7 @@ export const ReplyDetail = ({ postId, replyId, currentUser, onPromote }: ReplyDe
       loadData()
       loadThreadedReplies(replyId)
     }
-  }, [postId, replyId, currentUser.id])
+  }, [postId, replyId, currentUser.id, loadData, loadThreadedReplies])
 
   const _handleLike = async () => {
     if (!reply) return
@@ -152,25 +137,11 @@ export const ReplyDetail = ({ postId, replyId, currentUser, onPromote }: ReplyDe
     }
   }
 
-  const _handleTokenClick = () => {
-    if (reply?.dex_screener_url) {
-      window.open(reply.dex_screener_url, '_blank', 'noopener,noreferrer')
-    }
-  }
 
   const handleProfileClick = (username: string) => {
     router.push(`/profile/${username}`)
   }
 
-  const _handleDeleteClick = () => {
-    setShowDeleteDialog(true)
-    setShowDeleteMenu(false)
-  }
-
-  const _handlePromoteClick = () => {
-    onPromote?.(postId)
-    setShowDeleteMenu(false)
-  }
 
   const handleDeleteConfirm = async () => {
     if (!reply) return
@@ -188,19 +159,6 @@ export const ReplyDetail = ({ postId, replyId, currentUser, onPromote }: ReplyDe
     }
   }
 
-  const _handleShare = async () => {
-    try {
-      const replyUrl = `${window.location.origin}/posts/${postId}/reply/${replyId}`
-      await navigator.clipboard.writeText(replyUrl)
-      
-      // Reset the icon after 2 seconds
-      setTimeout(() => {
-        // You could add a toast notification here
-      }, 2000)
-    } catch (error) {
-      console.error('Error copying to clipboard:', error)
-    }
-  }
 
   const handleReplySubmit = async (data: {
     content?: string

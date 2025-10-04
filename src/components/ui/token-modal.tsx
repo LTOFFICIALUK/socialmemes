@@ -86,7 +86,7 @@ export const TokenModal = ({ isOpen, onClose, onTokenSelect, currentToken, onTok
       
       // DexScreener doesn't provide logos in token-pairs endpoint
       // Use a fallback logo service for common tokens or generate a placeholder
-      const getTokenLogo = (symbol: string, _address: string) => {
+      const getTokenLogo = (symbol: string) => {
         // Try CoinGecko API for token logos
         const symbolLower = symbol.toLowerCase()
         

@@ -1,6 +1,7 @@
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import Image from 'next/image'
 import { AlphaChatMessage } from '@/lib/database'
 
 interface AlphaChatMessageProps {
@@ -28,9 +29,11 @@ export const AlphaChatMessageComponent = ({ message }: AlphaChatMessageProps) =>
             <p className="text-gray-300 mb-2">{message.content}</p>
           )}
           {message.image_url && (
-            <img
+            <Image
               src={message.image_url}
               alt="Alpha message"
+              width={400}
+              height={300}
               className="rounded-lg max-w-full h-auto"
             />
           )}

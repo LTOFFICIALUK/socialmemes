@@ -277,6 +277,14 @@ export interface Database {
           token_address: string | null
           token_name: string | null
           dex_screener_url: string | null
+          fire_count: number | null
+          thumbs_down_count: number | null
+          diamond_count: number | null
+          money_count: number | null
+          fire_reacted_by: string[] | null
+          thumbs_down_reacted_by: string[] | null
+          diamond_reacted_by: string[] | null
+          money_reacted_by: string[] | null
           created_at: string
           updated_at: string
         }
@@ -290,6 +298,14 @@ export interface Database {
           token_address?: string | null
           token_name?: string | null
           dex_screener_url?: string | null
+          fire_count?: number | null
+          thumbs_down_count?: number | null
+          diamond_count?: number | null
+          money_count?: number | null
+          fire_reacted_by?: string[] | null
+          thumbs_down_reacted_by?: string[] | null
+          diamond_reacted_by?: string[] | null
+          money_reacted_by?: string[] | null
           created_at?: string
           updated_at?: string
         }
@@ -303,6 +319,14 @@ export interface Database {
           token_address?: string | null
           token_name?: string | null
           dex_screener_url?: string | null
+          fire_count?: number | null
+          thumbs_down_count?: number | null
+          diamond_count?: number | null
+          money_count?: number | null
+          fire_reacted_by?: string[] | null
+          thumbs_down_reacted_by?: string[] | null
+          diamond_reacted_by?: string[] | null
+          money_reacted_by?: string[] | null
           created_at?: string
           updated_at?: string
         }

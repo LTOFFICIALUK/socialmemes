@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, Grid3X3, Bell, Search } from 'lucide-react'
@@ -88,9 +88,9 @@ export const MobileNavigation = ({ currentUser }: MobileNavigationProps) => {
 
     window.addEventListener('notificationRead', handleNotificationRead)
     return () => window.removeEventListener('notificationRead', handleNotificationRead)
-  }, [])
+  }, [refreshUnreadCount])
 
-  const refreshUnreadCount = async () => {
+  const refreshUnreadCount = useCallback(async () => {
     if (!currentUser?.id) return
     
     try {
@@ -99,7 +99,7 @@ export const MobileNavigation = ({ currentUser }: MobileNavigationProps) => {
     } catch (error) {
       console.error('Error fetching unread notification count:', error)
     }
-  }
+  }, [currentUser?.id])
 
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 z-50">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 import { Loader2 } from 'lucide-react'
 import { PostCard } from './post-card'
 import { Post } from '@/lib/database'
@@ -14,10 +14,9 @@ interface FeedProps {
   isLoading?: boolean
   onDeletePost?: (postId: string) => void
   onPromotePost?: (postId: string) => void
-  onAlphaChatMessageLiked?: () => void // Callback to refresh alpha chat messages
 }
 
-export const Feed = ({ posts, currentUserId, onLoadMore, hasMore, isLoading, onDeletePost, onPromotePost, onAlphaChatMessageLiked }: FeedProps) => {
+export const Feed = ({ posts, currentUserId, onLoadMore, hasMore, isLoading, onDeletePost, onPromotePost }: FeedProps) => {
 
   const handleLike = async (postId: string) => {
     if (!currentUserId) return
@@ -54,7 +53,7 @@ export const Feed = ({ posts, currentUserId, onLoadMore, hasMore, isLoading, onD
     }
   }
 
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
     if (
       window.innerHeight + document.documentElement.scrollTop >=
       document.documentElement.offsetHeight - 1000 &&
@@ -63,12 +62,12 @@ export const Feed = ({ posts, currentUserId, onLoadMore, hasMore, isLoading, onD
     ) {
       onLoadMore?.()
     }
-  }
+  }, [hasMore, isLoading, onLoadMore])
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [hasMore, isLoading])
+  }, [handleScroll])
 
   if (posts.length === 0 && !isLoading) {
     return (

@@ -40,14 +40,6 @@ export const TrendingTokens = ({ trendingTokens, tokenImages }: TrendingTokensPr
     return '🪙'
   }
 
-  const _getTrendingScore = (score: number): string => {
-    if (score >= 50) return '+500%'
-    if (score >= 30) return '+300%'
-    if (score >= 20) return '+200%'
-    if (score >= 10) return '+100%'
-    if (score >= 5) return '+50%'
-    return '+25%'
-  }
 
   const getRankTextColor = (index: number): string => {
     switch (index) {

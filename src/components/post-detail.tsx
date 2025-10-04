@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Heart, MessageCircle, Share, Check, MoreHorizontal, Trash2, Coins, TrendingUp, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -41,7 +41,7 @@ export const PostDetail = ({ postId, currentUser, onPromote }: PostDetailProps) 
     enabled: !isLoading && !!post
   })
 
-  const loadPost = async () => {
+  const loadPost = useCallback(async () => {
     try {
       setIsLoading(true)
       const postData = await getPostById(postId, currentUser.id)
@@ -54,9 +54,9 @@ export const PostDetail = ({ postId, currentUser, onPromote }: PostDetailProps) 
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [postId, currentUser.id])
 
-  const loadReplies = async () => {
+  const loadReplies = useCallback(async () => {
     try {
       setIsLoadingReplies(true)
       const repliesData = await getRepliesByPostId(postId, currentUser.id)
@@ -66,14 +66,14 @@ export const PostDetail = ({ postId, currentUser, onPromote }: PostDetailProps) 
     } finally {
       setIsLoadingReplies(false)
     }
-  }
+  }, [postId, currentUser.id])
 
   useEffect(() => {
     if (postId && currentUser.id) {
       loadPost()
       loadReplies()
     }
-  }, [postId, currentUser.id])
+  }, [postId, currentUser.id, loadPost, loadReplies])
 
   // Handle scrolling to specific reply when page loads with hash
   useEffect(() => {

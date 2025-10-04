@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Navigation } from '@/components/navigation'
 import { MobileNavigation } from '@/components/mobile-navigation'
@@ -30,7 +30,7 @@ export function NotificationsClient({ trendingTokens, tokenImages }: Notificatio
   const router = useRouter()
   const { toasts, removeToast, success, error: showError } = useToast()
 
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async () => {
     if (!currentUser?.id) return
     
     try {
@@ -43,7 +43,7 @@ export function NotificationsClient({ trendingTokens, tokenImages }: Notificatio
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [currentUser?.id])
 
   useEffect(() => {
     // Get current user and their profile

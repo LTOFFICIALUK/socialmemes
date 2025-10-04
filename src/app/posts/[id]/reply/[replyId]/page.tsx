@@ -8,7 +8,7 @@ interface ReplyPageProps {
   }
 }
 
-export default async function ReplyPage({ params }: ReplyPageProps) {
+export default async function ReplyPage({ params: { id, replyId } }: ReplyPageProps) {
   // Fetch trending tokens data server-side
   const trendingData = await getTrendingTokensWithImages(5, '24 hours')
 

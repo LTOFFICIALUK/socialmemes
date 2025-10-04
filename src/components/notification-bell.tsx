@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Bell, BellDot } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { NotificationModal } from './notification-modal'
@@ -17,7 +17,7 @@ export const NotificationBell = ({ userId, onNotificationRead }: NotificationBel
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchUnreadCount = async () => {
+  const fetchUnreadCount = useCallback(async () => {
     try {
       setIsLoading(true)
       const count = await getUnreadNotificationCount(userId)
@@ -27,13 +27,13 @@ export const NotificationBell = ({ userId, onNotificationRead }: NotificationBel
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [userId])
 
   useEffect(() => {
     if (userId) {
       fetchUnreadCount()
     }
-  }, [userId])
+  }, [userId, fetchUnreadCount])
 
   // Listen for real-time notifications
   useEffect(() => {
@@ -58,7 +58,7 @@ export const NotificationBell = ({ userId, onNotificationRead }: NotificationBel
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [userId])
+  }, [userId, fetchUnreadCount])
 
   const handleBellClick = () => {
     setIsModalOpen(true)

@@ -4,13 +4,12 @@ import { useState, useRef } from 'react'
 import { Search, X } from 'lucide-react'
 
 interface SearchBarProps {
-  onSearch?: (query: string) => void
   placeholder?: string
   value?: string
   onChange?: (value: string) => void
 }
 
-export const SearchBar = ({ onSearch: _onSearch, placeholder = "Search", value, onChange }: SearchBarProps) => {
+export const SearchBar = ({ placeholder = "Search", value, onChange }: SearchBarProps) => {
   const [internalQuery, setInternalQuery] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   

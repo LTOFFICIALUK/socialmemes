@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { CheckCircle, XCircle, AlertCircle, Info, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -48,14 +48,14 @@ export const Toast = ({ id, type, title, message, duration = 4000, onClose }: To
       clearTimeout(timer)
       clearTimeout(autoCloseTimer)
     }
-  }, [duration])
+  }, [duration, handleClose])
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setIsLeaving(true)
     setTimeout(() => {
       onClose(id)
     }, 300) // Match animation duration
-  }
+  }, [onClose, id])
 
   return (
     <div

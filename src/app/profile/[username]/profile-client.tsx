@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
+import Image from 'next/image'
 import { Navigation } from '@/components/navigation'
 import { MobileNavigation } from '@/components/mobile-navigation'
 import { MobileMenuButton } from '@/components/mobile-menu-button'
@@ -14,7 +15,7 @@ import { MobileTrendingModal } from '@/components/mobile-trending-modal'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ToastContainer, useToast } from '@/components/ui/toast'
-import { Post, Profile, TrendingToken, AlphaChatMessage, getProfileByUsername, getPostsByUser, isFollowing, followUser, unfollowUser, getTopFollowers, getFollowing, getFollowerCount, getFollowingCount, getAlphaChatMessages, hasActiveAlphaSubscription } from '@/lib/database'
+import { Post, Profile, TrendingToken, AlphaChatMessage, getProfileByUsername, getPostsByUser, isFollowing, followUser, unfollowUser, getTopFollowers, getFollowing, getFollowerCount, getFollowingCount, hasActiveAlphaSubscription } from '@/lib/database'
 import { supabase } from '@/lib/supabase'
 import { Users, UserPlus, UserMinus, Settings, Crown } from 'lucide-react'
 import { FollowersModal } from '@/components/followers-modal'
@@ -57,7 +58,7 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
   const [showAlphaSubscriptionModal, setShowAlphaSubscriptionModal] = useState(false)
   const { toasts, removeToast, success } = useToast()
 
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     try {
       setIsLoading(true)
       
@@ -127,9 +128,9 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [username])
 
-  const loadAlphaMessages = async () => {
+  const loadAlphaMessages = useCallback(async () => {
     if (!profile || !currentUser) return
     
     try {
@@ -158,7 +159,7 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
     } finally {
       setIsLoadingAlpha(false)
     }
-  }
+  }, [profile, currentUser])
 
   const handleCreateAlphaPost = async (data: {
     content?: string
@@ -231,13 +232,13 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
     if (username) {
       loadProfile()
     }
-  }, [username])
+  }, [username, loadProfile])
 
   useEffect(() => {
     if (activeTab === 'alpha' && profile && currentUser && hasAlphaAccess) {
       loadAlphaMessages()
     }
-  }, [activeTab, profile, currentUser, hasAlphaAccess])
+  }, [activeTab, profile, currentUser, hasAlphaAccess, loadAlphaMessages])
 
   const handleFollow = async () => {
     if (!currentUser || !profile || isFollowingLoading) return
@@ -326,9 +327,11 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
             {/* Profile Banner */}
             {profile.banner_url && (
               <div className="w-full">
-                <img
+                <Image
                   src={profile.banner_url}
                   alt={`${profile.username}'s banner`}
+                  width={800}
+                  height={200}
                   className="w-full h-auto object-contain"
                 />
               </div>

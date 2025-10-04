@@ -85,7 +85,7 @@ export function PostClient({ trendingTokens, tokenImages }: PostClientProps) {
     getUser()
   }, [router])
 
-  const handlePromotePost = (_postId: string) => {
+  const handlePromotePost = () => {
     setShowPromotionModal(true)
   }
 

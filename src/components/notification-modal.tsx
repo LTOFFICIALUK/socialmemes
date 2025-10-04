@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { X, Heart, MessageCircle, UserPlus, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
@@ -21,7 +21,7 @@ export const NotificationModal = ({ isOpen, onClose, userId, onNotificationRead 
   const [isLoading, setIsLoading] = useState(false)
   const [isMarkingAllRead, setIsMarkingAllRead] = useState(false)
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       setIsLoading(true)
       const data = await getNotifications(userId, 50)
@@ -31,13 +31,13 @@ export const NotificationModal = ({ isOpen, onClose, userId, onNotificationRead 
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [userId])
 
   useEffect(() => {
     if (isOpen && userId) {
       fetchNotifications()
     }
-  }, [isOpen, userId])
+  }, [isOpen, userId, fetchNotifications])
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
@@ -55,15 +55,6 @@ export const NotificationModal = ({ isOpen, onClose, userId, onNotificationRead 
     }
   }
 
-  const _handleDeleteNotification = async (notificationId: string) => {
-    try {
-      await deleteNotification(userId, notificationId)
-      setNotifications(prev => prev.filter(n => n.id !== notificationId))
-      onNotificationRead()
-    } catch (error) {
-      console.error('Error deleting notification:', error)
-    }
-  }
 
   const handleMarkAllAsRead = async () => {
     try {
