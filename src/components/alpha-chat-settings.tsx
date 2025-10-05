@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Crown, MessageSquare, Wallet } from 'lucide-react'
+import { Crown, MessageSquare } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast, ToastContainer } from '@/components/ui/toast'
 
@@ -13,10 +12,8 @@ interface AlphaChatSettingsProps {
 
 export const AlphaChatSettings = ({ onClose }: AlphaChatSettingsProps) => {
   const [isEnabled, setIsEnabled] = useState(false)
-  const [payoutWalletAddress, setPayoutWalletAddress] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isToggling, setIsToggling] = useState(false)
-  const [isSavingWallet, setIsSavingWallet] = useState(false)
   const { toasts, success, error, removeToast } = useToast()
 
   useEffect(() => {
@@ -29,12 +26,11 @@ export const AlphaChatSettings = ({ onClose }: AlphaChatSettingsProps) => {
       if (user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('alpha_chat_enabled, payout_wallet_address')
+          .select('alpha_chat_enabled')
           .eq('id', user.id)
           .single()
         
         setIsEnabled(profile?.alpha_chat_enabled || false)
-        setPayoutWalletAddress(profile?.payout_wallet_address || '')
       }
     } catch (error) {
       console.error('Error loading alpha chat status:', error)
@@ -83,38 +79,6 @@ export const AlphaChatSettings = ({ onClose }: AlphaChatSettingsProps) => {
     }
   }
 
-  const handleSaveWalletAddress = async () => {
-    try {
-      setIsSavingWallet(true)
-      
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        throw new Error('User not authenticated')
-      }
-
-      // Basic validation for Solana wallet address
-      if (payoutWalletAddress && payoutWalletAddress.length < 32) {
-        throw new Error('Please enter a valid Solana wallet address')
-      }
-      
-      const { error } = await supabase
-        .from('profiles')
-        .update({ payout_wallet_address: payoutWalletAddress || null })
-        .eq('id', user.id)
-
-      if (error) {
-        throw new Error(error.message)
-      }
-
-      success('Payout wallet address saved successfully!')
-    } catch (err) {
-      console.error('Error saving wallet address:', err)
-      error('Failed to save wallet address', err instanceof Error ? err.message : 'Please try again.')
-    } finally {
-      setIsSavingWallet(false)
-    }
-  }
 
   if (isLoading) {
     return (
@@ -187,40 +151,6 @@ export const AlphaChatSettings = ({ onClose }: AlphaChatSettingsProps) => {
                 </ul>
               </div>
 
-              <div className="bg-black border border-gray-800 rounded-lg p-4">
-                <div className="flex items-center space-x-3 mb-3">
-                  <Wallet className="h-5 w-5 text-blue-400" />
-                  <div>
-                    <h4 className="font-medium text-white">Payout Wallet Address</h4>
-                    <p className="text-sm text-gray-400">
-                      Set your Solana wallet address to receive subscription payments
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="space-y-3">
-                  <Input
-                    value={payoutWalletAddress}
-                    onChange={(e) => setPayoutWalletAddress(e.target.value)}
-                    placeholder="Enter your Solana wallet address (e.g., 9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM)"
-                    className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
-                  />
-                  <Button
-                    onClick={handleSaveWalletAddress}
-                    disabled={isSavingWallet}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    {isSavingWallet ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        <span>Saving...</span>
-                      </div>
-                    ) : (
-                      'Save Wallet Address'
-                    )}
-                  </Button>
-                </div>
-              </div>
             </div>
           )}
 

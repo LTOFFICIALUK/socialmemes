@@ -22,11 +22,12 @@ const calculatePrice = (hours: number) => {
 }
 
 export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: PromotionModalProps) => {
-  const [selectedDuration, setSelectedDuration] = useState(24) // Default to 1 day
+  const [selectedDuration, setSelectedDuration] = useState(6) // Default to 6 hours
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [isProUser, setIsProUser] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [showMainModal, setShowMainModal] = useState(true)
   const [successPaymentDetails, setSuccessPaymentDetails] = useState<{
     type: 'pro' | 'promotion' | 'featured-token' | 'alpha-chat-subscription'
     amount: number
@@ -42,6 +43,9 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
   useEffect(() => {
     if (isOpen) {
       setErrorMessage('')
+      setShowMainModal(true)
+      setShowSuccessModal(false)
+      setSuccessPaymentDetails(null)
       checkProStatus()
     }
   }, [isOpen])
@@ -75,7 +79,7 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
     setErrorMessage('')
 
     try {
-      // Process payment with Solana
+      // Process payment with Solana (this will refresh wallet connection)
       const paymentResult = await processUserToPlatformPayment({
         amount: totalCost,
         memo: `Post promotion - ${selectedDuration} hours`
@@ -85,10 +89,20 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
         throw new Error(paymentResult.error || 'Payment failed')
       }
 
+      // Get current session for authorization
+      const { data: { session } } = await supabase.auth.getSession()
+      console.log('Promotion Modal - Session check:', { session: !!session, hasAccessToken: !!session?.access_token })
+      if (!session) {
+        throw new Error('No active session')
+      }
+
       // Call promotion API with payment details
       const response = await fetch('/api/promote', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
         body: JSON.stringify({
           postId,
           duration: selectedDuration,
@@ -136,9 +150,9 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
         duration: durationText,
         signature: paymentResult.signature
       })
-      setShowSuccessModal(true)
+      setShowMainModal(false) // Hide the main modal content
+      setShowSuccessModal(true) // Show the success modal
       onPromote(postId, selectedDuration, totalCost)
-      onClose()
 
     } catch (error) {
       console.error('Error promoting post:', error)
@@ -146,6 +160,10 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
       // Handle user rejection specifically
       if (error instanceof Error && error.message.includes('User rejected')) {
         setErrorMessage('Transaction was cancelled. Please try again if you would like to proceed with the promotion.')
+      } else if (error instanceof Error && error.message.includes('Wallet error occurred')) {
+        setErrorMessage('Wallet error occurred. Please refresh the page and reconnect your wallet, then try again.')
+      } else if (error instanceof Error && error.message.includes('Insufficient balance')) {
+        setErrorMessage('Insufficient balance for transaction. Please ensure you have enough SOL in your wallet.')
       } else {
         setErrorMessage(error instanceof Error ? error.message : 'Payment failed')
       }
@@ -174,6 +192,8 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
           </div>
         </div>
 
+        {showMainModal && (
+        <>
         {/* Duration Selection */}
         <div className="p-6">
           <div className="mb-6">
@@ -181,18 +201,18 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
             <div className="relative">
               <input
                 type="range"
-                min="6"
+                min="1"
                 max="168"
-                step="6"
+                step="1"
                 value={selectedDuration}
                 onChange={(e) => setSelectedDuration(Number(e.target.value))}
                 className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
                 style={{
-                  background: `linear-gradient(to right, #10b981 0%, #10b981 ${((selectedDuration - 6) / (168 - 6)) * 100}%, #374151 ${((selectedDuration - 6) / (168 - 6)) * 100}%, #374151 100%)`
+                  background: `linear-gradient(to right, #10b981 0%, #10b981 ${((selectedDuration - 1) / (168 - 1)) * 100}%, #374151 ${((selectedDuration - 1) / (168 - 1)) * 100}%, #374151 100%)`
                 }}
               />
               <div className="flex justify-between text-xs text-gray-400 mt-2">
-                <span>6h</span>
+                <span>1h</span>
                 <span>1w</span>
               </div>
             </div>
@@ -250,8 +270,8 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
           </div>
         </div>
 
-            {/* Footer */}
-            <div className="p-6 border-t border-gray-700">
+        {/* Footer */}
+        <div className="p-6 border-t border-gray-700">
               <Button
                 onClick={handlePromote}
                 disabled={isLoading}
@@ -260,7 +280,7 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
                 {isLoading ? (
                   <div className="flex items-center justify-center space-x-2">
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    <span>Processing...</span>
+                    <span>Connecting wallet...</span>
                   </div>
                 ) : (
                   'Pay with Phantom'
@@ -278,6 +298,8 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
                 <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">Terms and Advertising Guidelines</a>.
               </p>
             </div>
+        </>
+        )}
       </div>
 
       {/* Payment Success Modal */}
@@ -287,6 +309,7 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
           onClose={() => {
             setShowSuccessModal(false)
             setSuccessPaymentDetails(null)
+            onClose() // Close the entire modal when success modal closes
           }}
           paymentDetails={successPaymentDetails}
         />

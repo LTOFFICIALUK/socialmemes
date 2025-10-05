@@ -200,32 +200,65 @@ export interface Database {
         Row: {
           id: string
           user_id: string
-          type: 'follow' | 'like' | 'comment'
+          type: 'follow' | 'like' | 'comment' | 'alpha_chat_subscription'
           actor_id: string
           post_id: string | null
           reply_id: string | null
           is_read: boolean
           created_at: string
+          metadata?: {
+            payment_type?: string
+            payment_received?: boolean
+            amount_sol?: number
+            duration?: string
+            post_id?: string
+            token_title?: string
+            recipient_username?: string
+            sender_username?: string
+            transaction_hash?: string
+          } | null
         }
         Insert: {
           id?: string
           user_id: string
-          type: 'follow' | 'like' | 'comment'
+          type: 'follow' | 'like' | 'comment' | 'alpha_chat_subscription'
           actor_id: string
           post_id?: string | null
           reply_id?: string | null
           is_read?: boolean
           created_at?: string
+          metadata?: {
+            payment_type?: string
+            payment_received?: boolean
+            amount_sol?: number
+            duration?: string
+            post_id?: string
+            token_title?: string
+            recipient_username?: string
+            sender_username?: string
+            transaction_hash?: string
+          } | null
         }
         Update: {
           id?: string
           user_id?: string
-          type?: 'follow' | 'like' | 'comment'
+          type?: 'follow' | 'like' | 'comment' | 'alpha_chat_subscription'
           actor_id?: string
           post_id?: string | null
           reply_id?: string | null
           is_read?: boolean
           created_at?: string
+          metadata?: {
+            payment_type?: string
+            payment_received?: boolean
+            amount_sol?: number
+            duration?: string
+            post_id?: string
+            token_title?: string
+            recipient_username?: string
+            sender_username?: string
+            transaction_hash?: string
+          } | null
         }
       }
       alpha_chat_members: {

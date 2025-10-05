@@ -78,67 +78,51 @@ export const PaymentSuccessModal = ({ isOpen, onClose, paymentDetails }: Payment
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div className="fixed inset-0 bg-black bg-opacity-25" onClick={handleClose} />
-        
-        <div className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-black border border-gray-700 rounded-xl max-w-md w-full">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-700">
+          <div className="flex items-center space-x-3">
+            <h2 className="text-xl font-semibold text-white">{config.title}</h2>
+          </div>
           <button
             onClick={handleClose}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-white hover:bg-gray-800 rounded-full p-2 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
+        </div>
 
-          <div className="flex items-center justify-center mb-4">
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-green-100">
-              <Check className="w-8 h-8 text-green-600" />
+        <div className="p-6">
+          {/* Success Icon */}
+          <div className="flex items-center justify-center mb-6">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-green-500/20 border border-green-500/30">
+              <Check className="w-8 h-8 text-green-400" />
             </div>
           </div>
 
+          {/* Content */}
           <div className="text-center mb-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {config.title}
-            </h3>
-            <p className="text-gray-600 mb-2">
+            <p className="text-gray-300 mb-2">
               {config.message}
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-400">
               {config.subtitle}
             </p>
           </div>
 
+          {/* View Transaction Button */}
           {signature && (
-            <div className="mb-6">
+            <div>
               <button
                 onClick={handleViewTransaction}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <ExternalLink className="w-4 h-4" />
                 View Transaction on Solscan
               </button>
             </div>
           )}
-
-          <div className="flex gap-3">
-            <button
-              onClick={handleClose}
-              className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              Close
-            </button>
-            {type === 'pro' && (
-              <button
-                onClick={() => {
-                  handleClose()
-                  window.location.reload()
-                }}
-                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Continue
-              </button>
-            )}
-          </div>
         </div>
       </div>
     </div>

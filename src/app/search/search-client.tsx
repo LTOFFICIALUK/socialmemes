@@ -14,9 +14,8 @@ import { MobileTrendingModal } from '@/components/mobile-trending-modal'
 import { ProModal } from '@/components/pro-modal'
 import { PromotionModal } from '@/components/promotion-modal'
 import { ToastContainer, useToast } from '@/components/ui/toast'
-import { Post, TrendingToken, followUser, unfollowUser, isFollowing } from '@/lib/database'
+import { Post, Profile, TrendingToken, followUser, unfollowUser, isFollowing } from '@/lib/database'
 import { supabase } from '@/lib/supabase'
-import { Crown } from 'lucide-react'
 
 interface SearchClientProps {
   trendingTokens: TrendingToken[]
@@ -25,7 +24,7 @@ interface SearchClientProps {
 
 export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps) {
   const [posts, setPosts] = useState<Post[]>([])
-  const [users, setUsers] = useState<any[]>([])
+  const [users, setUsers] = useState<Profile[]>([])
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string } | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(false)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
@@ -64,9 +63,9 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
       
       // Sort based on tab selection
       if (sortType === 'popular') {
-        results = results.sort((a: any, b: any) => (b.likes_count || 0) - (a.likes_count || 0))
+        results = results.sort((a: Post, b: Post) => (b.likes_count || 0) - (a.likes_count || 0))
       } else {
-        results = results.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        results = results.sort((a: Post, b: Post) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       }
       
       setPosts(results)
@@ -97,7 +96,7 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
       
       // Check follow status for each user if current user is logged in
       if (currentUser && userResults.length > 0) {
-        const followStatusPromises = userResults.map(async (user: any) => {
+        const followStatusPromises = userResults.map(async (user: Profile) => {
           const isFollowingUser = await isFollowing(currentUser.id, user.id)
           return { ...user, isFollowing: isFollowingUser }
         })
@@ -107,7 +106,7 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
         
         // Initialize follow states
         const initialFollowStates: Record<string, boolean> = {}
-        usersWithFollowStatus.forEach((user: any) => {
+        usersWithFollowStatus.forEach((user: Profile & { isFollowing: boolean }) => {
           initialFollowStates[user.id] = user.isFollowing
         })
         setFollowingStates(initialFollowStates)
@@ -372,11 +371,11 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
                         >
                           <div className="flex items-center space-x-3 p-3 sm:p-4">
                             <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden">
-                              {user.avatar ? (
-                                <img src={user.avatar} alt={user.title} className="w-full h-full object-cover" />
+                              {user.avatar_url ? (
+                                <img src={user.avatar_url} alt={user.username} className="w-full h-full object-cover" />
                               ) : (
                                 <span className="text-white font-semibold">
-                                  {user.title?.charAt(0)?.toUpperCase() || '?'}
+                                  {user.username?.charAt(0)?.toUpperCase() || '?'}
                                 </span>
                               )}
                             </div>
@@ -385,10 +384,10 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
                                  <h3 className={`font-semibold truncate ${
                                    user.pro ? 'pro-username-gold' : 'text-white'
                                  }`}>
-                                   {user.title}
+                                    {user.username}
                                  </h3>
                                 </div>
-                                <p className="text-gray-400 text-sm truncate">{user.subtitle}</p>
+                                <p className="text-gray-400 text-sm truncate">{user.bio || 'No bio available'}</p>
                             </div>
                             {currentUser && currentUser.id !== user.id && (
                               <button 

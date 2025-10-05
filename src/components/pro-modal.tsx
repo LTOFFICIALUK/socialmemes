@@ -15,6 +15,7 @@ import { createPaymentNotification } from '@/lib/database'
 interface ProModalProps {
   isOpen: boolean
   onClose: () => void
+  forceWalletSetup?: boolean
 }
 
 const pricingPlans = [
@@ -66,7 +67,7 @@ const proFeatures = [
   },
 ]
 
-export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
+export const ProModal = ({ isOpen, onClose, forceWalletSetup = false }: ProModalProps) => {
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string; pro?: boolean; alpha_chat_enabled?: boolean; payout_wallet_address?: string } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubscribing, setIsSubscribing] = useState(false)
@@ -74,20 +75,57 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
   const [payoutWalletAddress, setPayoutWalletAddress] = useState('')
   const [isSavingWallet, setIsSavingWallet] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [showMainModal, setShowMainModal] = useState(true)
+  const [showWalletSetupModal, setShowWalletSetupModal] = useState(false)
   const [successPaymentDetails, setSuccessPaymentDetails] = useState<{
     type: 'pro' | 'promotion' | 'featured-token' | 'alpha-chat-subscription'
     amount: number
     duration?: string
     signature?: string
   } | null>(null)
+  const [pendingPaymentDetails, setPendingPaymentDetails] = useState<{
+    amount: number
+    duration: string
+    signature: string
+  } | null>(null)
   const router = useRouter()
   const { toasts, success, error, removeToast } = useToast()
 
   useEffect(() => {
     if (isOpen) {
+      if (forceWalletSetup) {
+        // For forced wallet setup, skip main modal and go directly to wallet setup
+        setShowMainModal(false)
+        setShowSuccessModal(false)
+        setShowWalletSetupModal(true)
+        setSuccessPaymentDetails(null)
+        setPendingPaymentDetails(null)
+      } else {
+        // Normal flow
+        setShowMainModal(true)
+        setShowSuccessModal(false)
+        setShowWalletSetupModal(false)
+        setSuccessPaymentDetails(null)
+        setPendingPaymentDetails(null)
+      }
       getCurrentUser()
     }
-  }, [isOpen])
+  }, [isOpen, forceWalletSetup])
+
+  // Listen for custom event to close all ProModals
+  useEffect(() => {
+    const handleCloseAllProModals = () => {
+      if (!forceWalletSetup) {
+        // Only close if this is not a forced wallet setup modal
+        onClose()
+      }
+    }
+
+    window.addEventListener('closeAllProModals', handleCloseAllProModals)
+    return () => {
+      window.removeEventListener('closeAllProModals', handleCloseAllProModals)
+    }
+  }, [forceWalletSetup, onClose])
 
   const getCurrentUser = async () => {
     try {
@@ -153,6 +191,8 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
         throw new Error('Failed to process subscription')
       }
 
+      const responseData = await response.json()
+
       // Create payment notification
       try {
         await createPaymentNotification(
@@ -169,16 +209,32 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
         // Don't fail the subscription if notification fails
       }
 
-      // Success - refresh user data and show success modal
+      // Success - refresh user data and check wallet setup
       await getCurrentUser()
-      setSuccessPaymentDetails({
-        type: 'pro',
-        amount: plan.price,
-        duration: plan.name,
-        signature: paymentResult.signature
-      })
-      setShowSuccessModal(true)
-      onClose()
+      
+      // Check if user needs to set up wallet address based on API response
+      if (responseData.requiresWalletSetup) {
+        // Store payment details for later use
+        setPendingPaymentDetails({
+          amount: plan.price,
+          duration: plan.name,
+          signature: paymentResult.signature || ''
+        })
+        // Hide main modal and show wallet setup popup
+        setShowMainModal(false)
+        setShowWalletSetupModal(true)
+        success('Payment successful! Please set up your payout wallet address to complete the process.')
+      } else {
+        // Show success modal and close if wallet is already set
+        setSuccessPaymentDetails({
+          type: 'pro',
+          amount: plan.price,
+          duration: plan.name,
+          signature: paymentResult.signature
+        })
+        setShowMainModal(false)
+        setShowSuccessModal(true)
+      }
     } catch (err) {
       console.error('Error subscribing to Pro:', err)
       error('Failed to process subscription', err instanceof Error ? err.message : 'Please try again.')
@@ -196,13 +252,13 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
       }
 
       // Basic validation for Solana wallet address
-      if (payoutWalletAddress && payoutWalletAddress.length < 32) {
+      if (!payoutWalletAddress || payoutWalletAddress.length < 32) {
         throw new Error('Please enter a valid Solana wallet address')
       }
       
       const { error } = await supabase
         .from('profiles')
-        .update({ payout_wallet_address: payoutWalletAddress || null })
+        .update({ payout_wallet_address: payoutWalletAddress })
         .eq('id', currentUser.id)
 
       if (error) {
@@ -212,6 +268,23 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
       // Update local state
       setCurrentUser(prev => prev ? { ...prev, payout_wallet_address: payoutWalletAddress } : null)
       success('Payout wallet address saved successfully!')
+      
+      // If this was from wallet setup modal, show success modal
+      if (showWalletSetupModal && pendingPaymentDetails) {
+        setShowWalletSetupModal(false)
+        setSuccessPaymentDetails({
+          type: 'pro',
+          amount: pendingPaymentDetails.amount,
+          duration: pendingPaymentDetails.duration,
+          signature: pendingPaymentDetails.signature
+        })
+        setPendingPaymentDetails(null)
+        setShowSuccessModal(true)
+      } else if (forceWalletSetup) {
+        setTimeout(() => {
+          onClose()
+        }, 1000)
+      }
     } catch (err) {
       console.error('Error saving wallet address:', err)
       error('Failed to save wallet address', err instanceof Error ? err.message : 'Please try again.')
@@ -224,20 +297,23 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-black border border-gray-800 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-800">
-          <div className="flex items-center space-x-3">
-            <Crown className="h-6 w-6 text-yellow-500" />
-            <h2 className="text-2xl font-bold text-white">Upgrade to Pro</h2>
+      {!showWalletSetupModal && !showSuccessModal && (
+        <div className="bg-black border border-gray-800 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-800">
+            <div className="flex items-center space-x-3">
+              <Crown className="h-6 w-6 text-yellow-500" />
+              <h2 className="text-2xl font-bold text-white">Upgrade to Pro</h2>
+            </div>
+            {!(forceWalletSetup && currentUser?.pro && !currentUser?.payout_wallet_address) && (
+              <button
+                onClick={onClose}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            )}
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors"
-          >
-            <X className="h-6 w-6" />
-          </button>
-        </div>
 
         {isLoading ? (
           <div className="p-8 text-center">
@@ -251,6 +327,8 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
             </Button>
           </div>
         ) : (
+          <>
+          {showMainModal && (
           <div className="p-6">
             {/* Pro Status Check */}
             {currentUser.pro && (
@@ -272,6 +350,21 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
                     </Button>
                   </div>
                 </div>
+
+                {/* Force wallet setup message */}
+                {forceWalletSetup && !currentUser.payout_wallet_address && (
+                  <div className="p-4 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <Wallet className="h-5 w-5 text-yellow-500" />
+                      <div>
+                        <span className="text-yellow-500 font-medium">Setup Required</span>
+                        <p className="text-yellow-400 text-sm mt-1">
+                          Please set your payout wallet address below to complete your Pro setup. You cannot close this modal until you provide a valid wallet address.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Payout Wallet Address */}
                 <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
@@ -411,8 +504,11 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
               </div>
             </div>
           </div>
+          )}
+          </>
         )}
-      </div>
+        </div>
+      )}
       
       {/* Alpha Chat Settings Modal */}
       {showAlphaSettings && (
@@ -429,6 +525,7 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
         </div>
       )}
       
+
       {/* Payment Success Modal */}
       {successPaymentDetails && (
         <PaymentSuccessModal
@@ -436,12 +533,85 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
           onClose={() => {
             setShowSuccessModal(false)
             setSuccessPaymentDetails(null)
+            onClose() // Close the entire modal when success modal closes
           }}
           paymentDetails={successPaymentDetails}
         />
       )}
       
       <ToastContainer toasts={toasts} onClose={removeToast} />
+      
+      {/* Wallet Setup Modal - Outside main modal container */}
+      {showWalletSetupModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-black border border-gray-700 rounded-xl max-w-md w-full">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-700">
+              <div className="flex items-center space-x-3">
+                <Wallet className="h-6 w-6 text-yellow-500" />
+                <h2 className="text-xl font-semibold text-white">Setup Required</h2>
+              </div>
+              {!forceWalletSetup && (
+                <button
+                  onClick={() => setShowWalletSetupModal(false)}
+                  className="text-gray-400 hover:text-white hover:bg-gray-800 rounded-full p-2 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+
+            <div className="p-6">
+              {/* Success Icon */}
+              <div className="flex items-center justify-center mb-6">
+                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-green-500/20 border border-green-500/30">
+                  <Check className="w-8 h-8 text-green-400" />
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="text-center mb-6">
+                <h3 className="text-lg font-semibold text-white mb-2">
+                  Pro Payment Successful!
+                </h3>
+                <p className="text-gray-300 mb-4">
+                  Your Pro subscription has been activated. To complete the setup, please provide your payout wallet address.
+                </p>
+                <p className="text-sm text-gray-400">
+                  This wallet will be used for any future subscription payments or rewards.
+                </p>
+              </div>
+
+              {/* Wallet Input */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Solana Wallet Address
+                </label>
+                <Input
+                  value={payoutWalletAddress}
+                  onChange={(e) => setPayoutWalletAddress(e.target.value)}
+                  placeholder="Enter your Solana wallet address"
+                  className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 mb-3"
+                />
+                <Button
+                  onClick={handleSaveWalletAddress}
+                  disabled={isSavingWallet || !payoutWalletAddress.trim()}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {isSavingWallet ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Saving...</span>
+                    </div>
+                  ) : (
+                    'Complete Setup'
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

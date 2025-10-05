@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
 import { verifyPayment } from '@/lib/solana'
 
 export async function POST(request: NextRequest) {
@@ -14,11 +14,30 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get the current user session
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
+    // Get the current user from authorization header
+    const authHeader = request.headers.get('authorization')
+    console.log('Promote API - Auth header:', { hasAuthHeader: !!authHeader, authHeader: authHeader?.substring(0, 20) + '...' })
+    if (!authHeader) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized - No auth header' },
+        { status: 401 }
+      )
+    }
+
+    // Create a service role client for server-side operations
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+
+    // Validate the user token
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    
+    console.log('Promote API - User auth:', { hasUser: !!user, authError: authError?.message })
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Invalid token', details: authError?.message },
         { status: 401 }
       )
     }
@@ -37,16 +56,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if the post exists and belongs to the user
+    console.log('Promote API - Looking for post:', { postId, userId: user.id })
     const { data: post, error: postError } = await supabase
       .from('posts')
       .select('id, user_id')
       .eq('id', postId)
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
       .single()
 
+    console.log('Promote API - Post lookup result:', { hasPost: !!post, postError: postError?.message, post })
     if (postError || !post) {
       return NextResponse.json(
-        { error: 'Post not found or unauthorized' },
+        { error: 'Post not found or unauthorized', details: postError?.message },
         { status: 404 }
       )
     }
@@ -55,7 +76,7 @@ export async function POST(request: NextRequest) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('pro')
-      .eq('id', session.user.id)
+      .eq('id', user.id)
       .single()
 
     const isProUser = profile?.pro || false

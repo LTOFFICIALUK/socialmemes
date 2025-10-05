@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
 import { verifyPayment } from '@/lib/solana'
 
 const MAX_FEATURED_TOKENS = 8
@@ -9,6 +9,12 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '6')
+
+    // Create a service role client for server-side operations
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
 
     const { data: featuredTokens, error } = await supabase
       .rpc('get_active_featured_tokens', { limit_count: limit })
@@ -66,11 +72,30 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get the current user session
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
+    // Get the current user from authorization header
+    const authHeader = request.headers.get('authorization')
+    console.log('Featured Tokens API - Auth header:', { hasAuthHeader: !!authHeader, authHeader: authHeader?.substring(0, 20) + '...' })
+    if (!authHeader) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized - No auth header' },
+        { status: 401 }
+      )
+    }
+
+    // Create a service role client for server-side operations
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+
+    // Validate the user token
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    
+    console.log('Featured Tokens API - User auth:', { hasUser: !!user, authError: authError?.message })
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Invalid token', details: authError?.message },
         { status: 401 }
       )
     }
@@ -79,7 +104,7 @@ export async function POST(request: NextRequest) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('pro')
-      .eq('id', session.user.id)
+      .eq('id', user.id)
       .single()
     
     const isProUser = profile?.pro || false
@@ -151,7 +176,7 @@ export async function POST(request: NextRequest) {
 
     // Insert the featured token with payment details
     console.log('Attempting to insert featured token with data:', {
-      user_id: session.user.id,
+      user_id: user.id,
       title: title || null,
       image_url: imageUrl,
       destination_url: destinationUrl,
@@ -167,7 +192,7 @@ export async function POST(request: NextRequest) {
     const { data: featuredToken, error: insertError } = await supabase
       .from('featured_tokens')
       .insert({
-        user_id: session.user.id,
+        user_id: user.id,
         title: title || null,
         image_url: imageUrl,
         destination_url: destinationUrl,

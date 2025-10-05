@@ -69,10 +69,10 @@ export async function POST(request: NextRequest) {
 
     console.log('Processing Pro subscription for user:', userId)
 
-    // Check if user is already Pro
+    // Check if user is already Pro and get payout wallet address
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('pro')
+      .select('pro, payout_wallet_address')
       .eq('id', userId)
       .single()
 
@@ -137,6 +137,7 @@ export async function POST(request: NextRequest) {
       duration: duration,
       expiresAt: expiresAt.toISOString(),
       transactionHash: signature,
+      requiresWalletSetup: !profile?.payout_wallet_address,
     })
 
   } catch (error) {

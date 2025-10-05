@@ -14,10 +14,10 @@ interface FeaturedTokenModalProps {
   onSuccess: () => void
 }
 
-// Calculate price based on days (2 SOL per day)
-// Minimum 1 day, maximum 7 days
-const calculatePrice = (days: number) => {
-  return days * 2
+// Calculate price based on hours (0.0833 SOL per hour, minimum 0.05 SOL)
+// 1 day (24 hours) = 2 SOL, 1 week (168 hours) = 14 SOL
+const calculatePrice = (hours: number) => {
+  return Math.max(0.05, Math.round(hours * 0.0833 * 100) / 100)
 }
 
 const MAX_FEATURED_TOKENS = 8
@@ -25,7 +25,7 @@ const MAX_FEATURED_TOKENS = 8
 export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedTokenModalProps) => {
   const [title, setTitle] = useState('')
   const [destinationUrl, setDestinationUrl] = useState('')
-  const [selectedDuration, setSelectedDuration] = useState(1) // Default to 1 day
+  const [selectedDuration, setSelectedDuration] = useState(24) // Default to 1 day (24 hours)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -35,6 +35,7 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
   const [isDragging, setIsDragging] = useState(false)
   const [isProUser, setIsProUser] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [showMainModal, setShowMainModal] = useState(true)
   const [successPaymentDetails, setSuccessPaymentDetails] = useState<{
     type: 'pro' | 'promotion' | 'featured-token' | 'alpha-chat-subscription'
     amount: number
@@ -65,7 +66,10 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
       setDestinationUrl('')
       setImageFile(null)
       setImagePreview(null)
-      setSelectedDuration(1)
+      setSelectedDuration(24)
+      setShowMainModal(true)
+      setShowSuccessModal(false)
+      setSuccessPaymentDetails(null)
       checkCapacity()
       checkProStatus()
     }
@@ -240,24 +244,40 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
       const imageUrl = await uploadImage(imageFile)
 
       // 2. Process payment with Solana
+      const durationText = selectedDuration < 24 
+        ? `${selectedDuration} hours`
+        : selectedDuration === 24
+        ? '1 day'
+        : `${Math.floor(selectedDuration / 24)} days`
+      
       const paymentResult = await processUserToPlatformPayment({
         amount: totalCost,
-        memo: `Featured token - ${selectedDuration} days`
+        memo: `Featured token - ${durationText}`
       })
 
       if (!paymentResult.success) {
         throw new Error(paymentResult.error || 'Payment failed')
       }
 
-      // 3. Call API to create featured token (convert days to hours for API)
+      // 3. Call API to create featured token
+      // Get current session for authorization
+      const { data: { session } } = await supabase.auth.getSession()
+      console.log('Featured Token Modal - Session check:', { session: !!session, hasAccessToken: !!session?.access_token })
+      if (!session) {
+        throw new Error('No active session')
+      }
+
       const response = await fetch('/api/featured-tokens', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
         body: JSON.stringify({
           title: title.trim() || null,
           imageUrl,
           destinationUrl: destinationUrl.trim(),
-          duration: selectedDuration * 24, // Convert days to hours
+          duration: selectedDuration, // Duration is already in hours
           price: totalCost,
           signature: paymentResult.signature,
           fromAddress: paymentResult.fromAddress,
@@ -270,7 +290,11 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
       }
 
       // Success - show success modal and close main modal
-      const durationText = selectedDuration === 1 ? '1 day' : `${selectedDuration} days`
+      const successDurationText = selectedDuration < 24 
+        ? `${selectedDuration} hours`
+        : selectedDuration === 24
+        ? '1 day'
+        : `${Math.floor(selectedDuration / 24)} days`
       
       // Create payment notification
       try {
@@ -281,7 +305,7 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
             'featured-token',
             totalCost,
             {
-              duration: durationText,
+              duration: successDurationText,
               tokenTitle: title.trim() || 'Featured Token',
               signature: paymentResult.signature
             }
@@ -295,12 +319,12 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
       setSuccessPaymentDetails({
         type: 'featured-token',
         amount: totalCost,
-        duration: durationText,
+        duration: successDurationText,
         signature: paymentResult.signature
       })
-      setShowSuccessModal(true)
+      setShowMainModal(false) // Hide the main modal content
+      setShowSuccessModal(true) // Show the success modal
       onSuccess()
-      onClose()
 
     } catch (error) {
       console.error('Error creating featured token:', error)
@@ -335,6 +359,7 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
           </div>
         </div>
 
+        {showMainModal && (
         <div className="p-6 space-y-6">
           {/* Image Upload */}
           <div>
@@ -419,28 +444,33 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
 
           {/* Duration Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-3">Duration (in days)</label>
+            <label className="block text-sm font-medium text-gray-300 mb-3">Duration</label>
             <div className="relative">
               <input
                 type="range"
                 min="1"
-                max="7"
+                max="168"
                 step="1"
                 value={selectedDuration}
                 onChange={(e) => setSelectedDuration(Number(e.target.value))}
                 className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
                 style={{
-                  background: `linear-gradient(to right, #10b981 0%, #10b981 ${((selectedDuration - 1) / (7 - 1)) * 100}%, #374151 ${((selectedDuration - 1) / (7 - 1)) * 100}%, #374151 100%)`
+                  background: `linear-gradient(to right, #10b981 0%, #10b981 ${((selectedDuration - 1) / (168 - 1)) * 100}%, #374151 ${((selectedDuration - 1) / (168 - 1)) * 100}%, #374151 100%)`
                 }}
               />
               <div className="flex justify-between text-xs text-gray-400 mt-2">
-                <span>1 day</span>
-                <span>7 days</span>
+                <span>1h</span>
+                <span>1w</span>
               </div>
             </div>
             <div className="text-center mt-3">
               <span className="text-2xl font-bold text-white">
-                {selectedDuration === 1 ? '1 day' : `${selectedDuration} days`}
+                {selectedDuration < 24 
+                  ? `${selectedDuration} hours`
+                  : selectedDuration === 24
+                  ? '1 day'
+                  : `${Math.floor(selectedDuration / 24)} days`
+                }
               </span>
             </div>
           </div>
@@ -480,14 +510,17 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
                     {totalCost.toFixed(2)} SOL
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
-                    2 SOL per day
+                    ~0.08 SOL per hour
                   </div>
                 </div>
               )}
             </div>
           </div>
         </div>
+        )}
 
+        {showMainModal && (
+        <>
         {/* Footer */}
         <div className="p-6 border-t border-gray-700">
           <Button
@@ -527,6 +560,8 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
             <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">Terms and Advertising Guidelines</a>.
           </p>
         </div>
+        </>
+        )}
       </div>
 
       {/* Payment Success Modal */}
@@ -536,6 +571,7 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
           onClose={() => {
             setShowSuccessModal(false)
             setSuccessPaymentDetails(null)
+            onClose() // Close the entire modal when success modal closes
           }}
           paymentDetails={successPaymentDetails}
         />

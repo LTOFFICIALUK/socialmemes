@@ -3,6 +3,18 @@ import { Connection, PublicKey, Transaction, SystemProgram, TransactionInstructi
 // Revenue wallet address (hardcoded as it can't be manipulated)
 export const REVENUE_WALLET_ADDRESS = 'Eo7ckS6V3ojYkmkBpp29nfb12r8vfbgpCGxh1Ldw7Eu'
 
+/**
+ * Validate if a string is a valid Solana public key
+ */
+export const isValidSolanaAddress = (address: string): boolean => {
+  try {
+    new PublicKey(address)
+    return true
+  } catch {
+    return false
+  }
+}
+
 // Solana mainnet connection using Helius RPC
 const connection = new Connection('https://mainnet.helius-rpc.com/?api-key=d72f6482-06d8-4c7b-a92a-867c8db174ad', 'confirmed')
 
@@ -73,7 +85,17 @@ export const verifyPayment = async (
       }
     }
 
-    // Get the revenue wallet public key
+    // Validate and get the revenue wallet public key
+    if (!isValidSolanaAddress(REVENUE_WALLET_ADDRESS)) {
+      return {
+        isValid: false,
+        amount: 0,
+        fromAddress: '',
+        signature,
+        error: 'Invalid revenue wallet address configuration'
+      }
+    }
+    
     const revenueWallet = new PublicKey(REVENUE_WALLET_ADDRESS)
 
     // Find transfers to our revenue wallet
@@ -240,16 +262,60 @@ export const sendPaymentToPlatform = async (options: PaymentOptions): Promise<Pa
       }
     }
     
-    if (!provider.publicKey) {
+    // Always refresh wallet connection to prevent stale state issues
+    try {
+      // Force a fresh connection to ensure wallet is ready for signing
+      await provider.connect()
+      
+      // Small delay to ensure wallet is fully ready
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      // Verify the connection is actually working
+      if (!provider.publicKey) {
+        return {
+          success: false,
+          error: 'Wallet connection failed. Please try again.'
+        }
+      }
+    } catch (connectError) {
       return {
         success: false,
-        error: 'Wallet not connected. Please connect your wallet first.'
+        error: 'Failed to connect wallet. Please try again.'
+      }
+    }
+    
+    // Validate revenue wallet address
+    if (!isValidSolanaAddress(REVENUE_WALLET_ADDRESS)) {
+      return {
+        success: false,
+        error: 'Invalid revenue wallet address configuration'
       }
     }
     
     const fromPublicKey = provider.publicKey
     const toPublicKey = new PublicKey(REVENUE_WALLET_ADDRESS)
     const amountLamports = solToLamports(options.amount)
+    
+    // Validate amount
+    if (amountLamports <= 0) {
+      return {
+        success: false,
+        error: 'Invalid payment amount'
+      }
+    }
+    
+    // Check if user has sufficient balance
+    try {
+      const balance = await connection.getBalance(fromPublicKey)
+      if (balance < amountLamports + 5000) { // Add 5000 lamports for transaction fees
+        return {
+          success: false,
+          error: 'Insufficient balance for transaction (including fees)'
+        }
+      }
+    } catch (balanceError) {
+      console.warn('Could not check balance, proceeding anyway:', balanceError)
+    }
     
     // Create transaction
     const transaction = new Transaction()
@@ -263,23 +329,73 @@ export const sendPaymentToPlatform = async (options: PaymentOptions): Promise<Pa
     
     transaction.add(transferInstruction)
     
-    // Add memo if provided
-    if (options.memo) {
-      const memoInstruction = new TransactionInstruction({
-        keys: [],
-        programId: new PublicKey('MemoSq4gqABAXKb96qnH8TysKcWfC85B2q2'),
-        data: Buffer.from(options.memo, 'utf8'),
-      })
-      transaction.add(memoInstruction)
-    }
+    // Add memo if provided (commented out due to program ID issues)
+    // if (options.memo) {
+    //   const memoInstruction = new TransactionInstruction({
+    //     keys: [],
+    //     programId: new PublicKey('Memo1QaPj3ByHPM5azqS8nUxGTxjJ4S36Zbr1o9iRx1'),
+    //     data: Buffer.from(options.memo, 'utf8'),
+    //   })
+    //   transaction.add(memoInstruction)
+    // }
     
     // Get recent blockhash
-    const { blockhash } = await connection.getLatestBlockhash('confirmed')
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed')
     transaction.recentBlockhash = blockhash
     transaction.feePayer = fromPublicKey
     
+    // Validate transaction before signing
+    try {
+      // Simulate the transaction to catch any issues early
+      const simulation = await connection.simulateTransaction(transaction)
+      if (simulation.value.err) {
+        return {
+          success: false,
+          error: `Transaction simulation failed: ${JSON.stringify(simulation.value.err)}`
+        }
+      }
+    } catch (simError) {
+      console.warn('Transaction simulation failed, proceeding anyway:', simError)
+    }
+    
     // Sign transaction
-    const signedTransaction = await provider.signTransaction(transaction)
+    let signedTransaction: Transaction
+    try {
+      signedTransaction = await provider.signTransaction(transaction)
+    } catch (signError) {
+      console.error('Transaction signing error:', signError)
+      
+      // Handle specific Phantom wallet errors
+      if (signError instanceof Error) {
+        if (signError.message.includes('User rejected')) {
+          return {
+            success: false,
+            error: 'User rejected the transaction'
+          }
+        }
+        if (signError.message.includes('Oe: Unexpected error')) {
+          return {
+            success: false,
+            error: 'Wallet error occurred. Please try refreshing the page and reconnecting your wallet.'
+          }
+        }
+        if (signError.message.includes('insufficient funds')) {
+          return {
+            success: false,
+            error: 'Insufficient funds for transaction'
+          }
+        }
+        return {
+          success: false,
+          error: `Transaction signing failed: ${signError.message}`
+        }
+      }
+      
+      return {
+        success: false,
+        error: 'Transaction signing failed with unknown error'
+      }
+    }
     
     // Send transaction
     const signature = await connection.sendRawTransaction(signedTransaction.serialize(), {
@@ -291,7 +407,7 @@ export const sendPaymentToPlatform = async (options: PaymentOptions): Promise<Pa
     const confirmation = await connection.confirmTransaction({
       signature,
       blockhash,
-      lastValidBlockHeight: (await connection.getLatestBlockhash('confirmed')).lastValidBlockHeight,
+      lastValidBlockHeight,
     })
     
     if (confirmation.value.err) {
@@ -321,6 +437,12 @@ export const sendPaymentToPlatform = async (options: PaymentOptions): Promise<Pa
         return {
           success: false,
           error: 'Insufficient funds for transaction'
+        }
+      }
+      if (error.message.includes('Simulation failed')) {
+        return {
+          success: false,
+          error: `Transaction simulation failed: ${error.message}`
         }
       }
       return {
@@ -404,6 +526,7 @@ export const processUserToPlatformPayment = async (options: PaymentOptions): Pro
 
 /**
  * Send payment to another user's wallet
+ * This reuses the exact same flow as sendPaymentToPlatform but with a custom recipient address
  */
 export const sendPaymentToUser = async (
   options: PaymentOptions & { toAddress: string }
@@ -418,18 +541,30 @@ export const sendPaymentToUser = async (
       }
     }
     
-    if (!provider.publicKey) {
+    // Always refresh wallet connection to prevent stale state issues
+    try {
+      // Force a fresh connection to ensure wallet is ready for signing
+      await provider.connect()
+      
+      // Small delay to ensure wallet is fully ready
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      // Verify the connection is actually working
+      if (!provider.publicKey) {
+        return {
+          success: false,
+          error: 'Wallet connection failed. Please try again.'
+        }
+      }
+    } catch (connectError) {
       return {
         success: false,
-        error: 'Wallet not connected. Please connect your wallet first.'
+        error: 'Failed to connect wallet. Please try again.'
       }
     }
     
     // Validate recipient address
-    let toPublicKey: PublicKey
-    try {
-      toPublicKey = new PublicKey(options.toAddress)
-    } catch {
+    if (!isValidSolanaAddress(options.toAddress)) {
       return {
         success: false,
         error: 'Invalid recipient wallet address'
@@ -437,7 +572,29 @@ export const sendPaymentToUser = async (
     }
     
     const fromPublicKey = provider.publicKey
+    const toPublicKey = new PublicKey(options.toAddress)
     const amountLamports = solToLamports(options.amount)
+    
+    // Validate amount
+    if (amountLamports <= 0) {
+      return {
+        success: false,
+        error: 'Invalid payment amount'
+      }
+    }
+    
+    // Check if user has sufficient balance
+    try {
+      const balance = await connection.getBalance(fromPublicKey)
+      if (balance < amountLamports + 5000) { // Add 5000 lamports for transaction fees
+        return {
+          success: false,
+          error: 'Insufficient balance for transaction (including fees)'
+        }
+      }
+    } catch (balanceError) {
+      console.warn('Could not check balance, proceeding anyway:', balanceError)
+    }
     
     // Create transaction
     const transaction = new Transaction()
@@ -451,23 +608,75 @@ export const sendPaymentToUser = async (
     
     transaction.add(transferInstruction)
     
-    // Add memo if provided
-    if (options.memo) {
-      const memoInstruction = new TransactionInstruction({
-        keys: [],
-        programId: new PublicKey('MemoSq4gqABAXKb96qnH8TysKcWfC85B2q2'),
-        data: Buffer.from(options.memo, 'utf8'),
-      })
-      transaction.add(memoInstruction)
+    // Add memo if provided (commented out due to program ID issues)
+    // if (options.memo) {
+    //   const memoInstruction = new TransactionInstruction({
+    //     keys: [],
+    //     programId: new PublicKey('Memo1QaPj3ByHPM5azqS8nUxGTxjJ4S36Zbr1o9iRx1'),
+    //     data: Buffer.from(options.memo, 'utf8'),
+    //   })
+    //   transaction.add(memoInstruction)
+    // }
+    
+    // Get recent blockhash with retry logic
+    let blockhash: string
+    let lastValidBlockHeight: number
+    let retries = 3
+    
+    while (retries > 0) {
+      try {
+        const blockHashInfo = await connection.getLatestBlockhash('confirmed')
+        blockhash = blockHashInfo.blockhash
+        lastValidBlockHeight = blockHashInfo.lastValidBlockHeight
+        break
+      } catch (error) {
+        retries--
+        if (retries === 0) throw error
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
     }
     
-    // Get recent blockhash
-    const { blockhash } = await connection.getLatestBlockhash('confirmed')
     transaction.recentBlockhash = blockhash
     transaction.feePayer = fromPublicKey
     
     // Sign transaction
-    const signedTransaction = await provider.signTransaction(transaction)
+    let signedTransaction: Transaction
+    try {
+      signedTransaction = await provider.signTransaction(transaction)
+    } catch (signError) {
+      console.error('Transaction signing error:', signError)
+      
+      // Handle specific Phantom wallet errors
+      if (signError instanceof Error) {
+        if (signError.message.includes('User rejected')) {
+          return {
+            success: false,
+            error: 'User rejected the transaction'
+          }
+        }
+        if (signError.message.includes('Oe: Unexpected error')) {
+          return {
+            success: false,
+            error: 'Wallet error occurred. Please try refreshing the page and reconnecting your wallet.'
+          }
+        }
+        if (signError.message.includes('insufficient funds')) {
+          return {
+            success: false,
+            error: 'Insufficient funds for transaction'
+          }
+        }
+        return {
+          success: false,
+          error: `Transaction signing failed: ${signError.message}`
+        }
+      }
+      
+      return {
+        success: false,
+        error: 'Transaction signing failed with unknown error'
+      }
+    }
     
     // Send transaction
     const signature = await connection.sendRawTransaction(signedTransaction.serialize(), {
@@ -479,7 +688,7 @@ export const sendPaymentToUser = async (
     const confirmation = await connection.confirmTransaction({
       signature,
       blockhash,
-      lastValidBlockHeight: (await connection.getLatestBlockhash('confirmed')).lastValidBlockHeight,
+      lastValidBlockHeight,
     })
     
     if (confirmation.value.err) {
@@ -496,21 +705,9 @@ export const sendPaymentToUser = async (
     }
     
   } catch (error) {
-    console.error('User-to-user payment error:', error)
+    console.error('Payment to user error:', error)
     
     if (error instanceof Error) {
-      if (error.message.includes('User rejected')) {
-        return {
-          success: false,
-          error: 'User rejected the transaction'
-        }
-      }
-      if (error.message.includes('insufficient funds')) {
-        return {
-          success: false,
-          error: 'Insufficient funds for transaction'
-        }
-      }
       return {
         success: false,
         error: error.message

@@ -1,6 +1,6 @@
 'use client'
 
-import { Heart, MessageCircle, UserPlus } from 'lucide-react'
+import { Heart, MessageCircle, UserPlus, DollarSign } from 'lucide-react'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Notification } from '@/lib/database'
 import { formatDistanceToNow } from 'date-fns'
@@ -25,6 +25,8 @@ export const NotificationItem = ({
         return <Heart className="h-4 w-4 text-red-500" />
       case 'comment':
         return <MessageCircle className="h-4 w-4 text-green-500" />
+      case 'alpha_chat_subscription':
+        return <MessageCircle className="h-4 w-4 text-purple-500" />
       default:
         return null
     }
@@ -39,6 +41,18 @@ export const NotificationItem = ({
         return `${actorName} liked your post`
       case 'comment':
         return `${actorName} commented on your post`
+      case 'alpha_chat_subscription':
+        // Check if this is a payment received notification
+        if (notification.metadata?.payment_received) {
+          const amount = notification.metadata.amount_sol || 0
+          const duration = notification.metadata.duration || '1 month'
+          return `${actorName} subscribed to your alpha chat (${amount} SOL for ${duration})`
+        } else {
+          // Payment sent notification
+          const recipientUsername = notification.metadata?.recipient_username || 'alpha chat'
+          const duration = notification.metadata?.duration || '1 month'
+          return `You subscribed to @${recipientUsername}'s alpha chat for ${duration}`
+        }
       default:
         return 'New notification'
     }
@@ -47,6 +61,16 @@ export const NotificationItem = ({
   const getNotificationLink = (notification: Notification) => {
     if (notification.type === 'follow') {
       return `/profile/${notification.actor.username}`
+    }
+    if (notification.type === 'alpha_chat_subscription') {
+      // Link to the alpha chat owner's profile
+      if (notification.metadata?.payment_received) {
+        // If you received a subscription, link to the subscriber's profile
+        return `/profile/${notification.actor.username}`
+      } else {
+        // If you subscribed, link to the recipient's profile
+        return `/profile/${notification.metadata?.recipient_username || notification.actor.username}`
+      }
     }
     if (notification.post_id) {
       return `/posts/${notification.post_id}`
