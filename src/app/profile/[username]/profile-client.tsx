@@ -12,6 +12,7 @@ import { FeaturedTokens } from '@/components/featured-tokens'
 import { SearchBar } from '@/components/search-bar'
 import { FeaturedTokenModal } from '@/components/featured-token-modal'
 import { MobileTrendingModal } from '@/components/mobile-trending-modal'
+import { PromotionModal } from '@/components/promotion-modal'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ToastContainer, useToast } from '@/components/ui/toast'
@@ -51,6 +52,8 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
   const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
   const [showTrendingModal, setShowTrendingModal] = useState(false)
   const [showProModal, setShowProModal] = useState(false)
+  const [showPromotionModal, setShowPromotionModal] = useState(false)
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null)
   const [featuredTokensKey, setFeaturedTokensKey] = useState(0)
   const [activeTab, setActiveTab] = useState<'posts' | 'alpha'>('posts')
   const [hasAlphaAccess, setHasAlphaAccess] = useState(false)
@@ -264,6 +267,16 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
     }
   }
 
+  const handlePromotePost = (postId: string) => {
+    setSelectedPostId(postId)
+    setShowPromotionModal(true)
+  }
+
+  const handlePromoteConfirm = async (postId: string, duration: number, price: number) => {
+    console.log('Promoting post:', { postId, duration, price })
+    success(`Post promoted for ${duration} hours at ${price} SOL!`)
+  }
+
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     setCurrentUser(undefined)
@@ -455,6 +468,7 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
                 posts={posts}
                 currentUserId={currentUser?.id}
                 isLoading={false}
+                onPromotePost={handlePromotePost}
               />
             ) : (
               <>
@@ -537,6 +551,7 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
                       }))}
                       currentUserId={currentUser?.id}
                       isLoading={false}
+                      onPromotePost={handlePromotePost}
                     />
                   </>
                 )}
@@ -614,6 +629,14 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
       <ProModal
         isOpen={showProModal}
         onClose={() => setShowProModal(false)}
+      />
+      
+      {/* Promotion Modal */}
+      <PromotionModal
+        isOpen={showPromotionModal}
+        onClose={() => setShowPromotionModal(false)}
+        postId={selectedPostId || ''}
+        onPromote={handlePromoteConfirm}
       />
       
       <ToastContainer toasts={toasts} onClose={removeToast} />

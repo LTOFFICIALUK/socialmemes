@@ -12,6 +12,7 @@ import { FeaturedTokens } from '@/components/featured-tokens'
 import { FeaturedTokenModal } from '@/components/featured-token-modal'
 import { MobileTrendingModal } from '@/components/mobile-trending-modal'
 import { ProModal } from '@/components/pro-modal'
+import { PromotionModal } from '@/components/promotion-modal'
 import { ToastContainer, useToast } from '@/components/ui/toast'
 import { Post, TrendingToken, followUser, unfollowUser, isFollowing } from '@/lib/database'
 import { supabase } from '@/lib/supabase'
@@ -31,6 +32,8 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
   const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
   const [showTrendingModal, setShowTrendingModal] = useState(false)
   const [showProModal, setShowProModal] = useState(false)
+  const [showPromotionModal, setShowPromotionModal] = useState(false)
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null)
   const [featuredTokensKey, setFeaturedTokensKey] = useState(0)
   const [activeTab, setActiveTab] = useState<'popular' | 'latest' | 'users'>('popular')
   const [searchQuery, setSearchQuery] = useState('')
@@ -234,6 +237,16 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
     }
   }, [query])
 
+  const handlePromotePost = (postId: string) => {
+    setSelectedPostId(postId)
+    setShowPromotionModal(true)
+  }
+
+  const handlePromoteConfirm = async (postId: string, duration: number, price: number) => {
+    console.log('Promoting post:', { postId, duration, price })
+    success(`Post promoted for ${duration} hours at ${price} SOL!`)
+  }
+
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     setCurrentUser(undefined)
@@ -422,9 +435,7 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
                         onDelete={async () => {
                           // Handle delete if needed
                         }}
-                        onPromote={() => {
-                          // Handle promote if needed
-                        }}
+                        onPromote={handlePromotePost}
                       />
                     ))}
                   </>
@@ -474,6 +485,14 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
       <ProModal
         isOpen={showProModal}
         onClose={() => setShowProModal(false)}
+      />
+      
+      {/* Promotion Modal */}
+      <PromotionModal
+        isOpen={showPromotionModal}
+        onClose={() => setShowPromotionModal(false)}
+        postId={selectedPostId || ''}
+        onPromote={handlePromoteConfirm}
       />
       
       {/* Toast Notifications */}

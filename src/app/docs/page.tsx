@@ -985,6 +985,35 @@ const DocsPage = () => {
             </p>
           </div>
 
+          {/* Platform & Whitepaper Cards */}
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {docSections.filter(section => ['platform-whitepaper', 'product-roadmap'].includes(section.id)).map(section => (
+                <div
+                  key={section.id}
+                  onClick={() => setActiveSection(section.id)}
+                  className="bg-black border border-gray-800 rounded-lg p-6 cursor-pointer hover:bg-gray-900/30 transition-colors group"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <section.icon className="h-5 w-5 text-blue-500" />
+                        <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors">
+                          {section.title}
+                        </h3>
+                      </div>
+                      <p className="text-gray-400 text-sm leading-relaxed">
+                        {section.id === 'platform-whitepaper' && "Learn about the platform structure, token integration, and technical foundation of Social Memes."}
+                        {section.id === 'product-roadmap' && "Explore the future development plans and upcoming features for the platform."}
+                      </p>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-gray-500 group-hover:text-blue-400 transition-colors flex-shrink-0" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {docSections.filter(section => !['platform-whitepaper', 'product-roadmap'].includes(section.id)).map(section => (
             <div key={section.id} className="space-y-4">
               <div className="flex items-center space-x-3">

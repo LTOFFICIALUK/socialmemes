@@ -200,7 +200,7 @@ export const Navigation = ({ currentUser, onSignOut, onPromoteClick, onProClick 
                 <li key={item.name}>
                   <button
                     onClick={onPromoteClick}
-                    className="flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-gray-300 hover:bg-white/5 hover:text-white w-full text-left"
+                    className="flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-gray-300 hover:bg-white/5 hover:text-white w-full text-left cursor-pointer"
                   >
                     <item.icon className="h-5 w-5" />
                     <span>{item.name}</span>
@@ -214,7 +214,7 @@ export const Navigation = ({ currentUser, onSignOut, onPromoteClick, onProClick 
                 <li key={item.name}>
                   <button
                     onClick={onProClick}
-                    className="flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-gray-300 hover:bg-white/5 hover:text-white w-full text-left"
+                    className="flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-gray-300 hover:bg-white/5 hover:text-white w-full text-left cursor-pointer"
                   >
                     <item.icon className="h-5 w-5" />
                     <span>{item.name}</span>
@@ -273,7 +273,7 @@ export const Navigation = ({ currentUser, onSignOut, onPromoteClick, onProClick 
           <div className="mb-4">
             <button
               onClick={() => setIsCreatePostModalOpen(true)}
-              className="flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-gray-300 hover:bg-white/5 hover:text-white w-full text-left"
+              className="flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-gray-300 hover:bg-white/5 hover:text-white w-full text-left cursor-pointer"
             >
               <Plus className="h-5 w-5" />
               <span>Create Post</span>

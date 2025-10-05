@@ -75,7 +75,7 @@ export const MobileMenuButton = ({ currentUser, onSignOut, onPromoteClick, onTre
               onProClick()
               setIsMenuOpen(false)
             }}
-            className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 w-full text-left hover:bg-white/5 hover:text-white"
+            className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 w-full text-left hover:bg-white/5 hover:text-white cursor-pointer"
           >
             <Crown className="h-4 w-4" />
             <span>Pro</span>
@@ -89,7 +89,7 @@ export const MobileMenuButton = ({ currentUser, onSignOut, onPromoteClick, onTre
               onPromoteClick()
               setIsMenuOpen(false)
             }}
-            className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 w-full text-left hover:bg-white/5 hover:text-white"
+            className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 w-full text-left hover:bg-white/5 hover:text-white cursor-pointer"
           >
             <TrendingUp className="h-4 w-4" />
             <span>Promote a Token</span>
@@ -103,7 +103,7 @@ export const MobileMenuButton = ({ currentUser, onSignOut, onPromoteClick, onTre
               onTrendingClick()
               setIsMenuOpen(false)
             }}
-            className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 w-full text-left hover:bg-white/5 hover:text-white"
+            className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 w-full text-left hover:bg-white/5 hover:text-white cursor-pointer"
           >
             <BarChart3 className="h-4 w-4" />
             <span>Trending Tokens</span>
@@ -146,7 +146,7 @@ export const MobileMenuButton = ({ currentUser, onSignOut, onPromoteClick, onTre
         {currentUser && (
           <button
             onClick={handleSignOut}
-            className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 w-full text-left hover:bg-white/5 hover:text-white"
+            className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 w-full text-left hover:bg-white/5 hover:text-white cursor-pointer"
           >
             <LogOut className="h-4 w-4" />
             <span>Sign out</span>
@@ -161,7 +161,7 @@ export const MobileMenuButton = ({ currentUser, onSignOut, onPromoteClick, onTre
       {/* Menu Button */}
       <button
         onClick={handleMenuToggle}
-        className="p-2 rounded-lg text-gray-400"
+        className="p-2 rounded-lg text-gray-400 cursor-pointer"
         aria-label="Open menu"
       >
         <MoreVertical className="h-5 w-5" />

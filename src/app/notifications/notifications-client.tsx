@@ -12,6 +12,7 @@ import { NotificationItem } from '@/components/notification-item'
 import { MobileTrendingModal } from '@/components/mobile-trending-modal'
 import { ProModal } from '@/components/pro-modal'
 import { FeaturedTokenModal } from '@/components/featured-token-modal'
+import { PromotionModal } from '@/components/promotion-modal'
 import { Button } from '@/components/ui/button'
 import { ToastContainer, useToast } from '@/components/ui/toast'
 import { getNotifications, markNotificationAsRead, deleteNotification, markAllNotificationsAsRead } from '@/lib/database'
@@ -31,6 +32,8 @@ export function NotificationsClient({ trendingTokens, tokenImages }: Notificatio
   const [showTrendingModal, setShowTrendingModal] = useState(false)
   const [showProModal, setShowProModal] = useState(false)
   const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
+  const [showPromotionModal, setShowPromotionModal] = useState(false)
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null)
   const router = useRouter()
   const { toasts, removeToast, success, error: showError } = useToast()
 
@@ -151,6 +154,16 @@ export function NotificationsClient({ trendingTokens, tokenImages }: Notificatio
       console.error('Error marking all notifications as read:', error)
       showError('Failed to mark all notifications as read', 'Please try again later')
     }
+  }
+
+  const handlePromotePost = (postId: string) => {
+    setSelectedPostId(postId)
+    setShowPromotionModal(true)
+  }
+
+  const handlePromoteConfirm = async (postId: string, duration: number, price: number) => {
+    console.log('Promoting post:', { postId, duration, price })
+    success(`Post promoted for ${duration} hours at ${price} SOL!`)
   }
 
   const handleSignOut = async () => {
@@ -288,6 +301,14 @@ export function NotificationsClient({ trendingTokens, tokenImages }: Notificatio
           setShowFeaturedTokenModal(false)
           // Refresh featured tokens or show success message
         }}
+      />
+      
+      {/* Promotion Modal */}
+      <PromotionModal
+        isOpen={showPromotionModal}
+        onClose={() => setShowPromotionModal(false)}
+        postId={selectedPostId || ''}
+        onPromote={handlePromoteConfirm}
       />
       
       {/* Toast Notifications */}

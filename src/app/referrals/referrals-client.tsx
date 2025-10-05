@@ -12,6 +12,8 @@ import { MobileMenuButton } from '@/components/mobile-menu-button'
 import { ProModal } from '@/components/pro-modal'
 import { FeaturedTokenModal } from '@/components/featured-token-modal'
 import { MobileTrendingModal } from '@/components/mobile-trending-modal'
+import { PromotionModal } from '@/components/promotion-modal'
+import { ToastContainer, useToast } from '@/components/ui/toast'
 
 interface Profile {
   id: string
@@ -44,7 +46,10 @@ export const ReferralsClient = () => {
   const [showProModal, setShowProModal] = useState(false)
   const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
   const [showTrendingModal, setShowTrendingModal] = useState(false)
+  const [showPromotionModal, setShowPromotionModal] = useState(false)
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null)
   const router = useRouter()
+  const { toasts, removeToast, success } = useToast()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -105,6 +110,16 @@ export const ReferralsClient = () => {
 
     fetchData()
   }, [router])
+
+  const handlePromotePost = (postId: string) => {
+    setSelectedPostId(postId)
+    setShowPromotionModal(true)
+  }
+
+  const handlePromoteConfirm = async (postId: string, duration: number, price: number) => {
+    console.log('Promoting post:', { postId, duration, price })
+    success(`Post promoted for ${duration} hours at ${price} SOL!`)
+  }
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -184,7 +199,11 @@ export const ReferralsClient = () => {
         </div>
         
         {/* Mobile Navigation */}
-        <MobileNavigation currentUser={currentUser} onSignOut={handleSignOut} />
+        <MobileNavigation 
+          currentUser={currentUser} 
+          onSignOut={handleSignOut}
+          onPromoteClick={() => setShowFeaturedTokenModal(true)}
+        />
       </div>
     )
   }
@@ -214,7 +233,11 @@ export const ReferralsClient = () => {
         </div>
         
         {/* Mobile Navigation */}
-        <MobileNavigation currentUser={currentUser} onSignOut={handleSignOut} />
+        <MobileNavigation 
+          currentUser={currentUser} 
+          onSignOut={handleSignOut}
+          onPromoteClick={() => setShowFeaturedTokenModal(true)}
+        />
       </div>
     )
   }
@@ -227,6 +250,8 @@ export const ReferralsClient = () => {
           <Navigation 
             currentUser={currentUser} 
             onSignOut={handleSignOut}
+            onPromoteClick={() => setShowFeaturedTokenModal(true)}
+            onProClick={() => setShowProModal(true)}
           />
         </div>
         
@@ -419,6 +444,17 @@ export const ReferralsClient = () => {
         isOpen={showTrendingModal}
         onClose={() => setShowTrendingModal(false)}
       />
+      
+      {/* Promotion Modal */}
+      <PromotionModal
+        isOpen={showPromotionModal}
+        onClose={() => setShowPromotionModal(false)}
+        postId={selectedPostId || ''}
+        onPromote={handlePromoteConfirm}
+      />
+      
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
       
       {/* Mobile Navigation */}
       <MobileNavigation 

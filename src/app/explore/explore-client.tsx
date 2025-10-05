@@ -12,6 +12,7 @@ import { SearchBar } from '@/components/search-bar'
 import { FeaturedTokenModal } from '@/components/featured-token-modal'
 import { MobileTrendingModal } from '@/components/mobile-trending-modal'
 import { ProModal } from '@/components/pro-modal'
+import { PromotionModal } from '@/components/promotion-modal'
 import { ToastContainer, useToast } from '@/components/ui/toast'
 import { supabase } from '@/lib/supabase'
 import { TrendingToken } from '@/lib/database'
@@ -27,6 +28,8 @@ export function ExploreClient({ trendingTokens, tokenImages }: ExploreClientProp
   const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
   const [showTrendingModal, setShowTrendingModal] = useState(false)
   const [showProModal, setShowProModal] = useState(false)
+  const [showPromotionModal, setShowPromotionModal] = useState(false)
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null)
   const [featuredTokensKey, setFeaturedTokensKey] = useState(0)
   const router = useRouter()
   const { toasts, removeToast, success } = useToast()
@@ -81,6 +84,16 @@ export function ExploreClient({ trendingTokens, tokenImages }: ExploreClientProp
     }
     getUser()
   }, [router])
+
+  const handlePromotePost = (postId: string) => {
+    setSelectedPostId(postId)
+    setShowPromotionModal(true)
+  }
+
+  const handlePromoteConfirm = async (postId: string, duration: number, price: number) => {
+    console.log('Promoting post:', { postId, duration, price })
+    success(`Post promoted for ${duration} hours at ${price} SOL!`)
+  }
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -177,6 +190,14 @@ export function ExploreClient({ trendingTokens, tokenImages }: ExploreClientProp
       <ProModal
         isOpen={showProModal}
         onClose={() => setShowProModal(false)}
+      />
+      
+      {/* Promotion Modal */}
+      <PromotionModal
+        isOpen={showPromotionModal}
+        onClose={() => setShowPromotionModal(false)}
+        postId={selectedPostId || ''}
+        onPromote={handlePromoteConfirm}
       />
       
       {/* Toast Notifications */}
