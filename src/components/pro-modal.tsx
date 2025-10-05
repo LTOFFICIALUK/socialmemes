@@ -8,6 +8,9 @@ import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
 import { AlphaChatSettings } from '@/components/alpha-chat-settings'
 import { useToast, ToastContainer } from '@/components/ui/toast'
+import { processUserToPlatformPayment, isPhantomInstalled } from '@/lib/solana'
+import { PaymentSuccessModal } from '@/components/payment-success-modal'
+import { createPaymentNotification } from '@/lib/database'
 
 interface ProModalProps {
   isOpen: boolean
@@ -70,6 +73,13 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
   const [showAlphaSettings, setShowAlphaSettings] = useState(false)
   const [payoutWalletAddress, setPayoutWalletAddress] = useState('')
   const [isSavingWallet, setIsSavingWallet] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [successPaymentDetails, setSuccessPaymentDetails] = useState<{
+    type: 'pro' | 'promotion' | 'featured-token' | 'alpha-chat-subscription'
+    amount: number
+    duration?: string
+    signature?: string
+  } | null>(null)
   const router = useRouter()
   const { toasts, success, error, removeToast } = useToast()
 
@@ -106,9 +116,25 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
       return
     }
 
+    // Check if Phantom is installed
+    if (!isPhantomInstalled()) {
+      error('Phantom wallet not found', 'Please install Phantom wallet to continue.')
+      return
+    }
+
     setIsSubscribing(true)
     try {
-      // Call the Pro subscription API
+      // Process payment with Solana
+      const paymentResult = await processUserToPlatformPayment({
+        amount: plan.price,
+        memo: `Pro subscription - ${plan.name}`
+      })
+
+      if (!paymentResult.success) {
+        throw new Error(paymentResult.error || 'Payment failed')
+      }
+
+      // Call the Pro subscription API with payment details
       const response = await fetch('/api/pro/subscribe', {
         method: 'POST',
         headers: {
@@ -118,6 +144,8 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
           duration: plan.duration,
           price: plan.price,
           userId: currentUser.id,
+          signature: paymentResult.signature,
+          fromAddress: paymentResult.fromAddress,
         }),
       })
 
@@ -125,13 +153,35 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
         throw new Error('Failed to process subscription')
       }
 
-      // Success - refresh user data and close modal
+      // Create payment notification
+      try {
+        await createPaymentNotification(
+          currentUser.id,
+          'pro',
+          plan.price,
+          {
+            duration: plan.name,
+            signature: paymentResult.signature
+          }
+        )
+      } catch (notifError) {
+        console.error('Error creating notification:', notifError)
+        // Don't fail the subscription if notification fails
+      }
+
+      // Success - refresh user data and show success modal
       await getCurrentUser()
+      setSuccessPaymentDetails({
+        type: 'pro',
+        amount: plan.price,
+        duration: plan.name,
+        signature: paymentResult.signature
+      })
+      setShowSuccessModal(true)
       onClose()
-      success('Pro subscription activated successfully!')
     } catch (err) {
       console.error('Error subscribing to Pro:', err)
-      error('Failed to process subscription', 'Please try again.')
+      error('Failed to process subscription', err instanceof Error ? err.message : 'Please try again.')
     } finally {
       setIsSubscribing(false)
     }
@@ -377,6 +427,18 @@ export const ProModal = ({ isOpen, onClose }: ProModalProps) => {
             <AlphaChatSettings onClose={() => setShowAlphaSettings(false)} />
           </div>
         </div>
+      )}
+      
+      {/* Payment Success Modal */}
+      {successPaymentDetails && (
+        <PaymentSuccessModal
+          isOpen={showSuccessModal}
+          onClose={() => {
+            setShowSuccessModal(false)
+            setSuccessPaymentDetails(null)
+          }}
+          paymentDetails={successPaymentDetails}
+        />
       )}
       
       <ToastContainer toasts={toasts} onClose={removeToast} />

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { verifyPayment } from '@/lib/solana'
 
 const MAX_FEATURED_TOKENS = 8
 
@@ -43,13 +44,14 @@ export async function POST(request: NextRequest) {
       destinationUrl, 
       duration, 
       price, 
-      signature
+      signature,
+      fromAddress
     } = await request.json()
 
     // Validate required fields
-    if (!imageUrl || !destinationUrl || !duration || !price || !signature) {
+    if (!imageUrl || !destinationUrl || !duration || !price || !signature || !fromAddress) {
       return NextResponse.json(
-        { error: 'Missing required fields: imageUrl, destinationUrl, duration, price, signature' },
+        { error: 'Missing required fields: imageUrl, destinationUrl, duration, price, signature, fromAddress' },
         { status: 400 }
       )
     }
@@ -64,35 +66,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // ===== AUTH CHECK COMMENTED OUT FOR TESTING =====
     // Get the current user session
-    // const { data: { session } } = await supabase.auth.getSession()
-    // if (!session) {
-    //   return NextResponse.json(
-    //     { error: 'Unauthorized' },
-    //     { status: 401 }
-    //   )
-    // }
-    
-    // TEMPORARY: Get any user from database for testing
-    const { data: testUser } = await supabase
-      .from('profiles')
-      .select('id, pro')
-      .limit(1)
-      .single()
-    
-    if (!testUser) {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
       return NextResponse.json(
-        { error: 'No users found in database for testing' },
-        { status: 500 }
+        { error: 'Unauthorized' },
+        { status: 401 }
       )
     }
-    
-    const session = { user: { id: testUser.id } }
-    // ===== END AUTH CHECK COMMENTED OUT =====
 
     // Check if user is Pro and calculate discount
-    const isProUser = testUser?.pro || false
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('pro')
+      .eq('id', session.user.id)
+      .single()
+    
+    const isProUser = profile?.pro || false
     const discount = isProUser ? 0.2 : 0
     
     // Calculate the base price (what the price would be without discount)
@@ -126,20 +116,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // ===== PAYMENT VERIFICATION COMMENTED OUT FOR TESTING =====
     // Verify the payment transaction
-    // const paymentVerification = await verifyPayment(signature, price, fromAddress)
+    console.log('Verifying payment:', { signature, price, fromAddress })
+    const paymentVerification = await verifyPayment(signature, price, fromAddress)
     
-    // if (!paymentVerification.isValid) {
-    //   return NextResponse.json(
-    //     { 
-    //       error: 'Payment verification failed',
-    //       details: paymentVerification.error 
-    //     },
-    //     { status: 400 }
-    //   )
-    // }
-    // ===== END PAYMENT VERIFICATION COMMENTED OUT =====
+    if (!paymentVerification.isValid) {
+      console.error('Payment verification failed:', paymentVerification.error)
+      return NextResponse.json(
+        { 
+          error: 'Payment verification failed',
+          details: paymentVerification.error 
+        },
+        { status: 400 }
+      )
+    }
+
+    console.log('Payment verified successfully:', paymentVerification)
 
     // Calculate promotion times
     const promotionStart = new Date()
@@ -157,7 +149,7 @@ export async function POST(request: NextRequest) {
       ? maxOrderData.display_order + 1 
       : 0
 
-    // Insert the featured token
+    // Insert the featured token with payment details
     console.log('Attempting to insert featured token with data:', {
       user_id: session.user.id,
       title: title || null,
@@ -168,6 +160,7 @@ export async function POST(request: NextRequest) {
       promotion_end: promotionEnd.toISOString(),
       promotion_price: price,
       payment_tx_hash: signature,
+      payment_from_address: fromAddress,
       display_order: nextDisplayOrder
     })
 
@@ -183,6 +176,7 @@ export async function POST(request: NextRequest) {
         promotion_end: promotionEnd.toISOString(),
         promotion_price: price,
         payment_tx_hash: signature,
+        payment_from_address: fromAddress,
         display_order: nextDisplayOrder
       })
       .select()

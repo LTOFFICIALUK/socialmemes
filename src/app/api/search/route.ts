@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       // Search for users only (for instant dropdown)
       let queryBuilder = supabase
         .from('profiles')
-        .select('id, username, full_name, avatar_url')
+        .select('id, username, full_name, avatar_url, pro')
         .or(`username.ilike.${searchTerm},full_name.ilike.${searchTerm}`)
         .limit(5)
 
@@ -41,7 +41,8 @@ export async function GET(request: NextRequest) {
         title: user.full_name || user.username,
         subtitle: `@${user.username}`,
         avatar: user.avatar_url,
-        username: user.username
+        username: user.username,
+        pro: user.pro
       })) || []
 
       return NextResponse.json({ results })

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { verifyPayment } from '@/lib/solana'
 
 // Pro subscription pricing in SOL
 const PRO_PRICING = {
@@ -11,12 +12,20 @@ const PRO_PRICING = {
 
 export async function POST(request: NextRequest) {
   try {
-    const { duration, price, userId } = await request.json()
+    const { duration, price, userId, signature, fromAddress } = await request.json()
 
     // Validate input
     if (!duration || !price || !userId) {
       return NextResponse.json(
         { error: 'Duration, price, and userId are required' },
+        { status: 400 }
+      )
+    }
+
+    // Validate payment signature
+    if (!signature || !fromAddress) {
+      return NextResponse.json(
+        { error: 'Payment signature and fromAddress are required' },
         { status: 400 }
       )
     }
@@ -34,6 +43,23 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    // Verify the payment transaction
+    console.log('Verifying payment:', { signature, price, fromAddress })
+    const paymentVerification = await verifyPayment(signature, price, fromAddress)
+    
+    if (!paymentVerification.isValid) {
+      console.error('Payment verification failed:', paymentVerification.error)
+      return NextResponse.json(
+        { 
+          error: 'Payment verification failed',
+          details: paymentVerification.error 
+        },
+        { status: 400 }
+      )
+    }
+
+    console.log('Payment verified successfully:', paymentVerification)
 
     // Create a service role client for server-side operations
     const supabase = createClient(
@@ -85,7 +111,7 @@ export async function POST(request: NextRequest) {
 
     console.log('Successfully updated user to Pro:', userId)
 
-    // Store the subscription in the database
+    // Store the subscription in the database with transaction hash
     const { error: insertError } = await supabase
       .from('pro_subscriptions')
       .insert({
@@ -93,6 +119,8 @@ export async function POST(request: NextRequest) {
         duration_months: duration,
         price_sol: price,
         status: 'active',
+        payment_tx_hash: signature,
+        payment_from_address: fromAddress,
         created_at: now.toISOString(),
         activated_at: now.toISOString(),
         expires_at: expiresAt.toISOString(),
@@ -108,6 +136,7 @@ export async function POST(request: NextRequest) {
       message: 'Pro subscription activated successfully',
       duration: duration,
       expiresAt: expiresAt.toISOString(),
+      transactionHash: signature,
     })
 
   } catch (error) {

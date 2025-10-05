@@ -284,7 +284,10 @@ export function NotificationsClient({ trendingTokens, tokenImages }: Notificatio
       <FeaturedTokenModal
         isOpen={showFeaturedTokenModal}
         onClose={() => setShowFeaturedTokenModal(false)}
-        currentUser={currentUser}
+        onSuccess={() => {
+          setShowFeaturedTokenModal(false)
+          // Refresh featured tokens or show success message
+        }}
       />
       
       {/* Toast Notifications */}

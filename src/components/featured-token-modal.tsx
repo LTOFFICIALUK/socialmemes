@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, Upload, X, Crown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
+import { processUserToPlatformPayment, isPhantomInstalled } from '@/lib/solana'
+import { PaymentSuccessModal } from '@/components/payment-success-modal'
+import { createPaymentNotification } from '@/lib/database'
 
 interface FeaturedTokenModalProps {
   isOpen: boolean
@@ -31,6 +34,13 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
   const [isCheckingCapacity, setIsCheckingCapacity] = useState(true)
   const [isDragging, setIsDragging] = useState(false)
   const [isProUser, setIsProUser] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [successPaymentDetails, setSuccessPaymentDetails] = useState<{
+    type: 'pro' | 'promotion' | 'featured-token' | 'alpha-chat-subscription'
+    amount: number
+    duration?: string
+    signature?: string
+  } | null>(null)
 
   const basePrice = calculatePrice(selectedDuration)
   const discount = isProUser ? 0.2 : 0 // 20% discount for Pro users
@@ -216,6 +226,12 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
       return
     }
 
+    // Check if Phantom is installed
+    if (!isPhantomInstalled()) {
+      setErrorMessage('Phantom wallet not found. Please install Phantom wallet.')
+      return
+    }
+
     setIsLoading(true)
     setErrorMessage('')
 
@@ -223,47 +239,17 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
       // 1. Upload image
       const imageUrl = await uploadImage(imageFile)
 
-      // ===== PAYMENT COMMENTED OUT FOR TESTING =====
-      // // 2. Connect wallet
-      // const provider = window.phantom?.solana
-      // if (!provider?.isPhantom) {
-      //   throw new Error('Phantom wallet not found. Please install Phantom wallet.')
-      // }
+      // 2. Process payment with Solana
+      const paymentResult = await processUserToPlatformPayment({
+        amount: totalCost,
+        memo: `Featured token - ${selectedDuration} days`
+      })
 
-      // if (!provider.isConnected) {
-      //   await provider.connect()
-      // }
+      if (!paymentResult.success) {
+        throw new Error(paymentResult.error || 'Payment failed')
+      }
 
-      // const publicKey = provider.publicKey?.toString()
-      // if (!publicKey) {
-      //   throw new Error('Failed to get wallet address')
-      // }
-
-      // // 3. Create and send transaction
-      // const connection = new Connection('https://api.devnet.solana.com')
-      // const transaction = new Transaction()
-      
-      // transaction.add(
-      //   SystemProgram.transfer({
-      //     fromPubkey: new PublicKey(publicKey),
-      //     toPubkey: new PublicKey(getRevenueWalletAddress()),
-      //     lamports: solToLamports(totalCost),
-      //   })
-      // )
-
-      // const { blockhash } = await connection.getLatestBlockhash()
-      // transaction.recentBlockhash = blockhash
-      // transaction.feePayer = new PublicKey(publicKey)
-
-      // const signedTransaction = await provider.signTransaction(transaction)
-      // const signature = await connection.sendRawTransaction(signedTransaction.serialize())
- 
-      // TEMPORARY: Use dummy values for testing
-      const signature = 'test_signature_' + Date.now()
-      const publicKey = 'test_wallet_address'
-      // ===== END PAYMENT COMMENTED OUT =====
-
-      // 4. Call API to create featured token (convert days to hours for API)
+      // 3. Call API to create featured token (convert days to hours for API)
       const response = await fetch('/api/featured-tokens', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -273,8 +259,8 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
           destinationUrl: destinationUrl.trim(),
           duration: selectedDuration * 24, // Convert days to hours
           price: totalCost,
-          signature,
-          fromAddress: publicKey,
+          signature: paymentResult.signature,
+          fromAddress: paymentResult.fromAddress,
         }),
       })
 
@@ -283,7 +269,36 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
         throw new Error(errorData.error || 'Failed to create featured token')
       }
 
-      // Success
+      // Success - show success modal and close main modal
+      const durationText = selectedDuration === 1 ? '1 day' : `${selectedDuration} days`
+      
+      // Create payment notification
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          await createPaymentNotification(
+            user.id,
+            'featured-token',
+            totalCost,
+            {
+              duration: durationText,
+              tokenTitle: title.trim() || 'Featured Token',
+              signature: paymentResult.signature
+            }
+          )
+        }
+      } catch (notifError) {
+        console.error('Error creating notification:', notifError)
+        // Don't fail the featured token if notification fails
+      }
+
+      setSuccessPaymentDetails({
+        type: 'featured-token',
+        amount: totalCost,
+        duration: durationText,
+        signature: paymentResult.signature
+      })
+      setShowSuccessModal(true)
       onSuccess()
       onClose()
 
@@ -513,6 +528,18 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
           </p>
         </div>
       </div>
+
+      {/* Payment Success Modal */}
+      {successPaymentDetails && (
+        <PaymentSuccessModal
+          isOpen={showSuccessModal}
+          onClose={() => {
+            setShowSuccessModal(false)
+            setSuccessPaymentDetails(null)
+          }}
+          paymentDetails={successPaymentDetails}
+        />
+      )}
     </div>
   )
 }

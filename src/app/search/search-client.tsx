@@ -13,8 +13,9 @@ import { FeaturedTokenModal } from '@/components/featured-token-modal'
 import { MobileTrendingModal } from '@/components/mobile-trending-modal'
 import { ProModal } from '@/components/pro-modal'
 import { ToastContainer, useToast } from '@/components/ui/toast'
-import { Post, TrendingToken } from '@/lib/database'
+import { Post, TrendingToken, followUser, unfollowUser, isFollowing } from '@/lib/database'
 import { supabase } from '@/lib/supabase'
+import { Crown } from 'lucide-react'
 
 interface SearchClientProps {
   trendingTokens: TrendingToken[]
@@ -23,6 +24,7 @@ interface SearchClientProps {
 
 export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps) {
   const [posts, setPosts] = useState<Post[]>([])
+  const [users, setUsers] = useState<any[]>([])
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string } | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(false)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
@@ -30,12 +32,16 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
   const [showTrendingModal, setShowTrendingModal] = useState(false)
   const [showProModal, setShowProModal] = useState(false)
   const [featuredTokensKey, setFeaturedTokensKey] = useState(0)
+  const [activeTab, setActiveTab] = useState<'popular' | 'latest' | 'users'>('popular')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [followingStates, setFollowingStates] = useState<Record<string, boolean>>({})
+  const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({})
   const router = useRouter()
   const searchParams = useSearchParams()
   const query = searchParams.get('q') || ''
   const { toasts, removeToast, success } = useToast()
 
-  const searchPosts = async (searchQuery: string) => {
+  const searchPosts = async (searchQuery: string, sortType: 'popular' | 'latest' = 'latest') => {
     if (!searchQuery.trim()) {
       setPosts([])
       return
@@ -43,19 +49,114 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
 
     try {
       setIsLoading(true)
-      const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`)
+      const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}&type=posts`)
       
       if (!response.ok) {
         throw new Error('Search failed')
       }
       
       const data = await response.json()
-      setPosts(data.posts || [])
+      let results = data.results || []
+      
+      // Sort based on tab selection
+      if (sortType === 'popular') {
+        results = results.sort((a: any, b: any) => (b.likes_count || 0) - (a.likes_count || 0))
+      } else {
+        results = results.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      }
+      
+      setPosts(results)
     } catch (error) {
       console.error('Error searching posts:', error)
       setPosts([])
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const searchUsers = async (searchQuery: string) => {
+    if (!searchQuery.trim()) {
+      setUsers([])
+      return
+    }
+
+    try {
+      setIsLoading(true)
+      const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}&type=users`)
+      
+      if (!response.ok) {
+        throw new Error('Search failed')
+      }
+      
+      const data = await response.json()
+      const userResults = data.results || []
+      
+      // Check follow status for each user if current user is logged in
+      if (currentUser && userResults.length > 0) {
+        const followStatusPromises = userResults.map(async (user: any) => {
+          const isFollowingUser = await isFollowing(currentUser.id, user.id)
+          return { ...user, isFollowing: isFollowingUser }
+        })
+        
+        const usersWithFollowStatus = await Promise.all(followStatusPromises)
+        setUsers(usersWithFollowStatus)
+        
+        // Initialize follow states
+        const initialFollowStates: Record<string, boolean> = {}
+        usersWithFollowStatus.forEach((user: any) => {
+          initialFollowStates[user.id] = user.isFollowing
+        })
+        setFollowingStates(initialFollowStates)
+      } else {
+        setUsers(userResults)
+      }
+    } catch (error) {
+      console.error('Error searching users:', error)
+      setUsers([])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSearch = (searchTerm: string) => {
+    setSearchQuery(searchTerm)
+    if (activeTab === 'users') {
+      searchUsers(searchTerm)
+    } else {
+      searchPosts(searchTerm, activeTab)
+    }
+  }
+
+  const handleTabChange = (tab: 'popular' | 'latest' | 'users') => {
+    setActiveTab(tab)
+    if (searchQuery && tab !== 'users') {
+      searchPosts(searchQuery, tab)
+    } else if (searchQuery && tab === 'users') {
+      searchUsers(searchQuery)
+    }
+  }
+
+  const handleFollow = async (userId: string) => {
+    if (!currentUser || currentUser.id === userId) return
+    
+    try {
+      setLoadingStates(prev => ({ ...prev, [userId]: true }))
+      
+      const isCurrentlyFollowing = followingStates[userId]
+      
+      if (isCurrentlyFollowing) {
+        await unfollowUser(currentUser.id, userId)
+        setFollowingStates(prev => ({ ...prev, [userId]: false }))
+        success('Unfollowed successfully')
+      } else {
+        await followUser(currentUser.id, userId)
+        setFollowingStates(prev => ({ ...prev, [userId]: true }))
+        success('Followed successfully')
+      }
+    } catch (error) {
+      console.error('Error updating follow status:', error)
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [userId]: false }))
     }
   }
 
@@ -113,9 +214,16 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
   // Search when query changes
   useEffect(() => {
     if (query) {
-      searchPosts(query)
+      setSearchQuery(query)
+      if (activeTab === 'users') {
+        searchUsers(query)
+      } else {
+        searchPosts(query, activeTab)
+      }
     } else {
       setPosts([])
+      setUsers([])
+      setSearchQuery('')
     }
   }, [query])
 
@@ -157,18 +265,62 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
         
         {/* Center Column - Search Results */}
         <div className="flex-1 w-full lg:max-w-2xl lg:border-l lg:border-r border-gray-800 h-screen flex flex-col pb-16 lg:pb-0 min-w-0">
+          {/* Mobile Menu Button - Fixed position for mobile */}
+          <div className="lg:hidden fixed top-4 right-4 z-50">
+            <MobileMenuButton 
+              currentUser={currentUser} 
+              onSignOut={handleSignOut}
+              onPromoteClick={() => setShowFeaturedTokenModal(true)}
+              onTrendingClick={() => setShowTrendingModal(true)}
+              onProClick={() => setShowProModal(true)}
+            />
+          </div>
+          
           {/* Header */}
-          <div className="bg-black/80 backdrop-blur-sm border-b border-gray-800 px-4 py-3 flex-shrink-0 flex items-center justify-between">
-            <h1 className="text-xl font-bold text-white">Search</h1>
-            {/* Mobile Menu Button */}
-            <div className="lg:hidden">
-              <MobileMenuButton 
-                currentUser={currentUser} 
-                onSignOut={handleSignOut}
-                onPromoteClick={() => setShowFeaturedTokenModal(true)}
-                onTrendingClick={() => setShowTrendingModal(true)}
-                onProClick={() => setShowProModal(true)}
+          <div className="bg-black/80 backdrop-blur-sm border-b border-gray-800 px-4 pt-4 pb-0 flex-shrink-0">
+            {/* Search Bar */}
+            <div className="mb-4">
+              <SearchBar 
+                placeholder="Search posts, users, tokens..." 
+                value={searchQuery}
+                onChange={handleSearch}
               />
+            </div>
+            
+            {/* Tab Navigation */}
+            <div className="border-t border-gray-800 -mx-4 px-4">
+              <div className="flex justify-between">
+                <button
+                  onClick={() => handleTabChange('popular')}
+                  className={`flex-1 py-4 text-sm font-medium transition-colors ${
+                    activeTab === 'popular'
+                      ? 'text-white'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  Popular
+                </button>
+                <button
+                  onClick={() => handleTabChange('latest')}
+                  className={`flex-1 py-4 text-sm font-medium transition-colors ${
+                    activeTab === 'latest'
+                      ? 'text-white'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  Latest
+                </button>
+                <button
+                  onClick={() => handleTabChange('users')}
+                  className={`flex-1 py-4 text-sm font-medium transition-colors ${
+                    activeTab === 'users'
+                      ? 'text-white'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  Users
+                </button>
+              </div>
             </div>
           </div>
           
@@ -178,17 +330,74 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
               <div className="flex items-center justify-center h-32">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
               </div>
-            ) : query ? (
-              <div className="space-y-4 p-4">
-                {posts.length === 0 ? (
+            ) : searchQuery ? (
+              <div>
+                {activeTab === 'users' ? (
+                  users.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-400">No users found for &quot;{searchQuery}&quot;</p>
+                    </div>
+                  ) : (
+                    <>
+                      {users.map((user) => (
+                        <div 
+                          key={user.id} 
+                          className="hover:bg-gray-900/50 transition-colors cursor-pointer"
+                          onClick={() => router.push(`/profile/${user.username}`)}
+                        >
+                          <div className="flex items-center space-x-3 p-3 sm:p-4">
+                            <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden">
+                              {user.avatar ? (
+                                <img src={user.avatar} alt={user.title} className="w-full h-full object-cover" />
+                              ) : (
+                                <span className="text-white font-semibold">
+                                  {user.title?.charAt(0)?.toUpperCase() || '?'}
+                                </span>
+                              )}
+                            </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center space-x-2">
+                                 <h3 className={`font-semibold truncate ${
+                                   user.pro ? 'pro-username-gold' : 'text-white'
+                                 }`}>
+                                   {user.title}
+                                 </h3>
+                                </div>
+                                <p className="text-gray-400 text-sm truncate">{user.subtitle}</p>
+                            </div>
+                            {currentUser && currentUser.id !== user.id && (
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleFollow(user.id)
+                                }}
+                                disabled={loadingStates[user.id]}
+                                className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+                                  followingStates[user.id] 
+                                    ? 'border border-white text-white hover:bg-gray-800' 
+                                    : 'bg-white text-black hover:bg-gray-200'
+                                }`}
+                              >
+                                {loadingStates[user.id] ? (
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mx-auto"></div>
+                                ) : followingStates[user.id] ? (
+                                  'Unfollow'
+                                ) : (
+                                  'Follow'
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )
+                ) : posts.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-400">No posts found for &quot;{query}&quot;</p>
+                    <p className="text-gray-400">No posts found for &quot;{searchQuery}&quot;</p>
                   </div>
                 ) : (
                   <>
-                    <p className="text-gray-400 text-sm">
-                      Found {posts.length} result{posts.length !== 1 ? 's' : ''} for &quot;{query}&quot;
-                    </p>
                     {posts.map((post) => (
                       <PostCard
                         key={post.id}
@@ -207,7 +416,7 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
               </div>
             ) : (
               <div className="flex items-center justify-center h-32">
-                <p className="text-gray-400">Enter a search term to find posts</p>
+                <p className="text-gray-400">Enter a search term to find posts and users</p>
               </div>
             )}
           </div>

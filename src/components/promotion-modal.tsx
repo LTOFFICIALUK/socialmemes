@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react'
 import { ArrowLeft, Crown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { getRevenueWalletAddress, solToLamports } from '@/lib/solana'
-import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js'
 import { supabase } from '@/lib/supabase'
+import { processUserToPlatformPayment, isPhantomInstalled } from '@/lib/solana'
+import { PaymentSuccessModal } from '@/components/payment-success-modal'
+import { createPaymentNotification } from '@/lib/database'
 
 interface PromotionModalProps {
   isOpen: boolean
@@ -25,6 +26,13 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [isProUser, setIsProUser] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [successPaymentDetails, setSuccessPaymentDetails] = useState<{
+    type: 'pro' | 'promotion' | 'featured-token' | 'alpha-chat-subscription'
+    amount: number
+    duration?: string
+    signature?: string
+  } | null>(null)
 
   const basePrice = calculatePrice(selectedDuration)
   const discount = isProUser ? 0.2 : 0 // 20% discount for Pro users
@@ -57,47 +65,27 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
   }
 
   const handlePromote = async () => {
+    // Check if Phantom is installed
+    if (!isPhantomInstalled()) {
+      setErrorMessage('Phantom wallet not found. Please install Phantom wallet.')
+      return
+    }
+
     setIsLoading(true)
     setErrorMessage('')
 
     try {
-      // 1. Connect wallet
-      const provider = window.phantom?.solana
-      if (!provider?.isPhantom) {
-        throw new Error('Phantom wallet not found. Please install Phantom wallet.')
+      // Process payment with Solana
+      const paymentResult = await processUserToPlatformPayment({
+        amount: totalCost,
+        memo: `Post promotion - ${selectedDuration} hours`
+      })
+
+      if (!paymentResult.success) {
+        throw new Error(paymentResult.error || 'Payment failed')
       }
 
-      // Connect if not already connected
-      if (!provider.isConnected) {
-        await provider.connect()
-      }
-
-      const publicKey = provider.publicKey?.toString()
-      if (!publicKey) {
-        throw new Error('Failed to get wallet address')
-      }
-
-      // 2. Create and send transaction
-      const connection = new Connection('https://api.devnet.solana.com')
-      const transaction = new Transaction()
-      
-      transaction.add(
-        SystemProgram.transfer({
-          fromPubkey: new PublicKey(publicKey),
-          toPubkey: new PublicKey(getRevenueWalletAddress()),
-          lamports: solToLamports(totalCost),
-        })
-      )
-
-      const { blockhash } = await connection.getLatestBlockhash()
-      transaction.recentBlockhash = blockhash
-      transaction.feePayer = new PublicKey(publicKey)
-
-      // Sign and send
-      const signedTransaction = await provider.signTransaction(transaction)
-      const signature = await connection.sendRawTransaction(signedTransaction.serialize())
-
-      // 3. Call promotion API
+      // Call promotion API with payment details
       const response = await fetch('/api/promote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -105,8 +93,8 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
           postId,
           duration: selectedDuration,
           price: totalCost,
-          signature,
-          fromAddress: publicKey,
+          signature: paymentResult.signature,
+          fromAddress: paymentResult.fromAddress,
         }),
       })
 
@@ -115,7 +103,40 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
         throw new Error(errorData.error || 'Failed to promote post')
       }
 
-      // Success - close modal
+      // Success - show success modal and close main modal
+      const durationText = selectedDuration < 24 
+        ? `${selectedDuration} hours`
+        : selectedDuration === 24
+        ? '1 day'
+        : `${Math.floor(selectedDuration / 24)} days`
+
+      // Create payment notification
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          await createPaymentNotification(
+            user.id,
+            'promotion',
+            totalCost,
+            {
+              duration: durationText,
+              postId: postId,
+              signature: paymentResult.signature
+            }
+          )
+        }
+      } catch (notifError) {
+        console.error('Error creating notification:', notifError)
+        // Don't fail the promotion if notification fails
+      }
+
+      setSuccessPaymentDetails({
+        type: 'promotion',
+        amount: totalCost,
+        duration: durationText,
+        signature: paymentResult.signature
+      })
+      setShowSuccessModal(true)
       onPromote(postId, selectedDuration, totalCost)
       onClose()
 
@@ -258,6 +279,18 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
               </p>
             </div>
       </div>
+
+      {/* Payment Success Modal */}
+      {successPaymentDetails && (
+        <PaymentSuccessModal
+          isOpen={showSuccessModal}
+          onClose={() => {
+            setShowSuccessModal(false)
+            setSuccessPaymentDetails(null)
+          }}
+          paymentDetails={successPaymentDetails}
+        />
+      )}
     </div>
   )
 }

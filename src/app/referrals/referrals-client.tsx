@@ -408,7 +408,10 @@ export const ReferralsClient = () => {
       <FeaturedTokenModal
         isOpen={showFeaturedTokenModal}
         onClose={() => setShowFeaturedTokenModal(false)}
-        currentUser={currentUser}
+        onSuccess={() => {
+          setShowFeaturedTokenModal(false)
+          // Refresh featured tokens or show success message
+        }}
       />
       
       {/* Mobile Trending Modal */}

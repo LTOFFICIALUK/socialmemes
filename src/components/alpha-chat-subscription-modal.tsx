@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Crown } from 'lucide-react'
 import { useToast, ToastContainer } from '@/components/ui/toast'
 import { supabase } from '@/lib/supabase'
+import { processUserToUserPayment, isPhantomInstalled } from '@/lib/solana'
+import { PaymentSuccessModal } from '@/components/payment-success-modal'
+import { createPaymentNotification, createPaymentReceivedNotification } from '@/lib/database'
 
 interface AlphaChatSubscriptionModalProps {
   isOpen: boolean
@@ -31,6 +34,13 @@ export const AlphaChatSubscriptionModal = ({
 }: AlphaChatSubscriptionModalProps) => {
   const [selectedPlan, setSelectedPlan] = useState<keyof typeof ALPHA_CHAT_PRICING>(1)
   const [isSubscribing, setIsSubscribing] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [successPaymentDetails, setSuccessPaymentDetails] = useState<{
+    type: 'pro' | 'promotion' | 'featured-token' | 'alpha-chat-subscription'
+    amount: number
+    duration?: string
+    signature?: string
+  } | null>(null)
   const { toasts, success, error, removeToast } = useToast()
 
   if (!isOpen) return null
@@ -44,6 +54,15 @@ export const AlphaChatSubscriptionModal = ({
       if (!user) {
         throw new Error('User not authenticated')
       }
+
+      // Get current user's username for notifications
+      const { data: currentUserProfile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', user.id)
+        .single()
+
+      const currentUsername = currentUserProfile?.username || 'Anonymous'
 
       // 2. Get alpha chat owner's payout wallet address
       const { data: ownerProfile, error: ownerError } = await supabase
@@ -64,21 +83,32 @@ export const AlphaChatSubscriptionModal = ({
         throw new Error('Alpha chat owner has not set up their payout wallet address')
       }
 
-      // 3. Skip payment processing for testing
+      // 3. Check if Phantom is installed
+      if (!isPhantomInstalled()) {
+        throw new Error('Phantom wallet not found. Please install Phantom wallet to continue.')
+      }
+
       const selectedPlanData = ALPHA_CHAT_PRICING[selectedPlan]
       
-      // Mock payment data for testing (no actual payment)
-      const mockSignature = `mock_signature_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      const mockFromAddress = 'mock_wallet_address_for_testing'
+      // 4. Process user-to-user payment to owner's wallet
+      const paymentResult = await processUserToUserPayment({
+        toAddress: ownerProfile.payout_wallet_address,
+        amount: selectedPlanData.price,
+        memo: `Alpha Chat subscription - ${selectedPlanData.label} to ${ownerUsername}`
+      })
 
-      // 5. Call subscription API
+      if (!paymentResult.success) {
+        throw new Error(paymentResult.error || 'Payment failed')
+      }
+
+      // 5. Call subscription API with payment details
       const requestBody = {
         ownerId,
         duration: selectedPlan,
         price: selectedPlanData.price,
         userId: user.id,
-        signature: mockSignature,
-        fromAddress: mockFromAddress,
+        signature: paymentResult.signature,
+        fromAddress: paymentResult.fromAddress,
       }
       
       console.log('Making subscription API call with data:', requestBody)
@@ -93,7 +123,6 @@ export const AlphaChatSubscriptionModal = ({
       })
       
       console.log('API response status:', response.status)
-      console.log('API response headers:', Object.fromEntries(response.headers.entries()))
 
       if (!response.ok) {
         const errorData = await response.json()
@@ -101,10 +130,47 @@ export const AlphaChatSubscriptionModal = ({
         throw new Error(errorData.details || errorData.error || 'Failed to create subscription')
       }
 
-      // Success - refresh and close modal
+      // 6. Create notifications for both users
+      try {
+        // Notification for subscriber (current user)
+        await createPaymentNotification(
+          user.id,
+          'alpha-chat-subscription',
+          selectedPlanData.price,
+          {
+            duration: selectedPlanData.label,
+            recipientUsername: ownerUsername,
+            signature: paymentResult.signature
+          }
+        )
+
+        // Notification for alpha chat owner (payment received)
+        await createPaymentReceivedNotification(
+          ownerId,
+          user.id,
+          currentUsername,
+          selectedPlanData.price,
+          'alpha-chat-subscription',
+          {
+            duration: selectedPlanData.label,
+            signature: paymentResult.signature
+          }
+        )
+      } catch (notifError) {
+        console.error('Error creating notifications:', notifError)
+        // Don't fail the subscription if notifications fail
+      }
+
+      // 7. Show success modal and close subscription modal
+      setSuccessPaymentDetails({
+        type: 'alpha-chat-subscription',
+        amount: selectedPlanData.price,
+        duration: selectedPlanData.label,
+        signature: paymentResult.signature
+      })
+      setShowSuccessModal(true)
       onSubscriptionSuccess()
       onClose()
-      success('Alpha chat subscription activated successfully!')
     } catch (err) {
       console.error('Error subscribing to alpha chat:', err)
       error('Failed to subscribe', err instanceof Error ? err.message : 'Please try again.')
@@ -199,12 +265,21 @@ export const AlphaChatSubscriptionModal = ({
               )}
             </Button>
           </div>
-          
-          <p className="text-xs text-gray-400 text-center mt-3">
-            Payment processing disabled for testing • No actual charges
-          </p>
         </div>
       </div>
+
+      {/* Payment Success Modal */}
+      {successPaymentDetails && (
+        <PaymentSuccessModal
+          isOpen={showSuccessModal}
+          onClose={() => {
+            setShowSuccessModal(false)
+            setSuccessPaymentDetails(null)
+          }}
+          paymentDetails={successPaymentDetails}
+        />
+      )}
+
       <ToastContainer toasts={toasts} onClose={removeToast} />
     </>
   )

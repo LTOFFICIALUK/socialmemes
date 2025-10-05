@@ -1330,3 +1330,103 @@ export const reactMoneyAlphaChatMessage = async (userId: string, messageId: stri
   if (error) throw error
   return { money_count: data }
 }
+
+// ============================================
+// PAYMENT NOTIFICATION FUNCTIONS
+// ============================================
+
+/**
+ * Create a payment notification for the user who made the payment
+ * This notifies them of their successful payment transaction
+ */
+export const createPaymentNotification = async (
+  userId: string,
+  paymentType: 'pro' | 'promotion' | 'featured-token' | 'alpha-chat-subscription',
+  amount: number,
+  details?: {
+    duration?: string
+    postId?: string
+    tokenTitle?: string
+    recipientUsername?: string
+    signature?: string
+  }
+) => {
+  try {
+    const { error } = await supabase
+      .from('notifications')
+      .insert({
+        user_id: userId,
+        actor_id: userId,
+        type: 'alpha_chat_subscription', // Using existing notification type
+        post_id: null,
+        reply_id: null,
+        is_read: false,
+        metadata: {
+          payment_type: paymentType,
+          amount_sol: amount,
+          duration: details?.duration,
+          post_id: details?.postId,
+          token_title: details?.tokenTitle,
+          recipient_username: details?.recipientUsername,
+          transaction_hash: details?.signature
+        }
+      })
+    
+    if (error) {
+      console.error('Error creating payment notification:', error)
+      throw error
+    }
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Error in createPaymentNotification:', error)
+    throw error
+  }
+}
+
+/**
+ * Create a payment received notification for the recipient
+ * This notifies them when they receive a payment from another user
+ */
+export const createPaymentReceivedNotification = async (
+  recipientUserId: string,
+  senderUserId: string,
+  senderUsername: string,
+  amount: number,
+  paymentType: string,
+  details?: {
+    duration?: string
+    signature?: string
+  }
+) => {
+  try {
+    const { error } = await supabase
+      .from('notifications')
+      .insert({
+        user_id: recipientUserId,
+        actor_id: senderUserId,
+        type: 'alpha_chat_subscription', // Using existing notification type
+        post_id: null,
+        reply_id: null,
+        is_read: false,
+        metadata: {
+          payment_type: paymentType,
+          payment_received: true,
+          amount_sol: amount,
+          sender_username: senderUsername,
+          duration: details?.duration,
+          transaction_hash: details?.signature
+        }
+      })
+    
+    if (error) {
+      console.error('Error creating payment received notification:', error)
+      throw error
+    }
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Error in createPaymentReceivedNotification:', error)
+    throw error
+  }
+}

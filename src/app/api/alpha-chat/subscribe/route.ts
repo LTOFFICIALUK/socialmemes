@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { verifyUserToUserPayment } from '@/lib/solana'
 
 export async function GET() {
   console.log('=== ALPHA CHAT SUBSCRIBE API GET CALLED ===')
@@ -135,29 +136,33 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // TODO: Verify Solana transaction signature and payment
-    // For now, we'll simulate the verification
-    // In production, you would:
-    // 1. Verify the transaction signature
-    // 2. Check that the payment was sent to the correct wallet
-    // 3. Verify the amount matches the expected price
-    // 4. Ensure the transaction is confirmed on-chain
-
-    const isValidPayment = await verifySolanaPayment({
+    // Verify user-to-user payment went to correct recipient
+    console.log('Verifying user-to-user payment:', {
       signature,
+      price,
       fromAddress,
-      toAddress: ownerProfile.payout_wallet_address,
-      amount: price,
-      ownerId,
-      subscriberId: userId
+      toAddress: ownerProfile.payout_wallet_address
     })
 
-    if (!isValidPayment) {
+    const paymentVerification = await verifyUserToUserPayment(
+      signature,
+      price,
+      fromAddress,
+      ownerProfile.payout_wallet_address
+    )
+
+    if (!paymentVerification.isValid) {
+      console.error('Payment verification failed:', paymentVerification.error)
       return NextResponse.json(
-        { error: 'Invalid or unconfirmed payment' },
+        { 
+          error: 'Payment verification failed',
+          details: paymentVerification.error 
+        },
         { status: 400 }
       )
     }
+
+    console.log('Payment verified successfully:', paymentVerification)
 
     // Calculate subscription dates
     const now = new Date()
@@ -221,53 +226,5 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     )
-  }
-}
-
-// Placeholder function for Solana payment verification
-// In production, this would integrate with Solana RPC to verify transactions
-async function verifySolanaPayment({
-  signature,
-  fromAddress,
-  toAddress,
-  amount,
-  ownerId,
-  subscriberId
-}: {
-  signature: string
-  fromAddress: string
-  toAddress: string
-  amount: number
-  ownerId: string
-  subscriberId: string
-}): Promise<boolean> {
-  try {
-    // TODO: Implement actual Solana transaction verification
-    // This would involve:
-    // 1. Fetching the transaction from Solana RPC
-    // 2. Verifying the signature
-    // 3. Checking the transfer amount and addresses
-    // 4. Ensuring the transaction is confirmed
-    
-    // For now, we'll simulate a successful verification
-    // In production, replace this with actual Solana verification logic
-    console.log('Verifying Solana payment:', {
-      signature,
-      fromAddress,
-      toAddress,
-      amount,
-      ownerId,
-      subscriberId
-    })
-
-    // Simulate verification delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    // For development, always return true
-    // In production, implement proper verification
-    return true
-  } catch (error) {
-    console.error('Error verifying Solana payment:', error)
-    return false
   }
 }
