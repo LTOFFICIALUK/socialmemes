@@ -34,6 +34,7 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
   const [featuredTokensKey, setFeaturedTokensKey] = useState(0)
   const [activeTab, setActiveTab] = useState<'popular' | 'latest' | 'users'>('popular')
   const [searchQuery, setSearchQuery] = useState('')
+  const [hasSearched, setHasSearched] = useState(false)
   const [followingStates, setFollowingStates] = useState<Record<string, boolean>>({})
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({})
   const router = useRouter()
@@ -118,8 +119,12 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
     }
   }
 
-  const handleSearch = (searchTerm: string) => {
+  const handleSearchInput = (searchTerm: string) => {
     setSearchQuery(searchTerm)
+  }
+
+  const handleSearch = (searchTerm: string) => {
+    setHasSearched(true)
     if (activeTab === 'users') {
       searchUsers(searchTerm)
     } else {
@@ -215,6 +220,7 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
   useEffect(() => {
     if (query) {
       setSearchQuery(query)
+      setHasSearched(true)
       if (activeTab === 'users') {
         searchUsers(query)
       } else {
@@ -224,6 +230,7 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
       setPosts([])
       setUsers([])
       setSearchQuery('')
+      setHasSearched(false)
     }
   }, [query])
 
@@ -283,7 +290,8 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
               <SearchBar 
                 placeholder="Search posts, users, tokens..." 
                 value={searchQuery}
-                onChange={handleSearch}
+                onChange={handleSearchInput}
+                onSearch={handleSearch}
               />
             </div>
             
@@ -333,7 +341,11 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
             ) : searchQuery ? (
               <div>
                 {activeTab === 'users' ? (
-                  users.length === 0 ? (
+                  !hasSearched ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-400">Enter a search term to find posts and users</p>
+                    </div>
+                  ) : users.length === 0 ? (
                     <div className="text-center py-8">
                       <p className="text-gray-400">No users found for &quot;{searchQuery}&quot;</p>
                     </div>
@@ -392,6 +404,10 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
                       ))}
                     </>
                   )
+                ) : !hasSearched ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-400">Enter a search term to find posts and users</p>
+                  </div>
                 ) : posts.length === 0 ? (
                   <div className="text-center py-8">
                     <p className="text-gray-400">No posts found for &quot;{searchQuery}&quot;</p>

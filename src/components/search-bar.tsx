@@ -7,9 +7,10 @@ interface SearchBarProps {
   placeholder?: string
   value?: string
   onChange?: (value: string) => void
+  onSearch?: (value: string) => void
 }
 
-export const SearchBar = ({ placeholder = "Search", value, onChange }: SearchBarProps) => {
+export const SearchBar = ({ placeholder = "Search", value, onChange, onSearch }: SearchBarProps) => {
   const [internalQuery, setInternalQuery] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   
@@ -29,9 +30,14 @@ export const SearchBar = ({ placeholder = "Search", value, onChange }: SearchBar
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      // Navigate to search page with posts
-      if (query.trim()) {
-        window.location.href = `/search?q=${encodeURIComponent(query.trim())}`
+      if (onSearch) {
+        // Use onSearch callback if provided
+        onSearch(query.trim())
+      } else {
+        // Default behavior: navigate to search page with posts
+        if (query.trim()) {
+          window.location.href = `/search?q=${encodeURIComponent(query.trim())}`
+        }
       }
     }
   }
