@@ -27,6 +27,12 @@ interface Stats {
   recent_referrals: number
 }
 
+interface EarningsData {
+  total_earned: number
+  pending_payout: number
+  next_payout_date: string | null
+}
+
 interface Referral {
   id: string
   username: string
@@ -38,6 +44,11 @@ interface Referral {
 export const ReferralsClient = () => {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [stats, setStats] = useState<Stats>({ total_referrals: 0, recent_referrals: 0 })
+  const [earningsData, setEarningsData] = useState<EarningsData>({ 
+    total_earned: 0, 
+    pending_payout: 0, 
+    next_payout_date: null
+  })
   const [referrals, setReferrals] = useState<Referral[]>([])
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
@@ -90,6 +101,21 @@ export const ReferralsClient = () => {
 
         if (statsData && statsData[0]) {
           setStats(statsData[0])
+        }
+
+        // Get earnings data from referral_data table
+        const { data: referralData, error: referralDataError } = await supabase
+          .from('referral_data')
+          .select('total_earned, pending_payout, next_payout_date')
+          .eq('user_id', user.id)
+          .single()
+
+        if (referralData && !referralDataError) {
+          setEarningsData({
+            total_earned: Number(referralData.total_earned) || 0,
+            pending_payout: Number(referralData.pending_payout) || 0,
+            next_payout_date: referralData.next_payout_date
+          })
         }
 
         // Get recent referrals
@@ -162,15 +188,6 @@ export const ReferralsClient = () => {
       style: 'currency',
       currency: 'USD',
     }).format(amount)
-  }
-
-  // Mock earnings data - in a real app, this would come from the database
-  const earningsData = {
-    totalEarned: 125.50,
-    pendingPayout: 45.25,
-    nextPayoutDate: '2024-02-15',
-    referralRate: 2.50, // $2.50 per referral
-    lifetimeEarnings: 125.50
   }
 
   if (loading) {
@@ -278,7 +295,7 @@ export const ReferralsClient = () => {
           {/* Main Content - Scrollable */}
           <div className="flex-1 overflow-y-auto min-w-0 p-4 space-y-6">
             {/* Main Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Total Referrals */}
               <div className="bg-black border border-gray-800 rounded-lg p-4">
                 <div>
@@ -292,7 +309,7 @@ export const ReferralsClient = () => {
               <div className="bg-black border border-gray-800 rounded-lg p-4">
                 <div>
                   <p className="text-gray-400 text-sm">Total Earned</p>
-                  <p className="text-2xl font-bold text-white">{formatCurrency(earningsData.totalEarned)}</p>
+                  <p className="text-2xl font-bold text-white">{formatCurrency(earningsData.total_earned)}</p>
                   <p className="text-gray-500 text-xs mt-1">Lifetime earnings</p>
                 </div>
               </div>
@@ -301,17 +318,10 @@ export const ReferralsClient = () => {
               <div className="bg-black border border-gray-800 rounded-lg p-4">
                 <div>
                   <p className="text-gray-400 text-sm">Pending Payout</p>
-                  <p className="text-2xl font-bold text-white">{formatCurrency(earningsData.pendingPayout)}</p>
-                  <p className="text-gray-500 text-xs mt-1">Next payout: {formatDate(earningsData.nextPayoutDate)}</p>
-                </div>
-              </div>
-
-              {/* Referral Rate */}
-              <div className="bg-black border border-gray-800 rounded-lg p-4">
-                <div>
-                  <p className="text-gray-400 text-sm">Per Referral</p>
-                  <p className="text-2xl font-bold text-white">{formatCurrency(earningsData.referralRate)}</p>
-                  <p className="text-gray-500 text-xs mt-1">Earned per signup</p>
+                  <p className="text-2xl font-bold text-white">{formatCurrency(earningsData.pending_payout)}</p>
+                  <p className="text-gray-500 text-xs mt-1">
+                    {earningsData.next_payout_date ? `Next payout: ${formatDate(earningsData.next_payout_date)}` : 'No pending payout'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -390,15 +400,9 @@ export const ReferralsClient = () => {
                           </p>
                           <p className="text-sm text-gray-400">@{referral.username}</p>
                         </div>
-                        <div className="flex items-center space-x-3">
-                          <Badge variant="secondary" className="bg-gray-700 text-gray-300">
-                            {formatDate(referral.created_at)}
-                          </Badge>
-                          <div className="text-right">
-                            <p className="text-white font-semibold">+{formatCurrency(earningsData.referralRate)}</p>
-                            <p className="text-xs text-gray-500">Earned</p>
-                          </div>
-                        </div>
+                        <Badge variant="secondary" className="bg-gray-700 text-gray-300">
+                          {formatDate(referral.created_at)}
+                        </Badge>
                       </div>
                     ))}
                   </div>

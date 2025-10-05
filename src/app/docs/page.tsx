@@ -17,7 +17,12 @@ import {
   Heart,
   ArrowLeft,
   ArrowRight,
-  Home
+  Home,
+  Crown,
+  TrendingUp,
+  DollarSign,
+  UserPlus,
+  Lock
 } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
@@ -217,12 +222,20 @@ const docSections: DocSection[] = [
             <ul className="text-gray-300 space-y-2 ml-4 mb-6">
               <li>• New likes on your posts</li>
               <li>• Comments on your content</li>
+              <li>• Replies to your comments</li>
               <li>• New followers</li>
+            </ul>
+            
+            <h3 className="text-xl font-semibold text-white mb-4">Alpha Chat Notifications</h3>
+            <ul className="text-gray-300 space-y-2 ml-4 mb-6">
+              <li>• New alpha chat subscriptions (when someone subscribes to your alpha chat)</li>
             </ul>
             
             <h3 className="text-xl font-semibold text-white mb-4">System Notifications</h3>
             <ul className="text-gray-300 space-y-2 ml-4 mb-8">
               <li>• Account updates</li>
+              <li>• Pro subscription status changes</li>
+              <li>• Referral earnings and payouts</li>
               <li>• Platform announcements</li>
               <li>• Security alerts</li>
             </ul>
@@ -262,17 +275,10 @@ const docSections: DocSection[] = [
             </div>
           </div>
         )
-      }
-    ]
-  },
-  {
-    id: 'search',
-    title: 'Search & Discovery',
-    icon: Search,
-    children: [
+      },
       {
         id: 'search-basics',
-        title: 'Search Basics',
+        title: 'Search & Discovery',
         icon: Search,
         content: (
           <div className="prose prose-invert max-w-none overflow-hidden">
@@ -337,8 +343,438 @@ const docSections: DocSection[] = [
     ]
   },
   {
+    id: 'premium-features',
+    title: 'Monetization',
+    icon: Crown,
+    children: [
+      {
+        id: 'pro-subscription',
+        title: 'Pro Subscription',
+        icon: Crown,
+        content: (
+          <div className="prose prose-invert max-w-none overflow-hidden">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 break-words">Pro Subscription</h1>
+            <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed">
+              Upgrade to Pro and unlock exclusive features, increased visibility, and special perks on Social Memes.
+            </p>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">What is Pro?</h2>
+            <p className="text-gray-300 mb-4">
+              Pro subscription is a premium membership that gives you enhanced capabilities and visibility on the platform. 
+              Pro members receive a distinctive badge on their profile and gain access to exclusive features like Alpha Chats.
+            </p>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Pro Benefits</h2>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li><strong>Gold Username:</strong> Your username displays in gold to show your Pro status</li>
+              <li><strong>Creator Earnings:</strong> Pro users can start earning from their posts and engagement</li>
+              <li><strong>Alpha Chat Access:</strong> Enable your own Alpha Chat to create a premium subscription feed for your followers</li>
+              <li><strong>Advertisement Discounts:</strong> Get 20% off all post and token promotions</li>
+              <li><strong>Support the Platform:</strong> Help sustain Social Memes and fund creator rewards</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Subscription Plans</h2>
+            <div className="bg-black border border-gray-800 rounded-lg p-6 mb-6">
+              <h3 className="text-xl font-semibold text-white mb-4">Available Durations</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center p-3 bg-gray-900/50 rounded-lg">
+                  <span className="text-gray-300">1 Month</span>
+                  <span className="text-green-400 font-bold">0.1 SOL</span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-gray-900/50 rounded-lg">
+                  <span className="text-gray-300">3 Months</span>
+                  <span className="text-green-400 font-bold">0.25 SOL</span>
+                  <span className="text-yellow-400 text-sm">17% savings</span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-gray-900/50 rounded-lg">
+                  <span className="text-gray-300">6 Months</span>
+                  <span className="text-green-400 font-bold">0.45 SOL</span>
+                  <span className="text-yellow-400 text-sm">25% savings</span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-gray-900/50 rounded-lg">
+                  <span className="text-gray-300">12 Months</span>
+                  <span className="text-green-400 font-bold">0.8 SOL</span>
+                  <span className="text-yellow-400 text-sm">33% savings</span>
+                </div>
+              </div>
+            </div>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">How to Subscribe</h2>
+            <ol className="list-decimal list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>Ensure you have Phantom wallet installed with sufficient SOL</li>
+              <li>Click on the Pro badge or Pro button in the navigation</li>
+              <li>Select your preferred subscription duration</li>
+              <li>Review the pricing and benefits</li>
+              <li>Complete the payment through your Phantom wallet</li>
+              <li>Your Pro status activates immediately upon payment confirmation</li>
+            </ol>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Payment & Security</h2>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>All payments are processed securely through the Solana blockchain</li>
+              <li>Transactions are verified on-chain before subscription activation</li>
+              <li>Your Pro status is linked to your account and cannot be transferred</li>
+              <li>Subscriptions auto-expire at the end of the term (no auto-renewal)</li>
+            </ul>
+
+            <div className="bg-black border border-yellow-600 rounded-lg p-4">
+              <p className="text-yellow-300">
+                <strong>Pro Tip:</strong> Longer subscriptions offer better value per month. The 12-month plan provides the best discount!
+              </p>
+            </div>
+          </div>
+        )
+      },
+      {
+        id: 'alpha-chat',
+        title: 'Alpha Chats',
+        icon: Lock,
+        content: (
+          <div className="prose prose-invert max-w-none overflow-hidden">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 break-words">Alpha Chats</h1>
+            <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed">
+              Create a premium subscription-based content feed where you can share exclusive insights, alpha, and analysis with your paying subscribers.
+            </p>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">What are Alpha Chats?</h2>
+            <p className="text-gray-300 mb-4">
+              Alpha Chats are exclusive, subscription-based content feeds that allow creators to monetize their insights 
+              and build a premium community. Only Pro users can enable Alpha Chats, and subscribers pay you directly 
+              via your payout wallet address.
+            </p>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">For Alpha Chat Creators</h2>
+            <h3 className="text-xl font-semibold text-white mb-4">Requirements</h3>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-6">
+              <li>Must have an active Pro subscription</li>
+              <li>Must set up your payout wallet address in profile settings</li>
+              <li>Payment from subscribers goes directly to your wallet with zero platform fees</li>
+            </ul>
+
+            <h3 className="text-xl font-semibold text-white mb-4">Enabling Alpha Chat</h3>
+            <ol className="list-decimal list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>Subscribe to Pro if you haven&apos;t already</li>
+              <li>Set up your payout wallet address in your profile settings</li>
+              <li>Navigate to Pro settings and open Alpha Chat settings</li>
+              <li>Toggle Alpha Chat to &quot;Enabled&quot;</li>
+              <li>Your Alpha Chat feed is now active and visible to potential subscribers when they visit your profile</li>
+            </ol>
+
+            <h3 className="text-xl font-semibold text-white mb-4">Creating Alpha Content</h3>
+            <p className="text-gray-300 mb-4">When Alpha Chat is enabled, you can:</p>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>Post exclusive messages visible only to your subscribers</li>
+              <li>Share market analysis, trading insights, or alpha calls</li>
+              <li>Build a premium community around your expertise</li>
+              <li>Engage directly with your paying subscribers</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">For Subscribers</h2>
+            <h3 className="text-xl font-semibold text-white mb-4">Subscription Pricing</h3>
+            <div className="bg-black border border-gray-800 rounded-lg p-6 mb-6">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center p-3 bg-gray-900/50 rounded-lg">
+                  <span className="text-gray-300">1 Month Access</span>
+                  <span className="text-green-400 font-bold">0.1 SOL</span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-gray-900/50 rounded-lg">
+                  <span className="text-gray-300">3 Months Access</span>
+                  <span className="text-green-400 font-bold">0.25 SOL</span>
+                  <span className="text-yellow-400 text-sm">17% savings</span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-gray-900/50 rounded-lg">
+                  <span className="text-gray-300">6 Months Access</span>
+                  <span className="text-green-400 font-bold">0.45 SOL</span>
+                  <span className="text-yellow-400 text-sm">25% savings</span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-gray-900/50 rounded-lg">
+                  <span className="text-gray-300">12 Months Access</span>
+                  <span className="text-green-400 font-bold">0.8 SOL</span>
+                  <span className="text-yellow-400 text-sm">33% savings</span>
+                </div>
+              </div>
+            </div>
+
+            <h3 className="text-xl font-semibold text-white mb-4">How to Subscribe</h3>
+            <ol className="list-decimal list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>Visit the profile of a creator with Alpha Chat enabled</li>
+              <li>Click on their Alpha Chat section</li>
+              <li>Select your preferred subscription duration</li>
+              <li>Complete payment through Phantom wallet</li>
+              <li>Payment goes directly to the creator&apos;s wallet</li>
+              <li>Access is granted immediately upon payment confirmation</li>
+            </ol>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Features & Interactions</h2>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li><strong>Real-time Feed:</strong> See new messages as they&apos;re posted</li>
+              <li><strong>Like Messages:</strong> Show appreciation for valuable insights</li>
+              <li><strong>Notifications:</strong> Get notified of new alpha content</li>
+            </ul>
+
+            <div className="bg-black border border-purple-600 rounded-lg p-4">
+              <p className="text-purple-300">
+                <strong>Important:</strong> Alpha Chat subscriptions expire at the end of the term. Payments go directly to creators&apos; wallets, not through the platform.
+              </p>
+            </div>
+          </div>
+        )
+      },
+      {
+        id: 'referrals',
+        title: 'Referral Program',
+        icon: UserPlus,
+        content: (
+          <div className="prose prose-invert max-w-none overflow-hidden">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 break-words">Referral Program</h1>
+            <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed">
+              Earn rewards by inviting friends to join Social Memes. Receive a portion of your referred users&apos; earnings on the platform.
+            </p>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">How It Works</h2>
+            <p className="text-gray-300 mb-4">
+              The referral program allows you to earn passive income by growing the Social Memes community. 
+              When someone signs up using your referral code or link, you become their referrer and earn a percentage 
+              of their future platform earnings.
+            </p>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Your Referral Code</h2>
+            <p className="text-gray-300 mb-4">
+              Every user automatically receives a unique referral code based on their username. 
+              You can find your referral code and link on the Referrals page in your navigation menu.
+            </p>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li><strong>Referral Code:</strong> Your username in uppercase (e.g., JOHNDOE)</li>
+              <li><strong>Referral Link:</strong> A shareable link that includes your code</li>
+              <li><strong>Easy Sharing:</strong> Copy your code/link to share with others</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Earning from Referrals</h2>
+            <p className="text-gray-300 mb-4">
+              When users you refer earn money on Social Memes (through creator rewards, payouts, etc.), 
+              you automatically receive a small percentage of their earnings as referral commission.
+            </p>
+            <div className="bg-black border border-gray-800 rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Passive Income</h3>
+              <ul className="list-disc list-inside space-y-2 text-gray-300 ml-4">
+                <li>Earn from your referrals&apos; platform earnings</li>
+                <li>Track total earned and pending payouts</li>
+                <li>See your next scheduled payout date</li>
+                <li>View all your referred users and their activity</li>
+              </ul>
+            </div>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">How to Refer Users</h2>
+            <h3 className="text-xl font-semibold text-white mb-4">For Referrers</h3>
+            <ol className="list-decimal list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>Navigate to the Referrals page from the menu</li>
+              <li>Copy your referral code or referral link</li>
+              <li>Share with friends, on social media, or in communities</li>
+              <li>New users enter your code during signup or use your link</li>
+              <li>Track your referrals and earnings on the Referrals page</li>
+            </ol>
+
+            <h3 className="text-xl font-semibold text-white mb-4">For New Users</h3>
+            <ol className="list-decimal list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>Click a referral link or go to the signup page</li>
+              <li>Enter the referral code in the optional referral code field</li>
+              <li>The code is automatically validated as you type</li>
+              <li>Complete your signup process</li>
+              <li>You&apos;re now linked to your referrer</li>
+            </ol>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Referral Dashboard</h2>
+            <p className="text-gray-300 mb-4">The Referrals page provides comprehensive tracking:</p>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li><strong>Total Referrals:</strong> How many users you&apos;ve referred</li>
+              <li><strong>Total Earned:</strong> All-time referral earnings</li>
+              <li><strong>Pending Payout:</strong> Earnings awaiting next payout</li>
+              <li><strong>Referral List:</strong> See all users you&apos;ve referred and how much you earned from each</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Payout Information</h2>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>Referral earnings are tracked in real-time</li>
+              <li>Payouts are not automatic - you must claim your earnings manually</li>
+              <li>Visit the Referrals page and click to claim your earnings</li>
+              <li>A Phantom popup will appear to send your earnings to your wallet</li>
+              <li>Make sure to set up your payout wallet in profile settings</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Best Practices</h2>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>Share your referral link in relevant communities and groups</li>
+              <li>Explain the benefits of joining Social Memes to potential referrals</li>
+              <li>Be authentic and transparent about the platform</li>
+              <li>Don&apos;t spam or use deceptive practices</li>
+              <li>Help your referrals get started and engaged on the platform</li>
+            </ul>
+
+          </div>
+        )
+      }
+    ]
+  },
+  {
+    id: 'advertising',
+    title: 'Advertising',
+    icon: TrendingUp,
+    children: [
+      {
+        id: 'post-promotion',
+        title: 'Post Promotion',
+        icon: TrendingUp,
+        content: (
+          <div className="prose prose-invert max-w-none overflow-hidden">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 break-words">Post Promotion</h1>
+            <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed">
+              Boost your posts to reach a wider audience and increase engagement through promoted visibility in the main feed.
+            </p>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">What is Post Promotion?</h2>
+            <p className="text-gray-300 mb-4">
+              Post promotion allows you to boost the visibility of your memes and content across Social Memes. 
+              Promoted posts appear more prominently in the main feed, helping you reach more viewers and drive engagement.
+            </p>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">How It Works</h2>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>Promoted posts receive boosted visibility in the main feed</li>
+              <li>Your content appears more frequently to users browsing the platform</li>
+              <li>Promotion runs for the duration you select</li>
+              <li>You can promote any of your existing posts</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Pricing</h2>
+            <p className="text-gray-300 mb-4">
+              Promotion pricing is based on duration. The longer you promote, the more visibility you get.
+            </p>
+            <div className="bg-black border border-gray-800 rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Pro Users: 20% Discount</h3>
+              <p className="text-gray-400 mb-4">Pro subscribers automatically receive a 20% discount on all post promotions.</p>
+            </div>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">How to Promote a Post</h2>
+            <ol className="list-decimal list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>Navigate to the post you want to promote</li>
+              <li>Click the promote button (if available on the post)</li>
+              <li>Select your desired promotion duration</li>
+              <li>Review the pricing (Pro users see discounted rates)</li>
+              <li>Complete payment through your Phantom wallet</li>
+              <li>Your post becomes promoted immediately after payment confirmation</li>
+            </ol>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Best Practices</h2>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>Promote high-quality, engaging content for best results</li>
+              <li>Choose duration based on your content&apos;s relevance timeline</li>
+              <li>Use promotion for posts with token attachments to boost token visibility</li>
+              <li>Consider promoting when your target audience is most active</li>
+            </ul>
+
+
+            <div className="bg-black border border-blue-600 rounded-lg p-4">
+              <p className="text-blue-300">
+                <strong>Tip:</strong> Pro users save 20% on every promotion. If you promote frequently, a Pro subscription can pay for itself!
+              </p>
+            </div>
+          </div>
+        )
+      },
+      {
+        id: 'token-promotion',
+        title: 'Token Promotion',
+        icon: DollarSign,
+        content: (
+          <div className="prose prose-invert max-w-none overflow-hidden">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 break-words">Token Promotion (Featured Tokens)</h1>
+            <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed">
+              Promote your Solana token with featured placement in the trending tokens section, driving visibility and engagement for your project.
+            </p>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">What is Token Promotion?</h2>
+            <p className="text-gray-300 mb-4">
+              Token promotion (Featured Tokens) allows you to showcase your Solana token in a premium, high-visibility 
+              section of the platform. Featured tokens appear prominently in the trending tokens sidebar, reaching users 
+              actively engaged with the crypto community on Social Memes.
+            </p>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">How It Works</h2>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>Featured tokens appear in the trending tokens section on the right sidebar</li>
+              <li>Your token is displayed with a custom image and clickable link</li>
+              <li>Limited to 8 featured token slots at any time (premium positioning)</li>
+              <li>Promotion runs for your selected duration</li>
+              <li>Users can click through to your specified destination URL (website, DEX, etc.)</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">What You Need</h2>
+            <p className="text-gray-300 mb-4">To create a token promotion, you&apos;ll need:</p>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li><strong>Token Image:</strong> Upload a high-quality image representing your token (logo, artwork, etc.)</li>
+              <li><strong>Destination URL:</strong> Where users go when they click (your website, DEX listing, socials, etc.)</li>
+              <li><strong>Optional Title:</strong> Optionally add a custom title for your featured token (not displayed to users)</li>
+              <li><strong>Duration:</strong> How long you want the promotion to run</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Pricing</h2>
+            <p className="text-gray-300 mb-4">
+              Token promotion pricing is based on duration. Featured placement is limited to maintain exclusivity.
+            </p>
+            <div className="bg-black border border-gray-800 rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Pro Users: 20% Discount</h3>
+              <p className="text-gray-400 mb-4">
+                Pro subscribers automatically receive a 20% discount on all token promotions.
+              </p>
+              <h3 className="text-lg font-semibold text-white mb-4 mt-6">Limited Availability</h3>
+              <p className="text-gray-400">
+                Only 8 featured token slots available at any time. If all slots are full, you&apos;ll need to wait for an opening.
+              </p>
+            </div>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">How to Promote a Token</h2>
+            <ol className="list-decimal list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>Ensure you have a token image uploaded and a destination URL ready</li>
+              <li>Navigate to the featured tokens promotion section</li>
+              <li>Upload your token image or provide an image URL</li>
+              <li>Enter your destination URL (must be a valid URL)</li>
+              <li>Optionally add a custom title</li>
+              <li>Select your promotion duration</li>
+              <li>Review pricing (Pro users see discounted rates)</li>
+              <li>Complete payment through your Phantom wallet</li>
+              <li>Your token appears in the featured section immediately upon confirmation</li>
+            </ol>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Best Practices</h2>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>Use high-quality, eye-catching images for better click-through rates</li>
+              <li>Ensure your destination URL works and provides value</li>
+              <li>Choose a duration that aligns with your marketing campaign</li>
+              <li>Time promotions with token launches or major announcements</li>
+              <li>Make sure your destination page is mobile-friendly</li>
+            </ul>
+
+            <h2 className="text-2xl font-semibold text-white mb-4">Promotion Guidelines</h2>
+            <ul className="list-disc list-inside space-y-3 text-gray-300 ml-4 mb-8">
+              <li>Images must be appropriate and follow community guidelines</li>
+              <li>Destination URLs must be legitimate and not scams</li>
+              <li>No misleading or false advertising</li>
+              <li>Platform reserves the right to remove promotions that violate guidelines</li>
+            </ul>
+
+            <div className="bg-black border border-green-600 rounded-lg p-4">
+              <p className="text-green-300">
+                <strong>Success Tip:</strong> Combine token promotion with posting engaging content about your token to maximize visibility and community engagement!
+              </p>
+            </div>
+          </div>
+        )
+      }
+    ]
+  },
+  {
     id: 'settings',
-    title: 'Settings & Privacy',
+    title: 'Settings & Support',
     icon: Settings,
     children: [
       {
@@ -390,17 +826,10 @@ const docSections: DocSection[] = [
             </ul>
           </div>
         )
-      }
-    ]
-  },
-  {
-    id: 'help',
-    title: 'Help & Support',
-    icon: HelpCircle,
-    children: [
+      },
       {
         id: 'faq',
-        title: 'Frequently Asked Questions',
+        title: 'FAQs',
         icon: HelpCircle,
         content: (
           <div className="prose prose-invert max-w-none overflow-hidden">
@@ -714,6 +1143,7 @@ const docSections: DocSection[] = [
           <li>• New likes</li>
           <li>• New replies</li>
           <li>• New followers</li>
+          <li>• Alpha Chat subscriptions (when someone subscribes to your Alpha Chat)</li>
           <li>• No notifications for shares or token activity</li>
         </ul>
 
@@ -724,6 +1154,7 @@ const docSections: DocSection[] = [
           <li>• Profile picture, display name, and permanent username (set at signup and cannot be changed)</li>
           <li>• Bio and stats (posts, followers, following)</li>
           <li>• User&apos;s shared memes and text posts</li>
+          <li>• Alpha Chat section (if enabled by Pro users)</li>
           <li>• Editable sections: banner, profile picture, and bio</li>
         </ul>
 
@@ -770,28 +1201,69 @@ const docSections: DocSection[] = [
           <li>• Updates dynamically to reflect platform-wide activity</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold text-white mb-4">5. Technical Foundation</h2>
+        <h2 className="text-2xl font-semibold text-white mb-4">5. Monetization & Premium Features</h2>
+        
+        <h3 className="text-xl font-semibold text-white mb-4">5.1 Pro Subscription</h3>
         <ul className="text-gray-300 space-y-2 ml-4 mb-6">
-          <li>• <strong>Frontend</strong> – responsive web interface optimized for both desktop and mobile</li>
-          <li>• <strong>Backend</strong> – scalable API infrastructure for handling user data, content, and engagement</li>
-          <li>• <strong>Storage</strong> – centralized media storage at launch, with future options for decentralized hosting</li>
-          <li>• <strong>Blockchain Integration</strong> – built natively on Solana, using its token ecosystem for post attachments and trending token tracking</li>
+          <li>• <strong>Gold Username:</strong> Pro users display gold usernames to show their premium status</li>
+          <li>• <strong>Creator Earnings:</strong> Pro users can start earning from their posts and engagement</li>
+          <li>• <strong>Alpha Chat Access:</strong> Pro users can create premium subscription content feeds</li>
+          <li>• <strong>Advertisement Discounts:</strong> 20% off all post and token promotions</li>
+          <li>• <strong>Pricing:</strong> 0.1 SOL/month, with discounts for longer commitments (3, 6, 12 months)</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold text-white mb-4">6. Summary</h2>
+        <h3 className="text-xl font-semibold text-white mb-4">5.2 Alpha Chats</h3>
+        <ul className="text-gray-300 space-y-2 ml-4 mb-6">
+          <li>• <strong>Premium Content:</strong> Pro users can create exclusive subscription-based content feeds</li>
+          <li>• <strong>Direct Payments:</strong> Subscribers pay directly to creators with zero platform fees</li>
+          <li>• <strong>Subscription Tiers:</strong> 1 month (0.1 SOL), 3 months (0.25 SOL), 6 months (0.45 SOL), 12 months (0.8 SOL)</li>
+          <li>• <strong>Real-time Feed:</strong> Subscribers see new alpha messages as they&apos;re posted</li>
+          <li>• <strong>Creator Requirements:</strong> Must have Pro subscription and payout wallet set up</li>
+        </ul>
+
+        <h3 className="text-xl font-semibold text-white mb-4">5.3 Advertising</h3>
+        <ul className="text-gray-300 space-y-2 ml-4 mb-6">
+          <li>• <strong>Post Promotion:</strong> Boost visibility in the main feed for increased engagement</li>
+          <li>• <strong>Token Promotion:</strong> Featured placement in trending tokens section (max 8 active)</li>
+          <li>• <strong>Pro Discounts:</strong> 20% off all advertising for Pro subscribers</li>
+          <li>• <strong>Duration-based Pricing:</strong> Longer promotions provide better value</li>
+        </ul>
+
+        <h3 className="text-xl font-semibold text-white mb-4">5.4 Referral Program</h3>
+        <ul className="text-gray-300 space-y-2 ml-4 mb-6">
+          <li>• <strong>Earn from Referrals:</strong> Receive a portion of referred users&apos; earnings on the platform</li>
+          <li>• <strong>Unique Codes:</strong> Every user gets a referral code based on their username</li>
+          <li>• <strong>Manual Payouts:</strong> Claim earnings manually through Phantom wallet popup</li>
+          <li>• <strong>Real-time Tracking:</strong> Referral earnings tracked in real-time on referrals page</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold text-white mb-4">6. Technical Foundation</h2>
+        <ul className="text-gray-300 space-y-2 ml-4 mb-6">
+          <li>• <strong>Frontend</strong> – responsive web interface optimized for both desktop and mobile</li>
+          <li>• <strong>Backend</strong> – scalable API infrastructure for handling user data, content, engagement, and monetization</li>
+          <li>• <strong>Storage</strong> – centralized media storage at launch, with future options for decentralized hosting</li>
+          <li>• <strong>Blockchain Integration</strong> – built natively on Solana, using its token ecosystem for post attachments, trending token tracking, and payments</li>
+          <li>• <strong>Payment Infrastructure</strong> – integrated Phantom wallet for Pro subscriptions, Alpha Chat payments, and advertising transactions</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold text-white mb-4">7. Summary</h2>
         <p className="text-gray-300 mb-4 leading-relaxed">
           Social Memes is a Solana-native social platform where users share memes and text posts, engage with each other, and connect their content to tokens.
         </p>
         <p className="text-gray-300 mb-4">The platform includes:</p>
         <ul className="text-gray-300 space-y-2 ml-4 mb-6">
-          <li>• A familiar feed-based structure</li>
+          <li>• A familiar feed-based structure with post promotion capabilities</li>
           <li>• Grid-style meme discovery via Explore</li>
-          <li>• Profile pages with permanent usernames and customizable banners</li>
+          <li>• Profile pages with permanent usernames, customizable banners, and Alpha Chat integration</li>
           <li>• Post pages supporting both memes and text posts, with optional token attachments</li>
           <li>• A real-time list of trending Solana tokens ranked by post activity and engagement</li>
+          <li>• Pro subscription system with creator earnings and premium features</li>
+          <li>• Alpha Chat premium content feeds with direct creator payments</li>
+          <li>• Advertising system for post and token promotion</li>
+          <li>• Referral program for community growth and user rewards</li>
         </ul>
         <p className="text-gray-300 leading-relaxed">
-          By combining proven social features with token integration, Social Memes provides a straightforward but crypto-native experience tailored to meme culture and Solana communities.
+          By combining proven social features with token integration and comprehensive monetization tools, Social Memes provides a complete crypto-native experience that rewards creators, supports community growth, and maintains focus on meme culture and Solana communities.
         </p>
       </div>
     )
@@ -1040,13 +1512,18 @@ const DocsPage = () => {
                           {child.id === 'account-setup' && "Complete guide to creating and setting up your Social Memes account."}
                           {child.id === 'posting-memes' && "Learn how to create, upload, and share memes with the community."}
                           {child.id === 'interactions' && "Engage with content through likes, comments, and following other users."}
-                          {child.id === 'notifications' && "Manage your notifications and stay updated with platform activity."}
+                          {child.id === 'notifications' && "Manage your notifications and stay updated with platform activity including alpha chats."}
+                          {child.id === 'pro-subscription' && "Upgrade to Pro for exclusive features, badges, and platform-wide benefits."}
+                          {child.id === 'alpha-chat' && "Create premium subscription content feeds and monetize your insights."}
+                          {child.id === 'referrals' && "Earn passive income by inviting friends and growing the community."}
+                          {child.id === 'post-promotion' && "Boost your posts for increased visibility and engagement."}
+                          {child.id === 'token-promotion' && "Promote your Solana token in featured placement for maximum exposure."}
                           {child.id === 'search-basics' && "Discover content and users with our powerful search and discovery features."}
                           {child.id === 'privacy-settings' && "Control your privacy and manage how others can interact with your content."}
                           {child.id === 'terms-of-service' && "Read the terms and conditions for using Social Memes."}
                           {child.id === 'privacy-policy' && "Learn how we collect, use, and protect your information."}
                           {child.id === 'community-guidelines' && "Guidelines for maintaining a positive community environment."}
-                          {child.id === 'faq' && "Find answers to common questions about using the Social Memes platform."}
+                          {child.id === 'faq' && "Frequently asked questions about using the Social Memes platform."}
                         </p>
                       </div>
                       <ChevronRight className="h-5 w-5 text-gray-500 group-hover:text-blue-400 transition-colors flex-shrink-0" />
