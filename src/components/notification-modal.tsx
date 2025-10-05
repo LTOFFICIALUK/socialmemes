@@ -135,8 +135,8 @@ export const NotificationModal = ({ isOpen, onClose, userId, onNotificationRead 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-end p-4 z-50">
-      <div className="bg-gray-900 border border-gray-700 rounded-lg shadow-xl w-full max-w-md max-h-[80vh] flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-end p-4 pb-20 lg:pb-4 z-50">
+      <div className="bg-gray-900 border border-gray-700 rounded-lg shadow-xl w-full max-w-md max-h-[calc(100vh-8rem)] lg:max-h-[80vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-700">
           <h2 className="text-lg font-semibold text-white">Notifications</h2>

@@ -36,10 +36,10 @@ export const ConfirmationDialog = ({
 
   return (
     <div 
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 pb-20 lg:pb-4"
       onClick={handleBackdropClick}
     >
-      <div className="bg-black border border-gray-700 rounded-lg shadow-xl max-w-md w-full mx-4">
+      <div className="bg-black border border-gray-700 rounded-lg shadow-xl max-w-md w-full max-h-[calc(100vh-8rem)] lg:max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <h3 className="text-lg font-semibold text-white mb-2">
             {title}

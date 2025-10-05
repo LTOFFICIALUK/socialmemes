@@ -15,12 +15,12 @@ export const MobileTrendingModal = ({ isOpen, onClose }: MobileTrendingModalProp
 
   return (
     <div 
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 pb-20 lg:pb-4"
       onClick={onClose}
       style={{ touchAction: 'none' }}
     >
       <div 
-        className="bg-black border border-gray-800 rounded-xl w-full max-w-md max-h-[85vh] overflow-y-auto overscroll-contain"
+        className="bg-black border border-gray-800 rounded-xl w-full max-w-md max-h-[calc(100vh-8rem)] lg:max-h-[85vh] overflow-y-auto overscroll-contain"
         onClick={(e) => e.stopPropagation()}
         style={{ 
           WebkitOverflowScrolling: 'touch',
