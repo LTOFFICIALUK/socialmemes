@@ -618,26 +618,26 @@ export const sendPaymentToUser = async (
     //   transaction.add(memoInstruction)
     // }
     
-    // Get recent blockhash with retry logic
-    let blockhash: string
-    let lastValidBlockHeight: number
-    let retries = 3
-    
-    while (retries > 0) {
-      try {
-        const blockHashInfo = await connection.getLatestBlockhash('confirmed')
-        blockhash = blockHashInfo.blockhash
-        lastValidBlockHeight = blockHashInfo.lastValidBlockHeight
-        break
-      } catch (error) {
-        retries--
-        if (retries === 0) throw error
-        await new Promise(resolve => setTimeout(resolve, 1000))
-      }
-    }
-    
-    transaction.recentBlockhash = blockhash
-    transaction.feePayer = fromPublicKey
+   // Get recent blockhash with retry logic
+   let blockhash!: string
+   let lastValidBlockHeight!: number
+   let retries = 3
+   
+   while (retries > 0) {
+     try {
+       const blockHashInfo = await connection.getLatestBlockhash('confirmed')
+       blockhash = blockHashInfo.blockhash
+       lastValidBlockHeight = blockHashInfo.lastValidBlockHeight
+       break
+     } catch (error) {
+       retries--
+       if (retries === 0) throw error
+       await new Promise(resolve => setTimeout(resolve, 1000))
+     }
+   }
+   
+   transaction.recentBlockhash = blockhash
+   transaction.feePayer = fromPublicKey
     
     // Sign transaction
     let signedTransaction: Transaction
