@@ -22,7 +22,7 @@ const calculatePrice = (hours: number) => {
 }
 
 export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: PromotionModalProps) => {
-  const [selectedDuration, setSelectedDuration] = useState(6) // Default to 6 hours
+  const [selectedDuration, setSelectedDuration] = useState(24) // Default to 1 day (24 hours)
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [isProUser, setIsProUser] = useState(false)
@@ -201,18 +201,18 @@ export const PromotionModal = ({ isOpen, onClose, postId, onPromote }: Promotion
             <div className="relative">
               <input
                 type="range"
-                min="1"
+                min="24"
                 max="168"
                 step="1"
                 value={selectedDuration}
                 onChange={(e) => setSelectedDuration(Number(e.target.value))}
                 className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
                 style={{
-                  background: `linear-gradient(to right, #10b981 0%, #10b981 ${((selectedDuration - 1) / (168 - 1)) * 100}%, #374151 ${((selectedDuration - 1) / (168 - 1)) * 100}%, #374151 100%)`
+                  background: `linear-gradient(to right, #10b981 0%, #10b981 ${((selectedDuration - 24) / (168 - 24)) * 100}%, #374151 ${((selectedDuration - 24) / (168 - 24)) * 100}%, #374151 100%)`
                 }}
               />
               <div className="flex justify-between text-xs text-gray-400 mt-2">
-                <span>1h</span>
+                <span>1d</span>
                 <span>1w</span>
               </div>
             </div>
