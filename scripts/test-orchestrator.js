@@ -201,6 +201,11 @@ async function runFullOrchestration() {
             logVerbose(`  Total score: ${step.data.totalScore || 0}`);
             logVerbose(`  Total calculated payout: ${step.data.totalCalculatedPayout || 0} SOL`);
             logVerbose(`  Is balanced: ${step.data.isBalanced ?? 'N/A'}`);
+          } else if (step.name === 'Calculate Referral Payouts') {
+            logVerbose(`  Processed referrals: ${step.data.processedReferrals || 0}`);
+            logVerbose(`  Total referral bonus: ${step.data.totalReferralBonus || 0} SOL`);
+            logVerbose(`  Referral percentage: ${step.data.referralPercentage || 5}%`);
+            logVerbose(`  Errors: ${step.data.errors || 0}`);
           }
         }
         
@@ -219,6 +224,8 @@ async function runFullOrchestration() {
       log(`  Total pool: ${response.data.finalResults.totalPool || 0} SOL`, 'cyan');
       log(`  Total users: ${response.data.finalResults.totalUsers || 0}`, 'cyan');
       log(`  Total payout: ${response.data.finalResults.totalPayout || 0} SOL`, 'cyan');
+      log(`  Referral bonuses: ${response.data.finalResults.totalReferralBonus || 0} SOL`, 'cyan');
+      log(`  Processed referrals: ${response.data.finalResults.processedReferrals || 0}`, 'cyan');
       log(`  Balanced: ${response.data.finalResults.isBalanced ?? 'N/A'}`, 'cyan');
       log('');
     }
