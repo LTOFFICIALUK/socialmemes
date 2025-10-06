@@ -119,20 +119,8 @@ async function testOrchestrator() {
   log('');
 
   try {
-    // Step 1: Test Period Validation
-    await testPeriodValidation();
-    
-    // Step 2: Test User Interaction Scores
-    await testUserInteractionScores();
-    
-    // Step 3a: Test PumpFun Period Fees
-    await testPumpFunPeriodFees();
-    
-    // Step 3b: Test Platform Period Fees
-    await testPlatformPeriodFees();
-    
-    // Step 4: Test User Payouts
-    await testUserPayouts();
+    // Call the orchestration endpoint once (exactly like GitHub Actions)
+    await runFullOrchestration();
     
     // Generate final report
     generateFinalReport();
@@ -144,8 +132,8 @@ async function testOrchestrator() {
   }
 }
 
-async function testPeriodValidation() {
-  logStep('STEP 1', 'Testing Period Validation', 'info');
+async function runFullOrchestration() {
+  log('📡 Calling orchestration endpoint (exactly like GitHub Actions)...', 'cyan');
   
   try {
     const body = CONFIG.PERIOD_START && CONFIG.PERIOD_END 
@@ -159,262 +147,100 @@ async function testPeriodValidation() {
       body
     });
     
-    if (response.ok && response.data.period) {
-      testResults.period = response.data.period;
-      logStep('STEP 1', `✅ Period validated: ${response.data.period.start} to ${response.data.period.end}`, 'success');
-      
-      if (response.data.steps && response.data.steps.length > 0) {
-        const periodStep = response.data.steps.find(s => s.name === 'Period Validation');
-        if (periodStep) {
-          logVerbose(`Period name: ${periodStep.data?.periodName || 'N/A'}`);
-          logVerbose(`PumpFun wallet: ${periodStep.data?.pumpfunCreatorWallet || 'N/A'}`);
-          logVerbose(`Revenue status: ${periodStep.data?.currentRevenueStatus || 'N/A'}`);
-          logVerbose(`Is current: ${periodStep.data?.isCurrent || 'N/A'}`);
-          logVerbose(`Is future: ${periodStep.data?.isFuture || 'N/A'}`);
-        }
-      }
-    } else {
-      logStep('STEP 1', `❌ Period validation failed: ${response.data.error || 'Unknown error'}`, 'error');
-      testResults.errors.push(`Period validation failed: ${response.data.error || 'Unknown error'}`);
+    log('');
+    log(`HTTP Status: ${response.status}`, response.ok ? 'green' : 'red');
+    logVerbose(`Full Response: ${JSON.stringify(response.data, null, 2)}`);
+    log('');
+    
+    if (!response.ok) {
+      log(`❌ API call failed with status ${response.status}`, 'red');
+      log(`Response: ${JSON.stringify(response.data)}`, 'red');
+      testResults.errors.push(`API call failed: ${response.data.error || 'Unknown error'}`);
+      return;
     }
     
-    testResults.steps.push({
-      step: 1,
-      name: 'Period Validation',
-      success: response.ok,
-      data: response.data
-    });
+    // Extract period info
+    if (response.data.period) {
+      testResults.period = response.data.period;
+      log(`📅 Period: ${response.data.period.start} to ${response.data.period.end}`, 'green');
+    }
     
-  } catch (error) {
-    logStep('STEP 1', `❌ Period validation error: ${error.message}`, 'error');
-    testResults.errors.push(`Period validation error: ${error.message}`);
-    testResults.steps.push({
-      step: 1,
-      name: 'Period Validation',
-      success: false,
-      error: error.message
-    });
-  }
-  
-  log('');
-}
-
-async function testUserInteractionScores() {
-  logStep('STEP 2', 'Testing User Interaction Scores', 'info');
-  
-  if (!testResults.period) {
-    logStep('STEP 2', '⚠️ Skipping - no valid period found', 'warning');
-    testResults.warnings.push('Skipped user interaction scores test - no valid period');
-    return;
-  }
-  
-  try {
-    const response = await makeRequest(`${CONFIG.APP_URL}/api/admin/revenue/period-interaction-score`, {
-      method: 'POST',
-      body: {
-        periodStart: testResults.period.start,
-        periodEnd: testResults.period.end
-      }
-    });
-    
-    if (response.ok) {
-      logStep('STEP 2', `✅ User interaction scores calculated`, 'success');
-      logVerbose(`Total users processed: ${response.data.summary?.totalUsers || 'N/A'}`);
-      logVerbose(`Total score: ${response.data.summary?.totalScore || 'N/A'}`);
-      logVerbose(`Average score: ${response.data.summary?.averageScore || 'N/A'}`);
+    // Parse all steps from response
+    if (response.data.steps && Array.isArray(response.data.steps)) {
+      log(`📈 Steps completed: ${response.data.steps.filter(s => s.success).length}/${response.data.steps.length}`, 'blue');
+      log('');
       
+      response.data.steps.forEach(step => {
+        const status = step.success ? '✅' : '❌';
+        const color = step.success ? 'green' : 'red';
+        
+        logStep(`STEP ${step.step}`, `${status} ${step.name}`, color);
+        
+        // Log step-specific data
+        if (step.data) {
+          if (step.name === 'Period Validation') {
+            logVerbose(`  Period name: ${step.data.periodName || 'N/A'}`);
+            logVerbose(`  PumpFun wallet: ${step.data.pumpfunCreatorWallet || 'N/A'}`);
+            logVerbose(`  Revenue status: ${step.data.currentRevenueStatus || 'N/A'}`);
+            logVerbose(`  Is current: ${step.data.isCurrent ?? 'N/A'}`);
+          } else if (step.name === 'Calculate Interaction Scores') {
+            logVerbose(`  Processed users: ${step.data.processedUsers || 0}`);
+            logVerbose(`  Total pro users: ${step.data.totalProUsers || 0}`);
+            logVerbose(`  Errors: ${step.data.errors || 0}`);
+          } else if (step.name === 'Calculate PumpFun Period Fees') {
+            logVerbose(`  PumpFun fees: ${step.data.pumpfunFees || 0} SOL`);
+            logVerbose(`  PumpFun pool: ${step.data.pumpfunPool || 0} SOL`);
+            logVerbose(`  Total pool: ${step.data.totalPool || 0} SOL`);
+          } else if (step.name === 'Calculate Platform Period Fees') {
+            logVerbose(`  Featured tokens revenue: ${step.data.featuredTokensRevenue || 0} SOL`);
+            logVerbose(`  Pro subscriptions revenue: ${step.data.proSubscriptionsRevenue || 0} SOL`);
+            logVerbose(`  Total platform revenue: ${step.data.totalPlatformRevenue || 0} SOL`);
+            logVerbose(`  Platform pool: ${step.data.platformPool || 0} SOL`);
+          } else if (step.name === 'Calculate User Payouts') {
+            logVerbose(`  Total users: ${step.data.totalUsers || 0}`);
+            logVerbose(`  Total score: ${step.data.totalScore || 0}`);
+            logVerbose(`  Total calculated payout: ${step.data.totalCalculatedPayout || 0} SOL`);
+            logVerbose(`  Is balanced: ${step.data.isBalanced ?? 'N/A'}`);
+          }
+        }
+        
+        if (step.error) {
+          log(`  Error: ${step.error}`, 'red');
+        }
+        
+        testResults.steps.push(step);
+        log('');
+      });
+    }
+    
+    // Extract final results
+    if (response.data.finalResults) {
+      log('💰 FINAL RESULTS:', 'bright');
+      log(`  Total pool: ${response.data.finalResults.totalPool || 0} SOL`, 'cyan');
+      log(`  Total users: ${response.data.finalResults.totalUsers || 0}`, 'cyan');
+      log(`  Total payout: ${response.data.finalResults.totalPayout || 0} SOL`, 'cyan');
+      log(`  Balanced: ${response.data.finalResults.isBalanced ?? 'N/A'}`, 'cyan');
+      log('');
+    }
+    
+    // Check overall success
+    if (response.data.success) {
+      log(`✅ Orchestration completed successfully`, 'green');
+    } else {
+      log(`❌ Orchestration failed`, 'red');
       if (response.data.errors && response.data.errors.length > 0) {
-        logStep('STEP 2', `⚠️ ${response.data.errors.length} user processing errors`, 'warning');
         response.data.errors.forEach(error => {
-          logVerbose(`  - ${error}`);
-          testResults.warnings.push(`User processing error: ${error}`);
+          testResults.errors.push(error);
         });
       }
-    } else {
-      logStep('STEP 2', `❌ User interaction scores failed: ${response.data.error || 'Unknown error'}`, 'error');
-      testResults.errors.push(`User interaction scores failed: ${response.data.error || 'Unknown error'}`);
     }
     
-    testResults.steps.push({
-      step: 2,
-      name: 'User Interaction Scores',
-      success: response.ok,
-      data: response.data
-    });
+    log('');
+    log(`📝 Message: ${response.data.message || 'N/A'}`, 'blue');
     
   } catch (error) {
-    logStep('STEP 2', `❌ User interaction scores error: ${error.message}`, 'error');
-    testResults.errors.push(`User interaction scores error: ${error.message}`);
-    testResults.steps.push({
-      step: 2,
-      name: 'User Interaction Scores',
-      success: false,
-      error: error.message
-    });
-  }
-  
-  log('');
-}
-
-async function testPumpFunPeriodFees() {
-  logStep('STEP 3A', 'Testing PumpFun Period Fees', 'info');
-  
-  if (!testResults.period) {
-    logStep('STEP 3A', '⚠️ Skipping - no valid period found', 'warning');
-    testResults.warnings.push('Skipped PumpFun fees test - no valid period');
-    return;
-  }
-  
-  // Get PumpFun wallet from period data
-  const periodStep = testResults.steps.find(s => s.name === 'Period Validation');
-  const pumpfunWallet = periodStep?.data?.steps?.[0]?.data?.pumpfunCreatorWallet;
-  
-  if (!pumpfunWallet) {
-    logStep('STEP 3A', '⚠️ Skipping - no PumpFun wallet found', 'warning');
-    testResults.warnings.push('Skipped PumpFun fees test - no PumpFun wallet');
-    return;
-  }
-  
-  try {
-    const response = await makeRequest(`${CONFIG.APP_URL}/api/admin/revenue/pumpfun-period-fees`, {
-      method: 'POST',
-      body: {
-        walletAddress: pumpfunWallet,
-        periodStart: testResults.period.start,
-        periodEnd: testResults.period.end
-      }
-    });
-    
-    if (response.ok) {
-      logStep('STEP 3A', `✅ PumpFun period fees calculated`, 'success');
-      logVerbose(`PumpFun fees: ${response.data.pumpfunFees || 'N/A'} SOL`);
-      logVerbose(`PumpFun pool: ${response.data.pumpfunPool || 'N/A'} SOL`);
-      logVerbose(`Total pool: ${response.data.totalPool || 'N/A'} SOL`);
-    } else {
-      logStep('STEP 3A', `❌ PumpFun period fees failed: ${response.data.error || 'Unknown error'}`, 'error');
-      testResults.errors.push(`PumpFun period fees failed: ${response.data.error || 'Unknown error'}`);
-    }
-    
-    testResults.steps.push({
-      step: 3,
-      name: 'PumpFun Period Fees',
-      success: response.ok,
-      data: response.data
-    });
-    
-  } catch (error) {
-    logStep('STEP 3A', `❌ PumpFun period fees error: ${error.message}`, 'error');
-    testResults.errors.push(`PumpFun period fees error: ${error.message}`);
-    testResults.steps.push({
-      step: 3,
-      name: 'PumpFun Period Fees',
-      success: false,
-      error: error.message
-    });
-  }
-  
-  log('');
-}
-
-async function testPlatformPeriodFees() {
-  logStep('STEP 3B', 'Testing Platform Period Fees', 'info');
-  
-  if (!testResults.period) {
-    logStep('STEP 3B', '⚠️ Skipping - no valid period found', 'warning');
-    testResults.warnings.push('Skipped platform fees test - no valid period');
-    return;
-  }
-  
-  try {
-    const response = await makeRequest(`${CONFIG.APP_URL}/api/admin/revenue/platform-period-fees`, {
-      method: 'POST',
-      body: {
-        periodStart: testResults.period.start,
-        periodEnd: testResults.period.end
-      }
-    });
-    
-    if (response.ok) {
-      logStep('STEP 3B', `✅ Platform period fees calculated`, 'success');
-      logVerbose(`Featured tokens revenue: ${response.data.breakdown?.featuredTokens?.revenue || 'N/A'} SOL`);
-      logVerbose(`Pro subscriptions revenue: ${response.data.breakdown?.proSubscriptions?.revenue || 'N/A'} SOL`);
-      logVerbose(`Total platform revenue: ${response.data.breakdown?.total || 'N/A'} SOL`);
-      logVerbose(`Platform pool: ${response.data.breakdown?.platformPool || 'N/A'} SOL`);
-    } else {
-      logStep('STEP 3B', `❌ Platform period fees failed: ${response.data.error || 'Unknown error'}`, 'error');
-      testResults.errors.push(`Platform period fees failed: ${response.data.error || 'Unknown error'}`);
-    }
-    
-    testResults.steps.push({
-      step: 3,
-      name: 'Platform Period Fees',
-      success: response.ok,
-      data: response.data
-    });
-    
-  } catch (error) {
-    logStep('STEP 3B', `❌ Platform period fees error: ${error.message}`, 'error');
-    testResults.errors.push(`Platform period fees error: ${error.message}`);
-    testResults.steps.push({
-      step: 3,
-      name: 'Platform Period Fees',
-      success: false,
-      error: error.message
-    });
-  }
-  
-  log('');
-}
-
-async function testUserPayouts() {
-  logStep('STEP 4', 'Testing User Payouts', 'info');
-  
-  if (!testResults.period) {
-    logStep('STEP 4', '⚠️ Skipping - no valid period found', 'warning');
-    testResults.warnings.push('Skipped user payouts test - no valid period');
-    return;
-  }
-  
-  try {
-    const response = await makeRequest(`${CONFIG.APP_URL}/api/admin/revenue/user-payouts`, {
-      method: 'POST',
-      body: {
-        periodStart: testResults.period.start,
-        periodEnd: testResults.period.end
-      }
-    });
-    
-    if (response.ok) {
-      logStep('STEP 4', `✅ User payouts calculated`, 'success');
-      logVerbose(`Total users: ${response.data.payoutSummary?.totalUsers || 'N/A'}`);
-      logVerbose(`Total score: ${response.data.payoutSummary?.totalScore || 'N/A'}`);
-      logVerbose(`Total calculated payout: ${response.data.payoutSummary?.totalCalculatedPayout || 'N/A'} SOL`);
-      logVerbose(`Is balanced: ${response.data.payoutSummary?.verification?.isBalanced || 'N/A'}`);
-      
-      if (response.data.payoutSummary?.verification?.balanceDifference) {
-        logVerbose(`Balance difference: ${response.data.payoutSummary.verification.balanceDifference} SOL`);
-      }
-    } else {
-      logStep('STEP 4', `❌ User payouts failed: ${response.data.error || 'Unknown error'}`, 'error');
-      testResults.errors.push(`User payouts failed: ${response.data.error || 'Unknown error'}`);
-    }
-    
-    testResults.steps.push({
-      step: 4,
-      name: 'User Payouts',
-      success: response.ok,
-      data: response.data
-    });
-    
-  } catch (error) {
-    logStep('STEP 4', `❌ User payouts error: ${error.message}`, 'error');
-    testResults.errors.push(`User payouts error: ${error.message}`);
-    testResults.steps.push({
-      step: 4,
-      name: 'User Payouts',
-      success: false,
-      error: error.message
-    });
+    log(`❌ Orchestration error: ${error.message}`, 'red');
+    testResults.errors.push(`Orchestration error: ${error.message}`);
   }
   
   log('');

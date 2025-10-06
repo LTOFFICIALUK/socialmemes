@@ -50,8 +50,13 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      finalPeriodStart = currentPeriodResult.period.period_start
-      finalPeriodEnd = currentPeriodResult.period.period_end
+      // Normalize dates to YYYY-MM-DD format (strip any time/timezone info)
+      finalPeriodStart = currentPeriodResult.period.period_start.split('T')[0]
+      finalPeriodEnd = currentPeriodResult.period.period_end.split('T')[0]
+    } else {
+      // Normalize provided dates as well
+      finalPeriodStart = periodStart.split('T')[0]
+      finalPeriodEnd = periodEnd.split('T')[0]
     }
 
     // Validate the period using our standardized validation
