@@ -66,9 +66,8 @@ export function PayoutNotification({ notification, onClaim }: PayoutNotification
     setIsClaiming(true)
     try {
       const payoutData = {
-        periodStart: metadata.period_start,
-        periodEnd: metadata.period_end,
-        payoutType: metadata.notification_type === 'payout_earned' ? 'user_payout' : 'referral_payout'
+        amount: metadata.payout_amount_sol || 0,
+        period: `${metadata.period_start || ''} to ${metadata.period_end || ''}`
       }
       
       await onClaim(notification.id, payoutData)
@@ -99,7 +98,7 @@ export function PayoutNotification({ notification, onClaim }: PayoutNotification
               {metadata.title}
             </h3>
             <p className="text-sm text-gray-300">
-              {formatPeriodName(metadata.period_start, metadata.period_end)}
+              {formatPeriodName(metadata.period_start || '', metadata.period_end || '')}
             </p>
           </div>
         </div>
@@ -121,28 +120,28 @@ export function PayoutNotification({ notification, onClaim }: PayoutNotification
                   <MessageSquare className="w-4 h-4 text-blue-400 mr-1" />
                   <span className="text-sm text-gray-400">Posts</span>
                 </div>
-                <p className="text-lg font-semibold text-white">{metadata.interaction_breakdown.posts}</p>
+                <p className="text-lg font-semibold text-white">{metadata.interaction_breakdown?.posts || 0}</p>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-1">
                   <MessageSquare className="w-4 h-4 text-purple-400 mr-1" />
                   <span className="text-sm text-gray-400">Comments</span>
                 </div>
-                <p className="text-lg font-semibold text-white">{metadata.interaction_breakdown.comments}</p>
+                <p className="text-lg font-semibold text-white">{metadata.interaction_breakdown?.comments || 0}</p>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-1">
                   <Heart className="w-4 h-4 text-red-400 mr-1" />
                   <span className="text-sm text-gray-400">Likes</span>
                 </div>
-                <p className="text-lg font-semibold text-white">{metadata.interaction_breakdown.likes}</p>
+                <p className="text-lg font-semibold text-white">{metadata.interaction_breakdown?.likes || 0}</p>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-1">
                   <UserPlus className="w-4 h-4 text-green-400 mr-1" />
                   <span className="text-sm text-gray-400">Follows</span>
                 </div>
-                <p className="text-lg font-semibold text-white">{metadata.interaction_breakdown.follows}</p>
+                <p className="text-lg font-semibold text-white">{metadata.interaction_breakdown?.follows || 0}</p>
               </div>
             </div>
           </div>
@@ -153,7 +152,7 @@ export function PayoutNotification({ notification, onClaim }: PayoutNotification
             <div>
               <p className="text-sm text-gray-300">Total Earnings</p>
               <p className="text-2xl font-bold text-green-400">
-                {formatSOL(metadata.payout_amount_sol)}
+                {formatSOL(metadata.payout_amount_sol || 0)}
               </p>
             </div>
             <Button

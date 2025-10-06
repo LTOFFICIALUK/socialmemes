@@ -12,23 +12,14 @@ import {
 
 interface PhantomPayoutClaimProps {
   payoutData: {
-    periodStart: string
-    periodEnd: string
-    payoutType: 'user_payout' | 'referral_payout'
+    amount: number
+    period: string
   }
   onSuccess: (transactionHash: string) => void
   onError: (error: string) => void
 }
 
-declare global {
-  interface Window {
-    solana?: {
-      isPhantom?: boolean
-      connect: () => Promise<{ publicKey: { toString: () => string } }>
-      signAndSendTransaction: (transaction: { serialize: () => Uint8Array }) => Promise<{ signature: string }>
-    }
-  }
-}
+// Phantom wallet types
 
 export function PhantomPayoutClaim({ payoutData, onSuccess, onError }: PhantomPayoutClaimProps) {
   const [isConnecting, setIsConnecting] = useState(false)
@@ -39,11 +30,13 @@ export function PhantomPayoutClaim({ payoutData, onSuccess, onError }: PhantomPa
   const connectPhantom = async () => {
     setIsConnecting(true)
     try {
-      if (!window.solana?.isPhantom) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (!(window as any).solana?.isPhantom) {
         throw new Error('Phantom wallet not found. Please install Phantom wallet.')
       }
 
-      const response = await window.solana.connect()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const response = await (window as any).solana.connect()
       setWalletAddress(response.publicKey.toString())
       setIsConnected(true)
     } catch (error) {
@@ -81,11 +74,13 @@ export function PhantomPayoutClaim({ payoutData, onSuccess, onError }: PhantomPa
       }
 
       // Sign and send transaction via Phantom
-      if (!window.solana) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (!(window as any).solana) {
         throw new Error('Phantom wallet not available')
       }
 
-      const result = await window.solana.signAndSendTransaction(transactionData)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (window as any).solana.signAndSendTransaction(transactionData)
       
       // Confirm the payout
       const confirmResponse = await fetch('/api/payouts/claim', {
@@ -96,7 +91,7 @@ export function PhantomPayoutClaim({ payoutData, onSuccess, onError }: PhantomPa
         body: JSON.stringify({
           payoutId: transaction.payoutId,
           transactionHash: result.signature,
-          payoutType: payoutData.payoutType
+          payoutType: 'user_payout'
         }),
       })
 
@@ -113,7 +108,8 @@ export function PhantomPayoutClaim({ payoutData, onSuccess, onError }: PhantomPa
     }
   }
 
-  if (!window.solana?.isPhantom) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (!(window as any).solana?.isPhantom) {
     return (
       <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
         <div className="flex items-center gap-3 mb-3">

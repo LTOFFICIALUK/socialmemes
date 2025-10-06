@@ -205,7 +205,13 @@ export const NotificationModal = ({ isOpen, onClose, userId, onNotificationRead 
                   return (
                     <div key={notification.id} className="border-b border-gray-700">
                       <PayoutNotification
-                        notification={notification as any}
+                        notification={{
+                          id: notification.id,
+                          type: notification.type,
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                          metadata: (notification.metadata as any) || {},
+                          created_at: notification.created_at
+                        }}
                         onClaim={(notificationId, payoutData) => handlePayoutClaim(notificationId, payoutData)}
                       />
                     </div>
