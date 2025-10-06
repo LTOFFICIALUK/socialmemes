@@ -61,19 +61,11 @@ export async function POST(request: NextRequest) {
     console.log('Step 1: Fetching user payouts...')
     const { data: userPayouts, error: userPayoutsError } = await supabase
       .from('user_payouts')
-      .select(`
-        user_id,
-        final_payout_sol,
-        user_interaction_scores!inner(
-          posts_created,
-          comments_replies_created,
-          likes_received,
-          follows_received
-        )
-      `)
+      .select('user_id, final_payout_sol')
       .eq('period_start', periodStart)
       .eq('period_end', periodEnd)
       .eq('payout_status', 'pending')
+      .gt('final_payout_sol', 0)
 
     if (userPayoutsError) {
       console.error('Error fetching user payouts:', userPayoutsError)
@@ -81,18 +73,31 @@ export async function POST(request: NextRequest) {
     } else if (userPayouts && userPayouts.length > 0) {
       console.log(`Found ${userPayouts.length} user payouts to notify`)
 
+      // Fetch all interaction scores for this period
+      const { data: allInteractionScores } = await supabase
+        .from('user_interaction_scores')
+        .select('user_id, posts_created, comments_replies_created, likes_received, follows_received')
+        .eq('period_start', periodStart)
+        .eq('period_end', periodEnd)
+
+      // Create a map for quick lookup
+      const interactionScoresMap = new Map()
+      if (allInteractionScores) {
+        allInteractionScores.forEach(score => {
+          interactionScoresMap.set(score.user_id, score)
+        })
+      }
+
       // Create notifications for each user payout
       for (const payout of userPayouts) {
         try {
-          // Get interaction breakdown from the joined table
-          const interactions = Array.isArray(payout.user_interaction_scores) && payout.user_interaction_scores.length > 0
-            ? payout.user_interaction_scores[0]
-            : {
-                posts_created: 0,
-                comments_replies_created: 0,
-                likes_received: 0,
-                follows_received: 0
-              }
+          // Get interaction breakdown from the map
+          const interactions = interactionScoresMap.get(payout.user_id) || {
+            posts_created: 0,
+            comments_replies_created: 0,
+            likes_received: 0,
+            follows_received: 0
+          }
 
           const { error: notificationError } = await supabase
             .from('notifications')
@@ -146,6 +151,7 @@ export async function POST(request: NextRequest) {
       .eq('period_start', periodStart)
       .eq('period_end', periodEnd)
       .eq('payout_status', 'pending')
+      .gt('referral_bonus_sol', 0)
 
     if (referralPayoutsError) {
       console.error('Error fetching referral payouts:', referralPayoutsError)
