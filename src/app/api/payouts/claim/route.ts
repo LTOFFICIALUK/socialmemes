@@ -233,7 +233,7 @@ export async function POST(request: NextRequest) {
 
     } else if (notificationType === 'referral_bonus') {
       // Update all referral payouts for this user in this period
-      const referralPayoutIds = (payoutData as any[]).map(p => p.id)
+      const referralPayoutIds = (payoutData as { id: string }[]).map(p => p.id)
       
       const { error: updateError } = await supabase
         .from('referral_payouts')

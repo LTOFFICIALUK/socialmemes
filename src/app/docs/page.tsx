@@ -347,6 +347,178 @@ const docSections: DocSection[] = [
     title: 'Monetization',
     icon: Crown,
     children: [
+        {
+          id: 'platform-earnings',
+          title: 'Platform Earnings',
+          icon: DollarSign,
+          content: (
+            <div className="prose prose-invert max-w-none overflow-hidden">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 break-words">Platform Earnings</h1>
+              <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed">
+                Learn how to earn SOL from your platform engagement through our bi-weekly revenue sharing system.
+              </p>
+              
+              <h2 className="text-2xl font-semibold text-white mb-4">How It Works</h2>
+              <p className="text-gray-300 mb-4">
+                Social Memes operates a bi-weekly revenue sharing system where active users earn SOL based on their platform engagement. 
+                The more you engage with the community, the more you earn.
+              </p>
+
+              <h3 className="text-xl font-semibold text-white mb-4">Revenue Sources</h3>
+              <ul className="text-gray-300 space-y-2 ml-4 mb-6">
+                <li>• <strong>PumpFun Trading Fees:</strong> A portion of creator fees from token trading</li>
+                <li>• <strong>Platform Revenue:</strong> Pro subscriptions and featured token promotions</li>
+              </ul>
+
+              <h2 className="text-2xl font-semibold text-white mb-4">Earning Opportunities</h2>
+              <h3 className="text-xl font-semibold text-white mb-4">Content Creation</h3>
+              <p className="text-gray-300 mb-4">
+                Create posts and replies to earn engagement points. The more content you create, the more opportunities you have to earn.
+              </p>
+
+              <h3 className="text-xl font-semibold text-white mb-4">Community Engagement</h3>
+              <p className="text-gray-300 mb-4">
+                Receive likes and follows to boost your earnings. Building an engaged community around your content increases your earning potential.
+              </p>
+
+              <h2 className="text-2xl font-semibold text-white mb-4">Interaction Scoring System</h2>
+              <p className="text-gray-300 mb-4">
+                Your earnings are calculated based on a weighted scoring system that rewards different types of engagement.
+              </p>
+
+              <h3 className="text-xl font-semibold text-white mb-4">Scoring Weights</h3>
+              <ul className="text-gray-300 space-y-2 ml-4 mb-6">
+                <li>• <strong>Posts Created:</strong> Highest weight in the scoring system</li>
+                <li>• <strong>Comments/Replies Created:</strong> High weight for community interaction</li>
+                <li>• <strong>Follows Received:</strong> Medium weight for building your audience</li>
+                <li>• <strong>Likes Received:</strong> Lower weight but adds up with engagement</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold text-white mb-4">How Scoring Works</h3>
+              <p className="text-gray-300 mb-4">
+                Your total interaction score is calculated by combining all your activities with their respective weights. 
+                Posts have the highest impact on your score, followed by comments, follows, and likes.
+              </p>
+              <p className="text-gray-300 mb-6">
+                The more you engage with the community through posts, comments, and interactions, the higher your score will be.
+              </p>
+
+              <h2 className="text-2xl font-semibold text-white mb-4">Payout Calculation</h2>
+              <p className="text-gray-300 mb-4">
+                Your SOL payout is calculated based on your share of the total interaction score pool.
+              </p>
+
+              <h3 className="text-xl font-semibold text-white mb-4">Revenue Pool Distribution</h3>
+              <h4 className="text-lg font-semibold text-white mb-4">Total Pool Sources</h4>
+              <ul className="text-gray-300 space-y-2 ml-4 mb-6">
+                <li>• <strong>PumpFun Pool:</strong> Significant portion of PumpFun creator fees</li>
+                <li>• <strong>Platform Pool:</strong> Major portion from Pro subscriptions and featured tokens</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold text-white mb-4">Your Payout Formula</h3>
+              <p className="text-gray-300 mb-4">
+                Your SOL payout is calculated based on your proportional share of the total pool. Your share of the pool is determined by your interaction score relative to all users&apos; scores.
+              </p>
+              <p className="text-gray-300 mb-6">
+                This ensures that users with higher engagement receive proportionally larger payouts.
+              </p>
+
+              <h2 className="text-2xl font-semibold text-white mb-4">Pro User Benefits</h2>
+              <h3 className="text-xl font-semibold text-white mb-4">Pro User Advantage</h3>
+              <p className="text-gray-300 mb-4">
+                Pro users receive a <strong>significant multiplier</strong> on their interaction scores, 
+                effectively increasing their earning potential substantially.
+              </p>
+              <p className="text-gray-300 mb-6">
+                This means Pro users earn significantly more from the same level of engagement compared to regular users.
+              </p>
+
+              <h2 className="text-2xl font-semibold text-white mb-4">Payout Schedule</h2>
+              <p className="text-gray-300 mb-4">
+                Understanding when and how you&apos;ll receive your earnings from platform engagement.
+              </p>
+
+              <h3 className="text-xl font-semibold text-white mb-4">Bi-Weekly Periods</h3>
+              <p className="text-gray-300 mb-4">
+                Earnings are calculated and distributed every two weeks in bi-weekly periods. Each period runs from Monday to Sunday.
+              </p>
+              <ul className="text-gray-300 space-y-2 ml-4 mb-6">
+                <li>• <strong>Period Duration:</strong> 14 days (2 weeks)</li>
+                <li>• <strong>Schedule:</strong> Monday to Sunday</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold text-white mb-4">Wallet Requirements</h3>
+              <h4 className="text-lg font-semibold text-white mb-4">Important: Wallet Setup Required</h4>
+              <p className="text-gray-300 mb-4">
+                To receive payouts, you must have a valid Solana wallet address set in your profile. 
+                Pro users are required to set up their payout wallet address.
+              </p>
+              <p className="text-gray-300 mb-6">
+                If you don&apos;t have a wallet address set up, your earnings will be held until you provide one.
+              </p>
+
+              <h2 className="text-2xl font-semibold text-white mb-4">Maximizing Your Earnings</h2>
+              <p className="text-gray-300 mb-4">
+                Tips and strategies to increase your platform engagement and maximize your SOL earnings.
+              </p>
+
+              <h3 className="text-xl font-semibold text-white mb-4">Content Strategy</h3>
+              <h4 className="text-lg font-semibold text-white mb-4">Create Quality Posts</h4>
+              <p className="text-gray-300 mb-4">
+                Posts have the highest weight in the scoring system, making them the most valuable for earning.
+              </p>
+              <ul className="text-gray-300 space-y-2 ml-4 mb-6">
+                <li>• Share original, engaging memes and content</li>
+                <li>• Post regularly to maintain consistent engagement</li>
+                <li>• Use relevant hashtags to increase visibility</li>
+                <li>• Engage with trending topics and discussions</li>
+              </ul>
+
+              <h4 className="text-lg font-semibold text-white mb-4">Active Commenting</h4>
+              <p className="text-gray-300 mb-4">
+                Comments and replies earn high weight points, making them a great way to boost your score.
+              </p>
+              <ul className="text-gray-300 space-y-2 ml-4 mb-6">
+                <li>• Reply to posts with thoughtful comments</li>
+                <li>• Engage in discussions and conversations</li>
+                <li>• Ask questions to encourage responses</li>
+                <li>• Share your perspective on trending topics</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold text-white mb-4">Community Building</h3>
+              <h4 className="text-lg font-semibold text-white mb-4">Build Your Following</h4>
+              <p className="text-gray-300 mb-4">
+                Each follow you receive adds medium weight points to your score, helping you earn more over time.
+              </p>
+              <ul className="text-gray-300 space-y-2 ml-4 mb-6">
+                <li>• Follow other active users to build relationships</li>
+                <li>• Create content that encourages follows</li>
+                <li>• Engage authentically with the community</li>
+                <li>• Share valuable insights and entertainment</li>
+              </ul>
+
+              <h4 className="text-lg font-semibold text-white mb-4">Encourage Likes</h4>
+              <p className="text-gray-300 mb-4">
+                Likes on your content earn lower weight points, but they add up quickly with engaging posts.
+              </p>
+              <ul className="text-gray-300 space-y-2 ml-4 mb-6">
+                <li>• Create shareable, likeable content</li>
+                <li>• Post at optimal times for your audience</li>
+                <li>• Use eye-catching visuals and captions</li>
+                <li>• Engage with others&apos; content to build reciprocity</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold text-white mb-4">Best Practices</h3>
+              <ul className="text-gray-300 space-y-2 ml-4 mb-6">
+                <li>• Be consistent with your posting schedule</li>
+                <li>• Engage authentically rather than just for points</li>
+                <li>• Build genuine relationships with other users</li>
+                <li>• Focus on quality over quantity in your content</li>
+                <li>• Stay active throughout the bi-weekly period</li>
+              </ul>
+            </div>
+          )
+        },
       {
         id: 'pro-subscription',
         title: 'Pro Subscription',
