@@ -13,6 +13,7 @@ import { MobileTrendingModal } from '@/components/mobile-trending-modal'
 import { ProModal } from '@/components/pro-modal'
 import { FeaturedTokenModal } from '@/components/featured-token-modal'
 import { PromotionModal } from '@/components/promotion-modal'
+import { WalletAddressModal } from '@/components/wallet-address-modal'
 import { Button } from '@/components/ui/button'
 import { ToastContainer, useToast } from '@/components/ui/toast'
 import { getNotifications, markNotificationAsRead, deleteNotification, markAllNotificationsAsRead } from '@/lib/database'
@@ -34,6 +35,15 @@ export function NotificationsClient({ trendingTokens, tokenImages }: Notificatio
   const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
   const [showPromotionModal, setShowPromotionModal] = useState(false)
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null)
+  const [showWalletAddressModal, setShowWalletAddressModal] = useState(false)
+  const [pendingClaimData, setPendingClaimData] = useState<{
+    notificationId: string
+    payoutAmount: number
+    periodStart: string
+    periodEnd: string
+    notificationType: string
+  } | null>(null)
+  const [isProcessingClaim, setIsProcessingClaim] = useState(false)
   const router = useRouter()
   const { toasts, removeToast, success, error: showError } = useToast()
 
@@ -174,26 +184,129 @@ export function NotificationsClient({ trendingTokens, tokenImages }: Notificatio
 
   const handleClaimPayout = async (notificationId: string, payoutAmount: number) => {
     try {
-      // Mark notification as read when claiming
-      await markNotificationAsRead(currentUser!.id, notificationId)
-      setNotifications(prev => 
-        prev.map(notification => 
-          notification.id === notificationId 
-            ? { ...notification, is_read: true }
-            : notification
-        )
-      )
+      // Get notification details
+      const notification = notifications.find(n => n.id === notificationId)
+      if (!notification) {
+        showError('Notification not found', 'Please try again')
+        return
+      }
 
-      // TODO: Implement actual payout claim logic with Phantom wallet
-      success(`Claiming ${payoutAmount.toFixed(4)} SOL payout...`)
-      
-      // For now, just show a success message
-      setTimeout(() => {
-        success(`Successfully claimed ${payoutAmount.toFixed(4)} SOL!`)
-      }, 1000)
+      const periodStart = notification.metadata?.period_start
+      const periodEnd = notification.metadata?.period_end
+      const notificationType = notification.metadata?.notification_type
+
+      if (!periodStart || !periodEnd || !notificationType) {
+        showError('Invalid notification data', 'Please try again')
+        return
+      }
+
+      // Store claim data for potential wallet address modal
+      setPendingClaimData({
+        notificationId,
+        payoutAmount,
+        periodStart,
+        periodEnd,
+        notificationType
+      })
+
+      // Try to process the claim (will check wallet address)
+      await processClaimPayout(periodStart, periodEnd, notificationType, notificationId, payoutAmount)
+
     } catch (error) {
       console.error('Error claiming payout:', error)
-      showError('Failed to claim payout', 'Please try again later')
+      const errorMessage = error instanceof Error ? error.message : 'Please try again later'
+      
+      // Check if error is about missing wallet address
+      if (errorMessage.includes('No payout wallet address found')) {
+        // Show wallet address modal
+        setShowWalletAddressModal(true)
+      } else {
+        showError('Failed to claim payout', errorMessage)
+      }
+    }
+  }
+
+  const processClaimPayout = async (
+    periodStart: string, 
+    periodEnd: string, 
+    notificationType: string, 
+    notificationId: string, 
+    payoutAmount: number,
+    walletAddress?: string
+  ) => {
+    setIsProcessingClaim(true)
+    
+    try {
+      // Show loading state
+      success(`Processing ${payoutAmount.toFixed(4)} SOL payout...`)
+
+      // Call the claim API
+      const response = await fetch('/api/payouts/claim', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: currentUser!.id,
+          periodStart,
+          periodEnd,
+          notificationType,
+          walletAddress // Optional: only provided when user enters it in modal
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to claim payout')
+      }
+
+      // Mark notification as read
+      await markNotificationAsRead(currentUser!.id, notificationId)
+
+      // Show success message
+      success(`Successfully claimed ${payoutAmount.toFixed(4)} SOL!`)
+      
+      // Close wallet modal if open
+      setShowWalletAddressModal(false)
+      setPendingClaimData(null)
+      
+      // Force page refresh after a short delay
+      setTimeout(() => {
+        window.location.reload()
+      }, 1500)
+
+    } catch (error) {
+      console.error('Error processing claim:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Please try again later'
+      throw error
+    } finally {
+      setIsProcessingClaim(false)
+    }
+  }
+
+  const handleWalletAddressSubmit = async (walletAddress: string) => {
+    if (!pendingClaimData) return
+    
+    try {
+      await processClaimPayout(
+        pendingClaimData.periodStart,
+        pendingClaimData.periodEnd,
+        pendingClaimData.notificationType,
+        pendingClaimData.notificationId,
+        pendingClaimData.payoutAmount,
+        walletAddress
+      )
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Please try again later'
+      showError('Failed to claim payout', errorMessage)
+    }
+  }
+
+  const handleWalletAddressModalClose = () => {
+    if (!isProcessingClaim) {
+      setShowWalletAddressModal(false)
+      setPendingClaimData(null)
     }
   }
 
@@ -335,6 +448,14 @@ export function NotificationsClient({ trendingTokens, tokenImages }: Notificatio
         onClose={() => setShowPromotionModal(false)}
         postId={selectedPostId || ''}
         onPromote={handlePromoteConfirm}
+      />
+      
+      {/* Wallet Address Modal */}
+      <WalletAddressModal
+        isOpen={showWalletAddressModal}
+        onClose={handleWalletAddressModalClose}
+        onSubmit={handleWalletAddressSubmit}
+        isProcessing={isProcessingClaim}
       />
       
       {/* Toast Notifications */}

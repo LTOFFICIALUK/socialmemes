@@ -1,11 +1,13 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Heart, MessageCircle, UserPlus, DollarSign } from 'lucide-react'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Notification } from '@/lib/database'
 import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
+import { supabase } from '@/lib/supabase'
 
 interface NotificationItemProps {
   notification: Notification
@@ -20,6 +22,62 @@ export const NotificationItem = ({
   onMarkAsRead,
   onClaimPayout
 }: NotificationItemProps) => {
+  const [payoutStatus, setPayoutStatus] = useState<string | null>(null)
+  const [isLoadingStatus, setIsLoadingStatus] = useState(false)
+
+  const isPayoutNotification = notification.type === 'payout_available'
+  const notificationType = notification.metadata?.notification_type
+  const periodStart = notification.metadata?.period_start
+  const periodEnd = notification.metadata?.period_end
+
+  // Fetch payout status when component mounts if it's a payout notification
+  useEffect(() => {
+    const fetchPayoutStatus = async () => {
+      if (!isPayoutNotification || !periodStart || !periodEnd || !notification.actor?.id) {
+        return
+      }
+
+      setIsLoadingStatus(true)
+      try {
+        if (notificationType === 'payout_earned') {
+          // Check user_payouts table
+          const { data, error } = await supabase
+            .from('user_payouts')
+            .select('payout_status')
+            .eq('user_id', notification.actor.id)
+            .eq('period_start', periodStart)
+            .eq('period_end', periodEnd)
+            .single()
+
+          if (!error && data) {
+            setPayoutStatus(data.payout_status)
+          }
+        } else if (notificationType === 'referral_bonus') {
+          // Check referral_payouts table
+          // For referral bonus, we need to check if ANY of the referral payouts for this user in this period are paid
+          const { data, error } = await supabase
+            .from('referral_payouts')
+            .select('payout_status')
+            .eq('referrer_id', notification.actor.id)
+            .eq('period_start', periodStart)
+            .eq('period_end', periodEnd)
+            .limit(1)
+            .single()
+
+          if (!error && data) {
+            setPayoutStatus(data.payout_status)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching payout status:', error)
+      } finally {
+        setIsLoadingStatus(false)
+      }
+    }
+
+    fetchPayoutStatus()
+  }, [isPayoutNotification, notificationType, periodStart, periodEnd, notification.actor?.id])
+
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'follow':
@@ -112,8 +170,11 @@ export const NotificationItem = ({
     }
   }
 
-  const isPayoutNotification = notification.type === 'payout_available'
   const payoutAmount = notification.metadata?.payout_amount_sol || 0
+
+  // Determine button state based on payout status
+  const isPayoutClaimed = payoutStatus === 'claimed' || payoutStatus === 'paid' || payoutStatus === 'processing'
+  const showClaimButton = isPayoutNotification && !isLoadingStatus
 
   const notificationContent = (
     <div
@@ -140,15 +201,23 @@ export const NotificationItem = ({
                 {getNotificationText(notification)}
               </span>
             </div>
-            {isPayoutNotification && (
+            {showClaimButton && (
               <Button
                 size="sm"
                 variant="outline"
-                className="border-green-500 text-green-400 hover:bg-green-500/10 text-xs px-3 py-1"
-                onClick={handleClaimPayout}
+                className={`text-xs px-3 py-1 ${
+                  isPayoutClaimed 
+                    ? 'border-gray-600 text-gray-500 bg-gray-800/50 cursor-not-allowed' 
+                    : 'border-green-500 text-green-400 hover:bg-green-500/10'
+                }`}
+                onClick={isPayoutClaimed ? undefined : handleClaimPayout}
+                disabled={isPayoutClaimed}
               >
-                Claim
+                {isPayoutClaimed ? 'Claimed' : 'Claim'}
               </Button>
+            )}
+            {isPayoutNotification && isLoadingStatus && (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-500"></div>
             )}
           </div>
           <p className="text-xs text-gray-400 mb-2">

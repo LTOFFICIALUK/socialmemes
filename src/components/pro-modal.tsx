@@ -62,8 +62,8 @@ const proFeatures = [
   },
   {
     icon: <Crown className="h-4 w-4 text-purple-500" />,
-    title: 'Pro Status',
-    description: 'Show your Pro status to the community',
+    title: 'Earn from Engagement',
+    description: 'Enable your Alpha Chat and earn revenue from platform engagement',
   },
 ]
 

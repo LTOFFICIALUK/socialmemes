@@ -382,6 +382,91 @@ export interface Database {
           updated_at?: string
         }
       }
+      user_payouts: {
+        Row: {
+          id: string
+          user_id: string
+          period_start: string
+          period_end: string
+          pumpfun_share_sol: string
+          platform_share_sol: string
+          total_payout_sol: string
+          referral_bonus_sol: string
+          final_payout_sol: string
+          payout_status: 'pending' | 'processing' | 'paid' | 'claimed' | 'failed'
+          payment_tx_hash: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          period_start: string
+          period_end: string
+          pumpfun_share_sol?: string
+          platform_share_sol?: string
+          total_payout_sol?: string
+          referral_bonus_sol?: string
+          final_payout_sol?: string
+          payout_status?: 'pending' | 'processing' | 'paid' | 'claimed' | 'failed'
+          payment_tx_hash?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          period_start?: string
+          period_end?: string
+          pumpfun_share_sol?: string
+          platform_share_sol?: string
+          total_payout_sol?: string
+          referral_bonus_sol?: string
+          final_payout_sol?: string
+          payout_status?: 'pending' | 'processing' | 'paid' | 'claimed' | 'failed'
+          payment_tx_hash?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      referral_payouts: {
+        Row: {
+          id: string
+          referrer_id: string
+          referred_user_id: string
+          period_start: string
+          period_end: string
+          referral_bonus_sol: string
+          payout_status: 'pending' | 'processing' | 'paid' | 'claimed' | 'failed'
+          payment_tx_hash: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          referrer_id: string
+          referred_user_id: string
+          period_start: string
+          period_end: string
+          referral_bonus_sol?: string
+          payout_status?: 'pending' | 'processing' | 'paid' | 'claimed' | 'failed'
+          payment_tx_hash?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          referrer_id?: string
+          referred_user_id?: string
+          period_start?: string
+          period_end?: string
+          referral_bonus_sol?: string
+          payout_status?: 'pending' | 'processing' | 'paid' | 'claimed' | 'failed'
+          payment_tx_hash?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
