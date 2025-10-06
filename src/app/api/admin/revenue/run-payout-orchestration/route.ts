@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
     // Step 2: Calculate user interaction scores
     console.log('Step 2: Calculating user interaction scores...')
     try {
-      const interactionResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/admin/revenue/period-interaction-score`, {
+      const interactionResponse = await fetch(`${process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/admin/revenue/period-interaction-score`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ periodStart: finalPeriodStart, periodEnd: finalPeriodEnd })
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
     // Step 3a: Calculate PumpFun period fees
     console.log('Step 3a: Calculating PumpFun period fees...')
     try {
-      const pumpfunResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/admin/revenue/pumpfun-period-fees`, {
+      const pumpfunResponse = await fetch(`${process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/admin/revenue/pumpfun-period-fees`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -184,7 +184,7 @@ export async function POST(request: NextRequest) {
     // Step 3b: Calculate platform period fees
     console.log('Step 3b: Calculating platform period fees...')
     try {
-      const platformResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/admin/revenue/platform-period-fees`, {
+      const platformResponse = await fetch(`${process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/admin/revenue/platform-period-fees`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ periodStart: finalPeriodStart, periodEnd: finalPeriodEnd })
@@ -227,7 +227,7 @@ export async function POST(request: NextRequest) {
     // Step 4: Calculate user payouts
     console.log('Step 4: Calculating user payouts...')
     try {
-      const payoutsResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/admin/revenue/user-payouts`, {
+      const payoutsResponse = await fetch(`${process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/admin/revenue/user-payouts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ periodStart: finalPeriodStart, periodEnd: finalPeriodEnd })
