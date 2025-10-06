@@ -168,7 +168,7 @@ async function runFullOrchestration() {
     // Parse all steps from response
     if (response.data.steps && Array.isArray(response.data.steps)) {
       log(`📈 Steps completed: ${response.data.steps.filter(s => s.success).length}/${response.data.steps.length}`, 'blue');
-      log('');
+  log('');
       
       response.data.steps.forEach(step => {
         const status = step.success ? '✅' : '❌';
@@ -206,6 +206,11 @@ async function runFullOrchestration() {
             logVerbose(`  Total referral bonus: ${step.data.totalReferralBonus || 0} SOL`);
             logVerbose(`  Referral percentage: ${step.data.referralPercentage || 5}%`);
             logVerbose(`  Errors: ${step.data.errors || 0}`);
+          } else if (step.name === 'Send Payout Notifications') {
+            logVerbose(`  User payout notifications: ${step.data.userPayoutNotifications || 0}`);
+            logVerbose(`  Referral payout notifications: ${step.data.referralPayoutNotifications || 0}`);
+            logVerbose(`  Total notifications: ${step.data.totalNotifications || 0}`);
+            logVerbose(`  Errors: ${step.data.errors || 0}`);
           }
         }
         
@@ -226,10 +231,11 @@ async function runFullOrchestration() {
       log(`  Total payout: ${response.data.finalResults.totalPayout || 0} SOL`, 'cyan');
       log(`  Referral bonuses: ${response.data.finalResults.totalReferralBonus || 0} SOL`, 'cyan');
       log(`  Processed referrals: ${response.data.finalResults.processedReferrals || 0}`, 'cyan');
+      log(`  Notifications sent: ${response.data.finalResults.notificationsSent || 0}`, 'cyan');
       log(`  Balanced: ${response.data.finalResults.isBalanced ?? 'N/A'}`, 'cyan');
-      log('');
-    }
-    
+  log('');
+}
+
     // Check overall success
     if (response.data.success) {
       log(`✅ Orchestration completed successfully`, 'green');

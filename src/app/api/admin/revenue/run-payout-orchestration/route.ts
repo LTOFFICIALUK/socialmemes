@@ -298,12 +298,57 @@ export async function POST(request: NextRequest) {
         }
       })
 
+    } catch (error) {
+      const errorMsg = `Step 5 failed: ${error}`
+      orchestrationResults.errors.push(errorMsg)
+      orchestrationResults.steps.push({
+        step: 5,
+        name: 'Calculate Referral Payouts',
+        success: false,
+        error: errorMsg
+      })
+      return NextResponse.json({
+        ...orchestrationResults,
+        error: errorMsg
+      }, { status: 500 })
+    }
+
+    // Step 6: Send payout notifications
+    console.log('Step 6: Sending payout notifications...')
+    try {
+      const notificationsResponse = await fetch(`${process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/admin/revenue/send-payout-notifications`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ periodStart: finalPeriodStart, periodEnd: finalPeriodEnd })
+      })
+
+      const notificationsData = await notificationsResponse.json()
+
+      if (!notificationsResponse.ok || !notificationsData.success) {
+        throw new Error(notificationsData.error || 'Failed to send payout notifications')
+      }
+
+      orchestrationResults.steps.push({
+        step: 6,
+        name: 'Send Payout Notifications',
+        success: true,
+        data: {
+          userPayoutNotifications: notificationsData.summary?.userPayoutNotifications || 0,
+          referralPayoutNotifications: notificationsData.summary?.referralPayoutNotifications || 0,
+          totalNotifications: notificationsData.summary?.totalNotifications || 0,
+          errors: notificationsData.summary?.errors || 0
+        }
+      })
+
       orchestrationResults.success = true
 
-      // Get user payouts data from Step 4
+      // Get data from previous steps
       const step4 = orchestrationResults.steps.find(s => s.step === 4)
+      const step5 = orchestrationResults.steps.find(s => s.step === 5)
       const totalUsers = step4?.data?.totalUsers || 0
       const totalPayout = step4?.data?.totalCalculatedPayout || 0
+      const totalReferralBonus = step5?.data?.totalReferralBonus || 0
+      const processedReferrals = step5?.data?.processedReferrals || 0
       const isBalanced = step4?.data?.isBalanced || false
 
       return NextResponse.json({
@@ -312,19 +357,20 @@ export async function POST(request: NextRequest) {
           totalPool: 45.919732548, // This comes from the period data
           totalUsers,
           totalPayout,
-          totalReferralBonus: referralData.summary?.totalReferralBonus || 0,
-          processedReferrals: referralData.summary?.processedReferrals || 0,
+          totalReferralBonus,
+          processedReferrals,
+          notificationsSent: notificationsData.summary?.totalNotifications || 0,
           isBalanced
         },
-        message: `Successfully completed payout orchestration for period ${finalPeriodStart} to ${finalPeriodEnd}. ${totalUsers} users ready for payout, ${referralData.summary?.processedReferrals || 0} referral bonuses calculated.`
+        message: `Successfully completed payout orchestration for period ${finalPeriodStart} to ${finalPeriodEnd}. ${totalUsers} users ready for payout, ${processedReferrals} referral bonuses calculated, ${notificationsData.summary?.totalNotifications || 0} notifications sent.`
       })
 
     } catch (error) {
-      const errorMsg = `Step 5 failed: ${error}`
+      const errorMsg = `Step 6 failed: ${error}`
       orchestrationResults.errors.push(errorMsg)
       orchestrationResults.steps.push({
-        step: 5,
-        name: 'Calculate Referral Payouts',
+        step: 6,
+        name: 'Send Payout Notifications',
         success: false,
         error: errorMsg
       })
