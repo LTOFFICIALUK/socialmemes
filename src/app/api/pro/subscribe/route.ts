@@ -120,7 +120,6 @@ export async function POST(request: NextRequest) {
         price_sol: price,
         status: 'active',
         payment_tx_hash: signature,
-        payment_from_address: fromAddress,
         created_at: now.toISOString(),
         activated_at: now.toISOString(),
         expires_at: expiresAt.toISOString(),
@@ -128,8 +127,23 @@ export async function POST(request: NextRequest) {
 
     if (insertError) {
       console.error('Error storing subscription:', insertError)
-      // Don't fail the request since user is already updated to Pro
+      // This is a critical error - we should fail the request to ensure data consistency
+      return NextResponse.json(
+        { 
+          error: 'Failed to store subscription record', 
+          details: insertError.message 
+        },
+        { status: 500 }
+      )
     }
+
+    console.log('Successfully stored pro subscription record:', {
+      userId,
+      duration,
+      price,
+      signature,
+      expiresAt: expiresAt.toISOString()
+    })
 
     return NextResponse.json({
       success: true,

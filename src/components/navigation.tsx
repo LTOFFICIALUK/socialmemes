@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Grid3X3, User, LogOut, Settings, Bell, Search, BookOpen, Plus, TrendingUp, Users, Crown } from 'lucide-react'
+import { Home, Grid3X3, User, LogOut, Settings, Bell, Search, BookOpen, Plus, TrendingUp, Users, Crown, Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { CreatePost } from '@/components/create-post'
@@ -16,6 +16,7 @@ interface NavigationProps {
     id: string
     username: string
     avatar_url?: string
+    pro?: boolean
   }
   onSignOut?: () => void
   onNotificationRead?: () => void
@@ -247,6 +248,24 @@ export const Navigation = ({ currentUser, onSignOut, onPromoteClick, onProClick 
               </li>
             )
           })}
+          
+          {/* Admin Dashboard Link for Pro Users */}
+          {currentUser?.pro && (
+            <li>
+              <Link
+                href="/admin"
+                className={cn(
+                  "flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors relative",
+                  pathname === '/admin'
+                    ? "text-white font-bold"
+                    : "text-gray-300 hover:bg-white/5 hover:text-white"
+                )}
+              >
+                <Shield className="h-5 w-5" />
+                <span>Admin</span>
+              </Link>
+            </li>
+          )}
         </ul>
       </div>
 

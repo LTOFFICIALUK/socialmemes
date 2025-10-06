@@ -1,0 +1,144 @@
+name: Bi-weekly Payout Orchestration
+
+on:
+  schedule:
+    # Run 1 hour after each biweekly period ends (UTC timezone)
+    # Periods end on 14th and last day of each month
+    # This gives time for all transactions to be finalized
+    - cron: '0 1 15 * *'  # Run at 1:00 AM UTC on the 15th (after period 1-14 ends)
+    - cron: '0 1 1 * *'   # Run at 1:00 AM UTC on the 1st (after period 15-end of month ends)
+  workflow_dispatch: # Allow manual triggering with optional period parameters
+    inputs:
+      period_start:
+        description: 'Period start date (YYYY-MM-DD) - leave empty for auto-detect'
+        required: false
+        type: string
+      period_end:
+        description: 'Period end date (YYYY-MM-DD) - leave empty for auto-detect'
+        required: false
+        type: string
+
+jobs:
+  payout-orchestration:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Trigger Payout Orchestration
+        id: orchestration
+        run: |
+          echo "🚀 Starting payout orchestration..."
+          echo "🌐 App URL: ${{ secrets.APP_URL }}"
+          
+          # Check if manual period was provided
+          if [ -n "${{ github.event.inputs.period_start }}" ] && [ -n "${{ github.event.inputs.period_end }}" ]; then
+            echo "📅 Using manually provided period: ${{ github.event.inputs.period_start }} to ${{ github.event.inputs.period_end }}"
+            REQUEST_BODY="{\"periodStart\": \"${{ github.event.inputs.period_start }}\", \"periodEnd\": \"${{ github.event.inputs.period_end }}\"}"
+          else
+            echo "📅 Auto-detecting current processable period..."
+            REQUEST_BODY="{}"
+          fi
+          
+          echo "Request body: $REQUEST_BODY"
+          
+          # Make API call to orchestrator endpoint
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.API_SECRET_KEY }}" \
+            -d "$REQUEST_BODY" \
+            "${{ secrets.APP_URL }}/api/admin/revenue/run-payout-orchestration")
+          
+          # Split response and status code
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          RESPONSE_BODY=$(echo "$RESPONSE" | head -n -1)
+          
+          echo "HTTP Status: $HTTP_CODE"
+          echo "Response: $RESPONSE_BODY"
+          
+          # Parse response
+          if [ $HTTP_CODE -eq 200 ]; then
+            # Extract period info from response
+            PERIOD_START=$(echo "$RESPONSE_BODY" | jq -r '.period.start // empty')
+            PERIOD_END=$(echo "$RESPONSE_BODY" | jq -r '.period.end // empty')
+            SUCCESS=$(echo "$RESPONSE_BODY" | jq -r '.success // false')
+            
+            if [ "$SUCCESS" = "true" ]; then
+              echo "✅ Orchestration completed successfully"
+              echo "📅 Period: $PERIOD_START to $PERIOD_END"
+              
+              # Extract step results
+              STEPS=$(echo "$RESPONSE_BODY" | jq -r '.steps | length')
+              SUCCESSFUL_STEPS=$(echo "$RESPONSE_BODY" | jq -r '.steps | map(select(.success == true)) | length')
+              
+              echo "📈 Steps completed: $SUCCESSFUL_STEPS/$STEPS"
+              
+              # Extract final results
+              TOTAL_USERS=$(echo "$RESPONSE_BODY" | jq -r '.finalResults.totalUsers // 0')
+              TOTAL_PAYOUT=$(echo "$RESPONSE_BODY" | jq -r '.finalResults.totalPayout // 0')
+              IS_BALANCED=$(echo "$RESPONSE_BODY" | jq -r '.finalResults.isBalanced // false')
+              
+              echo "💰 Total users: $TOTAL_USERS"
+              echo "💰 Total payout: $TOTAL_PAYOUT SOL"
+              echo "⚖️ Balanced: $IS_BALANCED"
+              
+              # Set outputs for next steps
+              echo "period_start=$PERIOD_START" >> $GITHUB_OUTPUT
+              echo "period_end=$PERIOD_END" >> $GITHUB_OUTPUT
+              echo "total_users=$TOTAL_USERS" >> $GITHUB_OUTPUT
+              echo "total_payout=$TOTAL_PAYOUT" >> $GITHUB_OUTPUT
+              echo "success=true" >> $GITHUB_OUTPUT
+              
+            else
+              echo "❌ Orchestration failed"
+              ERRORS=$(echo "$RESPONSE_BODY" | jq -r '.errors[]? // empty')
+              if [ -n "$ERRORS" ]; then
+                echo "Errors:"
+                echo "$ERRORS"
+              fi
+              echo "success=false" >> $GITHUB_OUTPUT
+              exit 1
+            fi
+          else
+            echo "❌ API call failed with status $HTTP_CODE"
+            echo "Response: $RESPONSE_BODY"
+            echo "success=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "✅ Payout orchestration completed successfully!"
+          echo "📅 Period: ${{ steps.orchestration.outputs.period_start }} to ${{ steps.orchestration.outputs.period_end }}"
+          echo "💰 Total users: ${{ steps.orchestration.outputs.total_users }}"
+          echo "💰 Total payout: ${{ steps.orchestration.outputs.total_payout }} SOL"
+          echo ""
+          echo "🎉 All users are now ready for payout distribution!"
+          # You can add Slack/Discord notifications here if needed
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Payout orchestration failed!"
+          echo "📅 Period: ${{ steps.orchestration.outputs.period_start }} to ${{ steps.orchestration.outputs.period_end }}"
+          echo ""
+          echo "🔧 Please check the logs above for error details."
+          echo "💡 Common issues:"
+          echo "  - Missing or invalid period data in biweekly_periods table"
+          echo "  - API endpoint authentication issues"
+          echo "  - Database connection problems"
+          echo "  - Missing revenue data for the period"
+          # You can add failure notifications here if needed

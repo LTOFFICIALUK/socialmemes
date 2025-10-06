@@ -8,6 +8,8 @@ import { getNotifications, markNotificationAsRead, markAllNotificationsAsRead } 
 import { Notification } from '@/lib/database'
 import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
+import { PayoutNotification } from './payout-notification'
+import { PhantomPayoutClaim } from './phantom-payout-claim'
 
 interface NotificationModalProps {
   isOpen: boolean
@@ -20,6 +22,8 @@ export const NotificationModal = ({ isOpen, onClose, userId, onNotificationRead 
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isMarkingAllRead, setIsMarkingAllRead] = useState(false)
+  const [showPayoutClaim, setShowPayoutClaim] = useState(false)
+  const [selectedPayoutData, setSelectedPayoutData] = useState<any>(null)
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -69,6 +73,30 @@ export const NotificationModal = ({ isOpen, onClose, userId, onNotificationRead 
     } finally {
       setIsMarkingAllRead(false)
     }
+  }
+
+  const handlePayoutClaim = async (notificationId: string, payoutData: any) => {
+    try {
+      setSelectedPayoutData(payoutData)
+      setShowPayoutClaim(true)
+      // Mark notification as read when user starts claiming
+      await handleMarkAsRead(notificationId)
+    } catch (error) {
+      console.error('Error handling payout claim:', error)
+    }
+  }
+
+  const handlePayoutSuccess = (transactionHash: string) => {
+    console.log('Payout successful:', transactionHash)
+    setShowPayoutClaim(false)
+    setSelectedPayoutData(null)
+    // Refresh notifications to show updated status
+    fetchNotifications()
+  }
+
+  const handlePayoutError = (error: string) => {
+    console.error('Payout error:', error)
+    // You could show a toast notification here
   }
 
   const getNotificationIcon = (type: string) => {
@@ -171,49 +199,92 @@ export const NotificationModal = ({ isOpen, onClose, userId, onNotificationRead 
             </div>
           ) : (
             <div>
-              {notifications.map((notification) => (
-                <Link key={notification.id} href={getNotificationLink(notification)}>
-                  <div
-                    className={`p-4 border-b border-gray-700 hover:bg-gray-800/50 transition-colors cursor-pointer ${
-                      !notification.is_read ? 'bg-gray-800/30' : ''
-                    }`}
-                    onClick={() => !notification.is_read && handleMarkAsRead(notification.id)}
-                  >
-                    <div className="flex items-start gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage 
-                          src={notification.actor.avatar_url || undefined} 
-                          alt={notification.actor.username} 
-                        />
-                        <AvatarFallback className="bg-green-500 text-white font-semibold">
-                          {notification.actor.username ? notification.actor.username.charAt(0).toUpperCase() : 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          {getNotificationIcon(notification.type)}
-                          <span className="text-sm font-medium text-white">
-                            {getNotificationText(notification)}
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-400 mb-2">
-                          {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
-                        </p>
-                        {notification.post && (
-                          <div className="text-sm text-gray-300 truncate">
-                            &quot;{notification.post.content?.substring(0, 100)}
-                            {notification.post.content && notification.post.content.length > 100 ? '...' : ''}&quot;
+              {notifications.map((notification) => {
+                // Handle payout notifications specially
+                if (notification.type === 'payout_available') {
+                  return (
+                    <div key={notification.id} className="border-b border-gray-700">
+                      <PayoutNotification
+                        notification={notification as any}
+                        onClaim={(notificationId, payoutData) => handlePayoutClaim(notificationId, payoutData)}
+                      />
+                    </div>
+                  )
+                }
+
+                // Regular notifications
+                return (
+                  <Link key={notification.id} href={getNotificationLink(notification)}>
+                    <div
+                      className={`p-4 border-b border-gray-700 hover:bg-gray-800/50 transition-colors cursor-pointer ${
+                        !notification.is_read ? 'bg-gray-800/30' : ''
+                      }`}
+                      onClick={() => !notification.is_read && handleMarkAsRead(notification.id)}
+                    >
+                      <div className="flex items-start gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage 
+                            src={notification.actor.avatar_url || undefined} 
+                            alt={notification.actor.username} 
+                          />
+                          <AvatarFallback className="bg-green-500 text-white font-semibold">
+                            {notification.actor.username ? notification.actor.username.charAt(0).toUpperCase() : 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            {getNotificationIcon(notification.type)}
+                            <span className="text-sm font-medium text-white">
+                              {getNotificationText(notification)}
+                            </span>
                           </div>
-                        )}
+                          <p className="text-xs text-gray-400 mb-2">
+                            {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                          </p>
+                          {notification.post && (
+                            <div className="text-sm text-gray-300 truncate">
+                              &quot;{notification.post.content?.substring(0, 100)}
+                              {notification.post.content && notification.post.content.length > 100 ? '...' : ''}&quot;
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                )
+              })}
             </div>
           )}
         </div>
       </div>
+
+      {/* Phantom Payout Claim Modal */}
+      {showPayoutClaim && selectedPayoutData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-60">
+          <div className="bg-gray-900 border border-gray-700 rounded-lg shadow-xl w-full max-w-md">
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Claim Your Payout</h3>
+              <PhantomPayoutClaim
+                payoutData={selectedPayoutData}
+                onSuccess={handlePayoutSuccess}
+                onError={handlePayoutError}
+              />
+              <div className="mt-4 flex justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowPayoutClaim(false)
+                    setSelectedPayoutData(null)
+                  }}
+                  className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

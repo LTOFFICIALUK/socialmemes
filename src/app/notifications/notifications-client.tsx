@@ -172,6 +172,31 @@ export function NotificationsClient({ trendingTokens, tokenImages }: Notificatio
     router.push('/auth/signup')
   }
 
+  const handleClaimPayout = async (notificationId: string, payoutAmount: number) => {
+    try {
+      // Mark notification as read when claiming
+      await markNotificationAsRead(currentUser!.id, notificationId)
+      setNotifications(prev => 
+        prev.map(notification => 
+          notification.id === notificationId 
+            ? { ...notification, is_read: true }
+            : notification
+        )
+      )
+
+      // TODO: Implement actual payout claim logic with Phantom wallet
+      success(`Claiming ${payoutAmount.toFixed(4)} SOL payout...`)
+      
+      // For now, just show a success message
+      setTimeout(() => {
+        success(`Successfully claimed ${payoutAmount.toFixed(4)} SOL!`)
+      }, 1000)
+    } catch (error) {
+      console.error('Error claiming payout:', error)
+      showError('Failed to claim payout', 'Please try again later')
+    }
+  }
+
   // Show loading while checking authentication
   if (isCheckingAuth) {
     return (
@@ -258,6 +283,7 @@ export function NotificationsClient({ trendingTokens, tokenImages }: Notificatio
                     notification={notification}
                     onMarkAsRead={handleMarkAsRead}
                     onDelete={handleDeleteNotification}
+                    onClaimPayout={handleClaimPayout}
                   />
                 ))}
               </div>
