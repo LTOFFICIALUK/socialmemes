@@ -24,8 +24,8 @@ declare global {
   interface Window {
     solana?: {
       isPhantom?: boolean
-      connect: () => Promise<{ publicKey: any }>
-      signAndSendTransaction: (transaction: any) => Promise<{ signature: string }>
+      connect: () => Promise<{ publicKey: { toString: () => string } }>
+      signAndSendTransaction: (transaction: { serialize: () => Uint8Array }) => Promise<{ signature: string }>
     }
   }
 }

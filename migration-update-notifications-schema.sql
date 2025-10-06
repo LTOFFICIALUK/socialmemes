@@ -10,10 +10,10 @@ ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
 ALTER TABLE notifications 
 DROP CONSTRAINT IF EXISTS notifications_type_check;
 
--- Add the new type constraint that includes payout_available
+-- Add the new type constraint that includes payout_available and alpha_chat_subscription
 ALTER TABLE notifications 
 ADD CONSTRAINT notifications_type_check 
-CHECK (type IN ('follow', 'like', 'comment', 'payout_available'));
+CHECK (type IN ('follow', 'like', 'comment', 'payout_available', 'alpha_chat_subscription'));
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS notifications_metadata_idx ON notifications USING GIN (metadata);

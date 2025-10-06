@@ -200,7 +200,7 @@ export interface Database {
         Row: {
           id: string
           user_id: string
-          type: 'follow' | 'like' | 'comment' | 'alpha_chat_subscription'
+          type: 'follow' | 'like' | 'comment' | 'alpha_chat_subscription' | 'payout_available'
           actor_id: string
           post_id: string | null
           reply_id: string | null
@@ -216,12 +216,18 @@ export interface Database {
             recipient_username?: string
             sender_username?: string
             transaction_hash?: string
+            payout_amount_sol?: number
+            notification_type?: string
+            period_start?: string
+            period_end?: string
+            message?: string
+            action_text?: string
           } | null
         }
         Insert: {
           id?: string
           user_id: string
-          type: 'follow' | 'like' | 'comment' | 'alpha_chat_subscription'
+          type: 'follow' | 'like' | 'comment' | 'alpha_chat_subscription' | 'payout_available'
           actor_id: string
           post_id?: string | null
           reply_id?: string | null
@@ -237,6 +243,12 @@ export interface Database {
             recipient_username?: string
             sender_username?: string
             transaction_hash?: string
+            payout_amount_sol?: number
+            notification_type?: string
+            period_start?: string
+            period_end?: string
+            message?: string
+            action_text?: string
           } | null
         }
         Update: {
@@ -258,6 +270,12 @@ export interface Database {
             recipient_username?: string
             sender_username?: string
             transaction_hash?: string
+            payout_amount_sol?: number
+            notification_type?: string
+            period_start?: string
+            period_end?: string
+            message?: string
+            action_text?: string
           } | null
         }
       }

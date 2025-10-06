@@ -3,6 +3,17 @@ import { validatePeriod, getCurrentProcessablePeriod } from '@/lib/period-utils'
 
 export async function POST(request: NextRequest) {
   try {
+    // Validate API key for security
+    const authHeader = request.headers.get('authorization')
+    const expectedApiKey = process.env.API_SECRET_KEY
+    
+    if (expectedApiKey && (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.substring(7) !== expectedApiKey)) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Invalid API key' },
+        { status: 401 }
+      )
+    }
+
     const { periodStart, periodEnd } = await request.json()
 
     // If no period provided, get the current processable period
@@ -39,7 +50,13 @@ export async function POST(request: NextRequest) {
 
     const orchestrationResults = {
       period: { start: finalPeriodStart, end: finalPeriodEnd },
-      steps: [] as any[],
+      steps: [] as Array<{
+        step: number;
+        name: string;
+        success: boolean;
+        data?: Record<string, unknown>;
+        error?: string;
+      }>,
       success: false,
       errors: [] as string[]
     }

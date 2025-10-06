@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { X, Heart, MessageCircle, UserPlus, Check, DollarSign } from 'lucide-react'
+import { X, Heart, MessageCircle, UserPlus, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { getNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '@/lib/database'
@@ -23,7 +23,7 @@ export const NotificationModal = ({ isOpen, onClose, userId, onNotificationRead 
   const [isLoading, setIsLoading] = useState(false)
   const [isMarkingAllRead, setIsMarkingAllRead] = useState(false)
   const [showPayoutClaim, setShowPayoutClaim] = useState(false)
-  const [selectedPayoutData, setSelectedPayoutData] = useState<any>(null)
+  const [selectedPayoutData, setSelectedPayoutData] = useState<{ amount: number; period: string } | null>(null)
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -75,7 +75,7 @@ export const NotificationModal = ({ isOpen, onClose, userId, onNotificationRead 
     }
   }
 
-  const handlePayoutClaim = async (notificationId: string, payoutData: any) => {
+  const handlePayoutClaim = async (notificationId: string, payoutData: { amount: number; period: string }) => {
     try {
       setSelectedPayoutData(payoutData)
       setShowPayoutClaim(true)

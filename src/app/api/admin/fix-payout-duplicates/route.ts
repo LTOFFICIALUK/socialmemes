@@ -11,7 +11,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   }
 })
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     console.log('Starting cleanup of duplicate user payouts...')
 
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Group by user_id, period_start, period_end to find duplicates
-    const userPeriodMap = new Map<string, any[]>()
+    const userPeriodMap = new Map<string, typeof allPayouts>()
     allPayouts?.forEach(payout => {
       const key = `${payout.user_id}-${payout.period_start}-${payout.period_end}`
       if (!userPeriodMap.has(key)) {
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     // Delete duplicates (keep the most recent one)
     let deletedCount = 0
-    for (const [key, payouts] of userPeriodMap.entries()) {
+    for (const [, payouts] of userPeriodMap.entries()) {
       if (payouts.length > 1) {
         // Sort by created_at descending to keep the most recent
         payouts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())

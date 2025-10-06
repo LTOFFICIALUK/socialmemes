@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate mock payout amount
-    const generateMockPayout = (interactions: any): number => {
+    const generateMockPayout = (interactions: { posts: number; likes: number; follows: number; comments: number }): number => {
       const baseAmount = 0.1 // Base 0.1 SOL
       const postBonus = interactions.posts * 0.05 // 0.05 SOL per post
       const engagementBonus = (interactions.likes + interactions.follows) * 0.002 // 0.002 SOL per like/follow

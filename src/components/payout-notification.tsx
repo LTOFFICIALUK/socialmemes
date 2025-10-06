@@ -10,7 +10,6 @@ import {
   Heart, 
   UserPlus, 
   ExternalLink,
-  CheckCircle,
   Clock
 } from 'lucide-react'
 
@@ -18,30 +17,35 @@ interface PayoutNotificationProps {
   notification: {
     id: string
     type: string
-    metadata: {
-      period_start: string
-      period_end: string
-      payout_amount_sol: number
-      interaction_breakdown: {
+    metadata?: {
+      period_start?: string
+      period_end?: string
+      payout_amount_sol?: number
+      interaction_breakdown?: {
         posts: number
         comments: number
         likes: number
         follows: number
       }
-      notification_type: 'payout_earned' | 'referral_bonus'
-      claim_action: string
-      title: string
-      message: string
-      action_text: string
-    }
+      notification_type?: 'payout_earned' | 'referral_bonus'
+      claim_action?: string
+      title?: string
+      message?: string
+      action_text?: string
+    } | null
     created_at: string
   }
-  onClaim: (notificationId: string, payoutData: any) => void
+  onClaim: (notificationId: string, payoutData: { amount: number; period: string }) => void
 }
 
 export function PayoutNotification({ notification, onClaim }: PayoutNotificationProps) {
   const [isClaiming, setIsClaiming] = useState(false)
   const { metadata } = notification
+
+  // Early return if no metadata
+  if (!metadata) {
+    return null
+  }
 
   const formatSOL = (amount: number) => {
     return amount.toFixed(4) + ' SOL'
@@ -174,7 +178,7 @@ export function PayoutNotification({ notification, onClaim }: PayoutNotification
       </div>
 
       <div className="text-xs text-gray-400">
-        <p>💡 Click "Claim" to open Phantom wallet and receive your SOL payout</p>
+        <p>💡 Click &quot;Claim&quot; to open Phantom wallet and receive your SOL payout</p>
       </div>
     </div>
   )

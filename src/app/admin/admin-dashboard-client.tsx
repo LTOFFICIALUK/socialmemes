@@ -269,7 +269,7 @@ export function AdminDashboardClient() {
       
       if (data.success) {
         alert('Revenue data set successfully!')
-        setNewRevenue({ pumpfunFees: '', platformRevenue: '' })
+        setNewRevenue({ pumpfunCreatorWallet: '', platformRevenue: '' })
         setPlatformBreakdown(null)
         fetchAllPeriods()
         fetchCurrentPeriod()
