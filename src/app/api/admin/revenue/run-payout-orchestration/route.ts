@@ -1,6 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { validatePeriod, getCurrentProcessablePeriod } from '@/lib/period-utils'
 
+export async function GET() {
+  return NextResponse.json({
+    message: "Payout Orchestration API",
+    method: "This endpoint only accepts POST requests",
+    usage: "Send a POST request with optional periodStart and periodEnd in the request body",
+    example: {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer YOUR_API_SECRET_KEY"
+      },
+      body: {
+        periodStart: "2024-01-01",
+        periodEnd: "2024-01-15"
+      }
+    }
+  })
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Validate API key for security
