@@ -1446,73 +1446,134 @@ const docSections: DocSection[] = [
     icon: Code,
     content: (
       <div className="prose prose-invert max-w-none">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6">Social Memes – Product Roadmap</h1>
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6">Social Memes Product Roadmap</h1>
         
-        <h2 className="text-2xl font-semibold text-white mb-4">Guiding Principle</h2>
+        <h2 className="text-2xl font-semibold text-white mb-4">Strategic Vision</h2>
         <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 leading-relaxed">
-          Social Memes is designed to remain clean, simple, and user-first.
+          Social Memes is designed to remain clean, simple, and user-first while establishing token-aware social experiences.
         </p>
         <p className="text-gray-300 mb-6 sm:mb-8 leading-relaxed">
-          The roadmap introduces only the core utilities needed for growth and sustainability, while avoiding unnecessary clutter. Future developments will be shaped by community feedback and organic evolution.
+          Our phase-based approach introduces core utilities for growth and sustainability, establishing feature parity with leading social networks while introducing unique token-native mechanics that centralized platforms cannot replicate.
         </p>
 
-        <h2 className="text-2xl font-semibold text-white mb-4">Phase 1 – Core Platform (Live)</h2>
-        <ul className="text-gray-300 space-y-2 ml-4 mb-6">
-          <li>• Meme/image sharing (upload only, no in-app creation)</li>
-          <li>• Text-only posts</li>
-          <li>• Solana token attachments to posts</li>
-          <li>• Feed, Explore (grid of most recent memes/images), Search, Profiles, Notifications</li>
-          <li>• Trending Tokens list (Top 10 by activity)</li>
-        </ul>
-
-        <h2 className="text-2xl font-semibold text-white mb-4">Phase 2 – Monetization & Rewards (Near-Term)</h2>
+        <h2 className="text-2xl font-semibold text-white mb-4">Phase 1 — Core Platform Expansion</h2>
+        <p className="text-gray-300 mb-4 leading-relaxed">
+          Establishing the foundation for token-aware social experiences.
+        </p>
         
-        <h3 className="text-xl font-semibold text-white mb-4">Creator Rewards Program</h3>
-        <ul className="text-gray-300 space-y-2 ml-4 mb-6">
-          <li>• Weekly SOL payouts to active creators</li>
-          <li>• Based on engagement, token activity, and community growth</li>
-          <li>• Rewards sent directly to linked Solana wallets</li>
-        </ul>
-
-        <h3 className="text-xl font-semibold text-white mb-4">Paid Advertising</h3>
-        <ul className="text-gray-300 space-y-2 ml-4 mb-6">
-          <li>• <strong>Promoted Posts</strong> → boosted visibility in feed and Explore</li>
-          <li>• <strong>Promoted Tokens</strong> → sponsored slots in the Trending Tokens panel (clearly marked as promoted)</li>
-          <li>• Ad revenue helps fund Creator Rewards and platform sustainability</li>
-        </ul>
-
-        <h3 className="text-xl font-semibold text-white mb-4">User Subscriptions (&quot;Verification&quot;)</h3>
-        <ul className="text-gray-300 space-y-2 ml-4 mb-6">
-          <li>• Users can subscribe to the platform for verified status</li>
-          <li>• Verified users receive a badge on their profile and improved visibility</li>
-          <li>• Establishes recurring revenue for the platform</li>
-        </ul>
-
-        <h2 className="text-2xl font-semibold text-white mb-4">Phase 3 – Community-Guided Evolution (Future)</h2>
+        <h3 className="text-xl font-semibold text-white mb-4">Token Community Chats</h3>
         <p className="text-gray-300 mb-4 leading-relaxed">
-          Future features will be built in response to community needs, adoption trends, and organic usage patterns.
+          Clicking a token tag opens a dedicated community chat page for that token, similar to community features on other platforms but natively integrated into Social Memes.
         </p>
-        <p className="text-gray-300 mb-4">Potential additions:</p>
         <ul className="text-gray-300 space-y-2 ml-4 mb-6">
-          <li>• Verified token communities</li>
-          <li>• Tipping in SOL</li>
-          <li>• Advanced discovery tools</li>
+          <li>• Auto-generated community pages for each token</li>
+          <li>• Token metrics and data integration</li>
+          <li>• Decentralized community ownership model</li>
+          <li>• Enhanced discovery through dedicated Communities tab</li>
         </ul>
-        <p className="text-gray-300 mb-6 sm:mb-8 leading-relaxed">
-          All updates will focus on simplicity and usability, keeping the platform uncluttered.
+
+        <h3 className="text-xl font-semibold text-white mb-4">Token Hover Previews</h3>
+        <p className="text-gray-300 mb-4 leading-relaxed">
+          Hovering over token tags displays instant context cards with key metrics and quick access links.
+        </p>
+        <ul className="text-gray-300 space-y-2 ml-4 mb-6">
+          <li>• Lightweight hover card components</li>
+          <li>• Real-time token data integration</li>
+          <li>• Consistent experience across all platform sections</li>
+        </ul>
+
+        <h3 className="text-xl font-semibold text-white mb-4">MP4 Video Support</h3>
+        <p className="text-gray-300 mb-4 leading-relaxed">
+          Enable video uploads and playback to support modern meme formats and increase content diversity.
+        </p>
+        <ul className="text-gray-300 space-y-2 ml-4 mb-6">
+          <li>• Video upload and storage infrastructure</li>
+          <li>• Optimized playback with mobile compatibility</li>
+          <li>• Support for short clips and GIF-like content</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold text-white mb-4">Phase 2 — User Experience & Safety Layer</h2>
+        <p className="text-gray-300 mb-4 leading-relaxed">
+          Refining the social experience to meet modern platform standards.
         </p>
 
-        <h2 className="text-2xl font-semibold text-white mb-4">Conclusion</h2>
+        <h3 className="text-xl font-semibold text-white mb-4">Profile Enhancements</h3>
         <p className="text-gray-300 mb-4 leading-relaxed">
-          The roadmap emphasizes three core pillars:
+          Upgrade profiles with stronger personal branding tools and improved content presentation capabilities.
         </p>
         <ul className="text-gray-300 space-y-2 ml-4 mb-6">
-          <li>• <strong>Rewards</strong> – payouts for active creators</li>
-          <li>• <strong>Advertising</strong> – sustainable revenue from promoted content</li>
-          <li>• <strong>Verification</strong> – optional subscriptions for credibility and platform support</li>
+          <li>• Pinned posts for profile feeds and community chats</li>
+          <li>• External links section for website and social connections</li>
+          <li>• Refined layout for highlighted content presentation</li>
         </ul>
-        <p className="text-gray-300 leading-relaxed">
-          This ensures Social Memes grows sustainably while staying clean, simple, and crypto-native, with the community guiding future expansion.
+
+        <h3 className="text-xl font-semibold text-white mb-4">Privacy & Safety Settings</h3>
+        <p className="text-gray-300 mb-4 leading-relaxed">
+          Comprehensive privacy controls and user safety features to establish trust and user control.
+        </p>
+        <ul className="text-gray-300 space-y-2 ml-4 mb-6">
+          <li>• User blocking and muting capabilities</li>
+          <li>• Granular notification settings</li>
+          <li>• Profile visibility and privacy options</li>
+          <li>• Content filtering and moderation tools</li>
+        </ul>
+
+        <h3 className="text-xl font-semibold text-white mb-4">Email Notifications & Marketing</h3>
+        <p className="text-gray-300 mb-4 leading-relaxed">
+          Email infrastructure for user engagement, retention, and structured communication.
+        </p>
+        <ul className="text-gray-300 space-y-2 ml-4 mb-6">
+          <li>• Email notifications for key platform events</li>
+          <li>• Digest emails and engagement summaries</li>
+          <li>• Marketing compliance and user communication</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold text-white mb-4">Phase 3 — Intelligence & Creator Infrastructure</h2>
+        <p className="text-gray-300 mb-4 leading-relaxed">
+          Layering analytics, security, and professional tools to scale creator success.
+        </p>
+
+        <h3 className="text-xl font-semibold text-white mb-4">Analytics Dashboard</h3>
+        <p className="text-gray-300 mb-4 leading-relaxed">
+          Comprehensive analytics suite for creators and token teams to track growth and content performance.
+        </p>
+        <ul className="text-gray-300 space-y-2 ml-4 mb-6">
+          <li>• Post engagement metrics and performance tracking</li>
+          <li>• Account growth and follower analytics</li>
+          <li>• Token-specific engagement insights</li>
+          <li>• Data export and reporting capabilities</li>
+        </ul>
+
+        <h3 className="text-xl font-semibold text-white mb-4">AI Spam & Scam Detection</h3>
+        <p className="text-gray-300 mb-4 leading-relaxed">
+          AI-driven content moderation and user reporting tools to protect platform integrity and build user trust.
+        </p>
+        <ul className="text-gray-300 space-y-2 ml-4 mb-6">
+          <li>• Automated detection of malicious content</li>
+          <li>• Real-time content scoring and filtering</li>
+          <li>• User reporting system with reason categorization</li>
+          <li>• Admin moderation dashboard and tools</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold text-white mb-4">Phase 4 — Mobile Expansion & Ecosystem Integration</h2>
+        <p className="text-gray-300 mb-4 leading-relaxed">
+          Delivering a native experience and scaling distribution across platforms.
+        </p>
+
+        <h3 className="text-xl font-semibold text-white mb-4">Native Mobile Apps</h3>
+        <p className="text-gray-300 mb-4 leading-relaxed">
+          Fully functional native iOS and Android applications with mobile-optimized features and performance.
+        </p>
+        <ul className="text-gray-300 space-y-2 ml-4 mb-6">
+          <li>• Native UI for all core platform features</li>
+          <li>• Push notifications for user engagement</li>
+          <li>• Mobile-optimized content creation tools</li>
+          <li>• App store distribution and discovery</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold text-white mb-4">Strategic Impact</h2>
+        <p className="text-gray-300 mb-4 leading-relaxed">
+          By progressing through these phases, Social Memes will establish feature parity with leading social networks while introducing unique token-native community and discovery mechanics. This approach provides creators and projects with professional tools and analytics while delivering a mobile-first experience that enables broader adoption across the Solana ecosystem.
         </p>
       </div>
     )
