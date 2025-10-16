@@ -15,6 +15,10 @@ import { ProModal } from '@/components/pro-modal'
 import { PromotionModal } from '@/components/promotion-modal'
 import { ToastContainer, useToast } from '@/components/ui/toast'
 import { Post, Profile, TrendingToken, followUser, unfollowUser, isFollowing } from '@/lib/database'
+
+interface SearchUser extends Profile {
+  avatar?: string
+}
 import { supabase } from '@/lib/supabase'
 
 interface SearchClientProps {
@@ -372,8 +376,8 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
                         >
                           <div className="flex items-center space-x-3 p-3 sm:p-4">
                             <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden">
-                              {(user as any).avatar ? (
-                                <img src={(user as any).avatar} alt={user.username} className="w-full h-full object-cover" />
+                              {(user as SearchUser).avatar ? (
+                                <img src={(user as SearchUser).avatar} alt={user.username} className="w-full h-full object-cover" />
                               ) : (
                                 <span className="text-white font-semibold">
                                   {user.username?.charAt(0)?.toUpperCase() || '?'}
