@@ -24,7 +24,7 @@ interface ReplyClientProps {
 }
 
 export function ReplyClient({ trendingTokens, tokenImages }: ReplyClientProps) {
-  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string } | undefined>(undefined)
+  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string; pro?: boolean } | undefined>(undefined)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [showPromotionModal, setShowPromotionModal] = useState(false)
   const [showTrendingModal, setShowTrendingModal] = useState(false)
@@ -69,7 +69,8 @@ export function ReplyClient({ trendingTokens, tokenImages }: ReplyClientProps) {
           setCurrentUser({
             id: profile.id,
             username: profile.username,
-            avatar_url: profile.avatar_url
+            avatar_url: profile.avatar_url,
+            pro: profile.pro
           })
         }
       } catch (err) {

@@ -26,7 +26,7 @@ interface HomeClientProps {
 }
 
 export function HomeClient({ trendingTokens, tokenImages }: HomeClientProps) {
-  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string } | undefined>(undefined)
+  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string; pro?: boolean } | undefined>(undefined)
   const [posts, setPosts] = useState<Post[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -89,7 +89,8 @@ export function HomeClient({ trendingTokens, tokenImages }: HomeClientProps) {
           setCurrentUser({
             id: profile.id,
             username: profile.username,
-            avatar_url: profile.avatar_url
+            avatar_url: profile.avatar_url,
+            pro: profile.pro
           })
         }
       } catch (err) {

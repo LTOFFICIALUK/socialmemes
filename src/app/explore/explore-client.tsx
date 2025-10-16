@@ -23,7 +23,7 @@ interface ExploreClientProps {
 }
 
 export function ExploreClient({ trendingTokens, tokenImages }: ExploreClientProps) {
-  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string } | undefined>(undefined)
+  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string; pro?: boolean } | undefined>(undefined)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
   const [showTrendingModal, setShowTrendingModal] = useState(false)
@@ -67,7 +67,8 @@ export function ExploreClient({ trendingTokens, tokenImages }: ExploreClientProp
           setCurrentUser({
             id: profile.id,
             username: profile.username,
-            avatar_url: profile.avatar_url
+            avatar_url: profile.avatar_url,
+            pro: profile.pro
           })
         }
       } catch (err) {

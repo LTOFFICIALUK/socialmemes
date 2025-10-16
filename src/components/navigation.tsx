@@ -389,7 +389,9 @@ export const Navigation = ({ currentUser, onSignOut, onPromoteClick, onProClick 
               </Avatar>
             </Link>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">
+              <p className={`text-sm font-medium truncate ${
+                currentUser.pro ? 'pro-username-gold' : 'text-white'
+              }`}>
                 {currentUser.username || 'User'}
               </p>
             </div>

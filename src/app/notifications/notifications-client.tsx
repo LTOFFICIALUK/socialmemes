@@ -27,7 +27,7 @@ interface NotificationsClientProps {
 
 export function NotificationsClient({ trendingTokens, tokenImages }: NotificationsClientProps) {
   const [notifications, setNotifications] = useState<Notification[]>([])
-  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string } | undefined>(undefined)
+  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string; pro?: boolean } | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(true)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [showTrendingModal, setShowTrendingModal] = useState(false)
@@ -95,7 +95,8 @@ export function NotificationsClient({ trendingTokens, tokenImages }: Notificatio
           setCurrentUser({
             id: profile.id,
             username: profile.username,
-            avatar_url: profile.avatar_url
+            avatar_url: profile.avatar_url,
+            pro: profile.pro
           })
         }
       } catch (err) {

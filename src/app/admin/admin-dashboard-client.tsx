@@ -17,6 +17,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
+import { AdminProGrant } from '@/components/AdminProGrant'
 
 interface RevenuePeriod {
   id: string
@@ -379,6 +380,12 @@ export function AdminDashboardClient() {
             <p className="text-xs text-gray-500">Admin Access</p>
           </div>
         </div>
+
+        {/* Admin Pro Grant Section */}
+        <AdminProGrant onSuccess={(message) => {
+          console.log('Pro granted:', message)
+          // You can add additional success handling here if needed
+        }} />
 
         {/* Current Period Section */}
         {currentPeriodData && (

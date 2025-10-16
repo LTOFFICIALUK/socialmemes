@@ -25,7 +25,7 @@ interface SearchClientProps {
 export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps) {
   const [posts, setPosts] = useState<Post[]>([])
   const [users, setUsers] = useState<Profile[]>([])
-  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string } | undefined>(undefined)
+  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string; pro?: boolean } | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(false)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
@@ -200,7 +200,8 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
           setCurrentUser({
             id: profile.id,
             username: profile.username,
-            avatar_url: profile.avatar_url
+            avatar_url: profile.avatar_url,
+            pro: profile.pro
           })
         }
       } catch (err) {
@@ -371,8 +372,8 @@ export function SearchClient({ trendingTokens, tokenImages }: SearchClientProps)
                         >
                           <div className="flex items-center space-x-3 p-3 sm:p-4">
                             <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden">
-                              {user.avatar_url ? (
-                                <img src={user.avatar_url} alt={user.username} className="w-full h-full object-cover" />
+                              {(user as any).avatar ? (
+                                <img src={(user as any).avatar} alt={user.username} className="w-full h-full object-cover" />
                               ) : (
                                 <span className="text-white font-semibold">
                                   {user.username?.charAt(0)?.toUpperCase() || '?'}

@@ -53,7 +53,7 @@ export const ReferralsClient = () => {
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
   const [copiedLink, setCopiedLink] = useState(false)
-  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string } | undefined>(undefined)
+  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string; pro?: boolean } | undefined>(undefined)
   const [showProModal, setShowProModal] = useState(false)
   const [showFeaturedTokenModal, setShowFeaturedTokenModal] = useState(false)
   const [showTrendingModal, setShowTrendingModal] = useState(false)
@@ -76,7 +76,7 @@ export const ReferralsClient = () => {
         // Get user profile with referral data
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('id, username, referral_code, referral_link, avatar_url')
+          .select('id, username, referral_code, referral_link, avatar_url, pro')
           .eq('id', user.id)
           .single()
 
@@ -92,7 +92,8 @@ export const ReferralsClient = () => {
         setCurrentUser({
           id: user.id,
           username: profileData.username,
-          avatar_url: profileData.avatar_url
+          avatar_url: profileData.avatar_url,
+          pro: profileData.pro
         })
 
         // Get referral statistics

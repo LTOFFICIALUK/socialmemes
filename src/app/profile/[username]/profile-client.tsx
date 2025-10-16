@@ -38,7 +38,7 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
   const [profile, setProfile] = useState<Profile | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
   const [alphaMessages, setAlphaMessages] = useState<AlphaChatMessage[]>([])
-  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string } | undefined>(undefined)
+  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; avatar_url?: string; pro?: boolean } | undefined>(undefined)
   const [isFollowingUser, setIsFollowingUser] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isFollowingLoading, setIsFollowingLoading] = useState(false)
@@ -84,7 +84,8 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
         setCurrentUser({
           id: currentUserProfile.id,
           username: currentUserProfile.username,
-          avatar_url: currentUserProfile.avatar_url
+          avatar_url: currentUserProfile.avatar_url,
+          pro: currentUserProfile.pro
         })
       }
 
