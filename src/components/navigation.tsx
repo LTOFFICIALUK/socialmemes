@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Grid3X3, User, LogOut, Settings, Bell, Search, BookOpen, Plus, TrendingUp, Users, Crown, Shield } from 'lucide-react'
+import { Home, Grid3X3, User, LogOut, Settings, Bell, Search, BookOpen, Plus, TrendingUp, Users, Crown, Shield, HelpCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { CreatePost } from '@/components/create-post'
@@ -32,11 +32,13 @@ const navigation = [
   { name: 'Pro', href: '#', icon: Crown, isAction: true },
   { name: 'Referrals', href: '/referrals', icon: Users },
   { name: 'Promote', href: '#', icon: TrendingUp, isAction: true },
+  { name: 'Create Post', href: '#', icon: Plus, isAction: true },
 ]
 
 export const Navigation = ({ currentUser, onSignOut, onPromoteClick, onProClick }: NavigationProps) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false)
+  const [isSupportOpen, setIsSupportOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
   const pathname = usePathname()
@@ -195,12 +197,27 @@ export const Navigation = ({ currentUser, onSignOut, onPromoteClick, onProClick 
             const isNotifications = item.name === 'Notifications'
             const isPromote = item.name === 'Promote'
             const isPro = item.name === 'Pro'
+            const isCreatePost = item.name === 'Create Post'
             
             if (isPromote) {
               return (
                 <li key={item.name}>
                   <button
                     onClick={onPromoteClick}
+                    className="flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-gray-300 hover:bg-white/5 hover:text-white w-full text-left cursor-pointer"
+                  >
+                    <item.icon className="h-5 w-5" />
+                    <span>{item.name}</span>
+                  </button>
+                </li>
+              )
+            }
+            
+            if (isCreatePost) {
+              return (
+                <li key={item.name}>
+                  <button
+                    onClick={() => setIsCreatePostModalOpen(true)}
                     className="flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-gray-300 hover:bg-white/5 hover:text-white w-full text-left cursor-pointer"
                   >
                     <item.icon className="h-5 w-5" />
@@ -217,8 +234,8 @@ export const Navigation = ({ currentUser, onSignOut, onPromoteClick, onProClick 
                     onClick={onProClick}
                     className="flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-gray-300 hover:bg-white/5 hover:text-white w-full text-left cursor-pointer"
                   >
-                    <item.icon className="h-5 w-5" />
-                    <span>{item.name}</span>
+                    <Crown className="h-5 w-5 pro-icon-gold" />
+                    <span className="pro-username-gold">{item.name}</span>
                   </button>
                 </li>
               )
@@ -288,16 +305,79 @@ export const Navigation = ({ currentUser, onSignOut, onPromoteClick, onProClick 
             </Link>
           </div>
 
-          {/* Create Post Button */}
-          <div className="mb-4">
+          {/* Support Menu Item */}
+          <div className="mb-2 relative">
             <button
-              onClick={() => setIsCreatePostModalOpen(true)}
+              onClick={() => setIsSupportOpen(!isSupportOpen)}
               className="flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-gray-300 hover:bg-white/5 hover:text-white w-full text-left cursor-pointer"
             >
-              <Plus className="h-5 w-5" />
-              <span>Create Post</span>
+              <HelpCircle className="h-5 w-5" />
+              <span>Support</span>
             </button>
+
+            {/* Support Dropdown */}
+            {isSupportOpen && (
+              <>
+                {/* Backdrop */}
+                <div 
+                  className="fixed inset-0 z-40"
+                  onClick={() => setIsSupportOpen(false)}
+                />
+                
+                {/* Menu */}
+                <div className="absolute bottom-0 left-0 bg-black border border-gray-800 rounded-lg shadow-lg py-2 z-50 w-48">
+                  {/* X (Twitter) Link */}
+                  <a
+                    href="https://x.com/socialmemesfun"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white"
+                    onClick={() => setIsSupportOpen(false)}
+                  >
+                    <svg
+                      className="h-4 w-4"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                    <span>X (Twitter)</span>
+                  </a>
+
+                  {/* Telegram Link */}
+                  <a
+                    href="https://t.me/socialmemesfun"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white"
+                    onClick={() => setIsSupportOpen(false)}
+                  >
+                    <svg
+                      className="h-4 w-4"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                    </svg>
+                    <span>Telegram</span>
+                  </a>
+
+                  {/* Docs Link */}
+                  <Link
+                    href="/docs"
+                    className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white"
+                    onClick={() => setIsSupportOpen(false)}
+                  >
+                    <BookOpen className="h-4 w-4" />
+                    <span>Docs</span>
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
+
           
           <div className="flex items-center space-x-3">
             <Link href={`/profile/${currentUser.username || 'user'}`}>

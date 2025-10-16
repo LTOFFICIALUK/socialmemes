@@ -345,3 +345,26 @@ input:-moz-autofill {
   font-weight: 600;
   cursor: pointer;
 }
+
+.pro-icon-gold {
+  stroke: url(#goldGradient);
+  animation: goldIconShimmer 3s ease-in-out infinite;
+}
+
+@keyframes goldIconShimmer {
+  0% {
+    stroke: #fbbf24;
+  }
+  25% {
+    stroke: #f59e0b;
+  }
+  50% {
+    stroke: #d97706;
+  }
+  75% {
+    stroke: #f59e0b;
+  }
+  100% {
+    stroke: #fbbf24;
+  }
+}
