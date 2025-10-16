@@ -6,7 +6,6 @@ import {
   UserPlus, 
   UserMinus, 
   Shield, 
-  Mail,
   Calendar,
   AlertCircle,
   CheckCircle,
@@ -25,7 +24,6 @@ interface AdminUser {
   permissions: Record<string, unknown>
   profiles?: {
     username: string
-    email: string
   }
 }
 
@@ -39,7 +37,7 @@ export const AdminManagement = ({ onSuccess, onError }: AdminManagementProps) =>
   const [isLoading, setIsLoading] = useState(true)
   const [isAdding, setIsAdding] = useState(false)
   const [isRemoving, setIsRemoving] = useState<string | null>(null)
-  const [newAdminEmail, setNewAdminEmail] = useState('')
+  const [newAdminUsername, setNewAdminUsername] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
 
@@ -78,52 +76,14 @@ export const AdminManagement = ({ onSuccess, onError }: AdminManagementProps) =>
     }
   }
 
-  const findUserByEmail = async (email: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, username, email')
-        .eq('email', email)
-        .single()
-
-      if (error) {
-        if (error.code === 'PGRST116') {
-          return null // User not found
-        }
-        throw error
-      }
-
-      return data
-    } catch (error) {
-      console.error('Error finding user:', error)
-      return null
-    }
-  }
-
   const addAdmin = async () => {
-    if (!newAdminEmail.trim()) {
-      onError?.('Please enter an email address')
+    if (!newAdminUsername.trim()) {
+      onError?.('Please enter a username')
       return
     }
 
     setIsAdding(true)
     try {
-      // Find user by email
-      const user = await findUserByEmail(newAdminEmail.trim())
-      if (!user) {
-        onError?.('User not found with that email address')
-        setIsAdding(false)
-        return
-      }
-
-      // Check if user is already an admin
-      const isAlreadyAdmin = admins.some(admin => admin.user_id === user.id)
-      if (isAlreadyAdmin) {
-        onError?.('This user is already an admin')
-        setIsAdding(false)
-        return
-      }
-
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
         onError?.('No active session found')
@@ -131,6 +91,7 @@ export const AdminManagement = ({ onSuccess, onError }: AdminManagementProps) =>
         return
       }
 
+      // Send username to API - it will look up the user server-side
       const response = await fetch('/api/admin/manage', {
         method: 'POST',
         headers: {
@@ -139,7 +100,7 @@ export const AdminManagement = ({ onSuccess, onError }: AdminManagementProps) =>
         },
         body: JSON.stringify({
           action: 'add',
-          userId: user.id,
+          username: newAdminUsername.trim(),
           permissions: { role: 'admin' }
         })
       })
@@ -147,8 +108,8 @@ export const AdminManagement = ({ onSuccess, onError }: AdminManagementProps) =>
       const result = await response.json()
       
       if (result.success) {
-        onSuccess?.(`Successfully added ${user.username || user.email} as admin`)
-        setNewAdminEmail('')
+        onSuccess?.(`Successfully added ${newAdminUsername.trim()} as admin`)
+        setNewAdminUsername('')
         setShowAddForm(false)
         fetchAdmins() // Refresh the list
       } else {
@@ -217,8 +178,7 @@ export const AdminManagement = ({ onSuccess, onError }: AdminManagementProps) =>
   const filteredAdmins = admins.filter(admin => {
     const searchLower = searchQuery.toLowerCase()
     const username = admin.profiles?.username?.toLowerCase() || ''
-    const email = admin.profiles?.email?.toLowerCase() || ''
-    return username.includes(searchLower) || email.includes(searchLower)
+    return username.includes(searchLower)
   })
 
   if (isLoading) {
@@ -261,15 +221,15 @@ export const AdminManagement = ({ onSuccess, onError }: AdminManagementProps) =>
           </div>
           <div className="flex gap-3">
             <Input
-              type="email"
-              placeholder="Enter user's email address"
-              value={newAdminEmail}
-              onChange={(e) => setNewAdminEmail(e.target.value)}
+              type="text"
+              placeholder="Enter username"
+              value={newAdminUsername}
+              onChange={(e) => setNewAdminUsername(e.target.value)}
               className="bg-gray-700 border-gray-600 text-white flex-1"
             />
             <Button
               onClick={addAdmin}
-              disabled={isAdding || !newAdminEmail.trim()}
+              disabled={isAdding || !newAdminUsername.trim()}
               className="flex items-center gap-2"
             >
               {isAdding ? 'Adding...' : 'Add Admin'}
@@ -278,14 +238,14 @@ export const AdminManagement = ({ onSuccess, onError }: AdminManagementProps) =>
               variant="outline"
               onClick={() => {
                 setShowAddForm(false)
-                setNewAdminEmail('')
+                setNewAdminUsername('')
               }}
             >
               <X className="w-4 h-4" />
             </Button>
           </div>
           <p className="text-xs text-gray-400 mt-2">
-            Enter the email address of the user you want to make an admin
+            Enter the username of the user you want to make an admin
           </p>
         </div>
       )}
@@ -294,7 +254,7 @@ export const AdminManagement = ({ onSuccess, onError }: AdminManagementProps) =>
       <div className="mb-4">
         <Input
           type="text"
-          placeholder="Search admins by username or email..."
+          placeholder="Search admins by username..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="bg-gray-800 border-gray-600 text-white"
@@ -330,10 +290,6 @@ export const AdminManagement = ({ onSuccess, onError }: AdminManagementProps) =>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-gray-400">
                       <div className="flex items-center gap-1">
-                        <Mail className="w-3 h-3" />
-                        {admin.profiles?.email || 'No email'}
-                      </div>
-                      <div className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
                         Added {formatDate(admin.created_at)}
                       </div>
@@ -346,7 +302,7 @@ export const AdminManagement = ({ onSuccess, onError }: AdminManagementProps) =>
                   onClick={() => removeAdmin(
                     admin.id, 
                     admin.user_id, 
-                    admin.profiles?.username || admin.profiles?.email || 'Unknown User'
+                    admin.profiles?.username || 'Unknown User'
                   )}
                   disabled={isRemoving === admin.user_id}
                   className="text-red-400 border-red-400 hover:bg-red-400/10"
@@ -376,7 +332,7 @@ export const AdminManagement = ({ onSuccess, onError }: AdminManagementProps) =>
               <li>• Only existing admins can add or remove other admins</li>
               <li>• Admin access is managed through the database admins table</li>
               <li>• Removed admins lose access immediately but records are preserved</li>
-              <li>• Use email addresses to find and add users as admins</li>
+              <li>• Use usernames to find and add users as admins</li>
             </ul>
           </div>
         </div>
