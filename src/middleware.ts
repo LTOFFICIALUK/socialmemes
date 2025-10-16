@@ -80,6 +80,11 @@ export async function middleware(request: NextRequest) {
       return response
     }
 
+    // Allow admin routes to pass through - client will handle auth check
+    if (request.nextUrl.pathname.startsWith('/admin')) {
+      return response
+    }
+
     return response
   } catch (error) {
     console.error('Middleware error:', error)

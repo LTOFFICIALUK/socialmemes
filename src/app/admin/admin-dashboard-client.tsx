@@ -12,12 +12,14 @@ import {
   CheckCircle,
   AlertCircle,
   Clock,
-  BookOpen
+  BookOpen,
+  X
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
 import { AdminProGrant } from '@/components/AdminProGrant'
+import { AdminManagement } from '@/components/AdminManagement'
 
 interface RevenuePeriod {
   id: string
@@ -103,6 +105,7 @@ export function AdminDashboardClient() {
   const [platformBreakdown, setPlatformBreakdown] = useState<PlatformRevenueBreakdown | null>(null)
   const [isCalculating, setIsCalculating] = useState(false)
   const [isSettingRevenue, setIsSettingRevenue] = useState(false)
+  const [adminMessage, setAdminMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
   // Form state for setting revenue
   const [newRevenue, setNewRevenue] = useState({
@@ -201,19 +204,34 @@ export function AdminDashboardClient() {
         return
       }
 
-      // Check if user is admin (you can implement your own admin logic here)
+      // Check if user is admin by directly querying the admins table
+      const { data: adminRow, error } = await supabase
+        .from('admins')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      console.log('Client admin check:', { user: user.id, adminRow, error })
+
+      if (error || !adminRow) {
+        console.log('Not an admin, redirecting to home')
+        router.push('/')
+        return
+      }
+
+      // Get user profile for display
       const { data: profile } = await supabase
         .from('profiles')
         .select('username, pro')
         .eq('id', user.id)
         .single()
 
-      if (!profile?.pro) {
-        router.push('/')
-        return
-      }
-
-      setCurrentUser({ ...user, ...profile })
+      setCurrentUser({ 
+        id: user.id,
+        username: profile?.username || user.user_metadata?.username || `user_${user.id.slice(0, 8)}`,
+        pro: profile?.pro || false
+      })
     } catch (error) {
       console.error('Auth check failed:', error)
       router.push('/auth/signin')
@@ -386,6 +404,44 @@ export function AdminDashboardClient() {
           console.log('Pro granted:', message)
           // You can add additional success handling here if needed
         }} />
+
+        {/* Admin Management Section */}
+        <AdminManagement 
+          onSuccess={(message) => {
+            setAdminMessage({ type: 'success', text: message })
+            setTimeout(() => setAdminMessage(null), 5000)
+          }}
+          onError={(message) => {
+            setAdminMessage({ type: 'error', text: message })
+            setTimeout(() => setAdminMessage(null), 5000)
+          }}
+        />
+
+        {/* Admin Message Display */}
+        {adminMessage && (
+          <div className={`mb-6 p-4 rounded-lg border ${
+            adminMessage.type === 'success' 
+              ? 'bg-green-900/20 border-green-500/30 text-green-300' 
+              : 'bg-red-900/20 border-red-500/30 text-red-300'
+          }`}>
+            <div className="flex items-center gap-2">
+              {adminMessage.type === 'success' ? (
+                <CheckCircle className="w-4 h-4" />
+              ) : (
+                <AlertCircle className="w-4 h-4" />
+              )}
+              <span className="font-medium">{adminMessage.text}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setAdminMessage(null)}
+                className="ml-auto text-gray-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Current Period Section */}
         {currentPeriodData && (
