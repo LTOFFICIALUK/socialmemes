@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
 import { AdminProGrant } from '@/components/AdminProGrant'
 import { AdminManagement } from '@/components/AdminManagement'
+import { AdminFeaturedTokens } from '@/components/AdminFeaturedTokens'
 
 interface RevenuePeriod {
   id: string
@@ -407,6 +408,18 @@ export function AdminDashboardClient() {
 
         {/* Admin Management Section */}
         <AdminManagement 
+          onSuccess={(message) => {
+            setAdminMessage({ type: 'success', text: message })
+            setTimeout(() => setAdminMessage(null), 5000)
+          }}
+          onError={(message) => {
+            setAdminMessage({ type: 'error', text: message })
+            setTimeout(() => setAdminMessage(null), 5000)
+          }}
+        />
+
+        {/* Featured Tokens Management Section */}
+        <AdminFeaturedTokens 
           onSuccess={(message) => {
             setAdminMessage({ type: 'success', text: message })
             setTimeout(() => setAdminMessage(null), 5000)

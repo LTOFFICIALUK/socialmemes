@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
         .from('posts')
         .select(`
           *,
-          profiles (*),
+          profiles (id, username, full_name, avatar_url, pro),
           likes_count:likes(count)
         `)
         .or(`content.ilike.${searchTerm},token_symbol.ilike.${searchTerm}`)
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
         content: string; 
         token_symbol: string | null; 
         created_at: string; 
-        profiles: { username: string; full_name: string | null; avatar_url: string | null }; 
+        profiles: { username: string; full_name: string | null; avatar_url: string | null; pro?: boolean }; 
         likes_count: { count: number }[] | null 
       }) => {
         const profile = post.profiles
@@ -109,15 +109,14 @@ export async function GET(request: NextRequest) {
         return {
           id: post.id,
           user_id: post.user_id,
-          type: 'post',
-          title: profile?.full_name || profile?.username || 'Unknown User',
-          subtitle: `@${profile?.username || 'unknown'}`,
           content: post.content,
           token_symbol: post.token_symbol,
-          avatar: profile?.avatar_url,
           created_at: post.created_at,
+          profiles: profile, // Keep the nested structure that PostCard expects
           likes_count: post.likes_count?.[0]?.count || 0,
-          is_liked: currentUserId ? userLikes.includes(post.id) : false
+          replies_count: 0, // Add default value for consistency
+          is_liked: currentUserId ? userLikes.includes(post.id) : false,
+          impression_count: 0 // Add default value for consistency
         }
       }) || []
 
