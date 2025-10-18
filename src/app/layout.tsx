@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://socialmemes.vercel.app'),
   title: "Social Memes",
   description: "Share memes and tag tokens on the ultimate crypto meme platform",
   icons: {
