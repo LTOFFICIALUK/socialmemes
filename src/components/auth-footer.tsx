@@ -6,6 +6,20 @@ import { BookOpen } from 'lucide-react'
 const AuthFooter = () => {
   return (
     <div className="flex items-center justify-center space-x-6 text-white text-sm">
+      {/* $MEMES Link */}
+      <a
+        href="https://dexscreener.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center space-x-2 hover:text-gray-300 transition-colors"
+        aria-label="View $MEMES on DexScreener"
+      >
+        <span>$MEMES</span>
+      </a>
+
+      {/* Separator */}
+      <div className="h-4 w-px bg-gray-600"></div>
+
       {/* Telegram Account Link */}
       <a
         href="https://t.me/socialmemesfun"

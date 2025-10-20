@@ -20,3 +20,4 @@ export const uploadImageToSupabase = async (file: File, bucket: string = 'featur
   return publicUrl
 }
 
+
