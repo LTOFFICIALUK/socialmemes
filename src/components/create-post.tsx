@@ -186,7 +186,7 @@ export const CreatePost = ({ currentUser, onSubmit, isSubmitting, isModal = fals
           >
             <Avatar className="h-10 w-10">
               <AvatarImage src={currentUser.avatar_url || undefined} alt={currentUser.username} />
-              <AvatarFallback className="bg-green-500 text-white font-semibold">
+              <AvatarFallback className="bg-purple-400 text-white font-semibold">
                 {currentUser.username.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>

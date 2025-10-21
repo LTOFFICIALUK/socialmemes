@@ -199,7 +199,7 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
           data-prevent-navigation
         >
           <AvatarImage src={post.profiles?.avatar_url || undefined} alt={post.profiles?.username || 'User'} />
-          <AvatarFallback className="bg-green-500 text-white font-semibold">
+          <AvatarFallback className="bg-purple-400 text-white font-semibold">
             {post.profiles?.username?.charAt(0).toUpperCase() || 'U'}
           </AvatarFallback>
         </Avatar>

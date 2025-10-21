@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Home, Grid3X3, User, LogOut, Settings, Bell, Search, BookOpen, Plus, TrendingUp, Users, Crown, HelpCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -179,15 +178,13 @@ export const Navigation = ({ currentUser, onSignOut, onPromoteClick, onProClick 
   return (
     <nav className="h-full w-full bg-black flex flex-col">
       {/* Logo */}
-      <div className="pt-6 pr-6 pl-7 pb-8">
+      <div className="pt-0 pr-6 pl-7">
         <Link href="/" className="flex items-center">
-          <Image 
-            src="/newlogo.png" 
+          <img 
+            src="/logo.png" 
             alt="Social Memes" 
-            width={80}
-            height={80}
-            className="w-20 h-auto object-contain"
-            priority
+            className="h-32 w-auto object-contain"
+            style={{ aspectRatio: '1/1' }}
           />
         </Link>
       </div>
@@ -368,7 +365,7 @@ export const Navigation = ({ currentUser, onSignOut, onPromoteClick, onProClick 
             <Link href={`/profile/${currentUser.username || 'user'}`}>
               <Avatar className="h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity">
                 <AvatarImage src={currentUser.avatar_url || undefined} alt={currentUser.username} />
-                <AvatarFallback className="bg-purple-400 text-white font-semibold">
+                <AvatarFallback className="bg-green-500 text-white font-semibold">
                   {currentUser.username ? currentUser.username.charAt(0).toUpperCase() : 'U'}
                 </AvatarFallback>
               </Avatar>

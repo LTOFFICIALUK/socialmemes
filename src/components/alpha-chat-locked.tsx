@@ -35,7 +35,7 @@ export const AlphaChatLocked = ({
             <div className="p-4 bg-gray-800 rounded-full border-2 border-gray-700">
               <Lock className="h-12 w-12 text-gray-400" />
             </div>
-            <div className="absolute -top-1 -right-1 p-1 bg-yellow-500 rounded-full">
+            <div className="absolute -top-1 -right-1 p-1 bg-purple-400 rounded-full">
               <Crown className="h-4 w-4 text-black" />
             </div>
           </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
@@ -87,6 +88,17 @@ function SignInForm() {
       <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div>
+            {/* Logo */}
+            <div className="flex justify-center mb-20">
+              <Image
+                src="/newlogo.png"
+                alt="Social Memes Logo"
+                width={200}
+                height={70}
+                className="object-contain"
+                priority
+              />
+            </div>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
               Sign in to Social Memes
             </h2>

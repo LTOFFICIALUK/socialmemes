@@ -77,7 +77,7 @@ export const FollowingModal = ({
                   <div className="flex items-center space-x-3">
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={user.avatar_url || undefined} alt={user.username} />
-                      <AvatarFallback className="bg-green-500 text-white font-semibold">
+                      <AvatarFallback className="bg-purple-400 text-white font-semibold">
                         {user.username.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>

@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getUnreadNotificationCount } from '@/lib/database'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { useScrollDirection } from '@/hooks/useScrollDirection'
 
 interface MobileNavigationProps {
   currentUser?: {
@@ -29,6 +30,7 @@ const navigation = [
 export const MobileNavigation = ({ currentUser }: MobileNavigationProps) => {
   const [unreadCount, setUnreadCount] = useState(0)
   const pathname = usePathname()
+  const { direction, isScrolled } = useScrollDirection(10)
 
   // Fetch unread notification count
   useEffect(() => {
@@ -101,8 +103,15 @@ export const MobileNavigation = ({ currentUser }: MobileNavigationProps) => {
     return () => window.removeEventListener('notificationRead', handleNotificationRead)
   }, [refreshUnreadCount])
 
+  // Determine if navigation should be hidden
+  const shouldHide = isScrolled && direction === 'down'
+
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 z-50">
+    <nav className={cn(
+      "lg:hidden fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 z-50 transition-transform duration-300 ease-in-out",
+      "pb-safe-bottom", // Safe area for devices with home indicators
+      shouldHide ? "translate-y-full" : "translate-y-0"
+    )}>
       <div className="flex items-center justify-around py-2">
         {navigation.map((item) => {
           const isActive = pathname === item.href
@@ -145,7 +154,7 @@ export const MobileNavigation = ({ currentUser }: MobileNavigationProps) => {
           >
             <Avatar className="h-6 w-6">
               <AvatarImage src={currentUser.avatar_url || undefined} alt={currentUser.username} />
-              <AvatarFallback className="bg-green-500 text-white font-semibold text-xs">
+              <AvatarFallback className="bg-purple-400 text-white font-semibold text-xs">
                 {currentUser.username ? currentUser.username.charAt(0).toUpperCase() : 'U'}
               </AvatarFallback>
             </Avatar>

@@ -233,7 +233,7 @@ export const NotificationModal = ({ isOpen, onClose, userId, onNotificationRead 
                             src={notification.actor.avatar_url || undefined} 
                             alt={notification.actor.username} 
                           />
-                          <AvatarFallback className="bg-green-500 text-white font-semibold">
+                          <AvatarFallback className="bg-purple-400 text-white font-semibold">
                             {notification.actor.username ? notification.actor.username.charAt(0).toUpperCase() : 'U'}
                           </AvatarFallback>
                         </Avatar>

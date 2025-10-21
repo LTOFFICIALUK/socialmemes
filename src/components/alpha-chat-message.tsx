@@ -14,7 +14,7 @@ export const AlphaChatMessageComponent = ({ message }: AlphaChatMessageProps) =>
       <div className="flex items-start space-x-3">
         <Avatar className="h-10 w-10">
           <AvatarImage src={message.profiles.avatar_url || ''} alt={message.profiles.username} />
-          <AvatarFallback className="bg-gray-800 text-white">
+          <AvatarFallback className="bg-purple-400 text-white">
             {message.profiles.username.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>

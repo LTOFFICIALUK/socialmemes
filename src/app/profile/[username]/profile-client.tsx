@@ -357,7 +357,7 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
               <div className="flex items-start space-x-4">
                 <Avatar className="h-20 w-20">
                   <AvatarImage src={profile.avatar_url || ''} alt={profile.username} />
-                  <AvatarFallback className="bg-gray-800 text-white text-xl">
+                  <AvatarFallback className="bg-purple-400 text-white text-xl">
                     {profile.username.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -371,7 +371,7 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
                         {profile.username}
                       </h2>
                       {profile.pro && (
-                        <Crown className="h-5 w-5 text-yellow-500" />
+                        <Crown className="h-5 w-5 text-purple-400" />
                       )}
                     </div>
                     {isOwnProfile ? (

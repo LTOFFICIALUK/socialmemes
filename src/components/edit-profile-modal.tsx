@@ -205,7 +205,7 @@ export const EditProfileModal = ({
                     src={avatarPreview || profile.avatar_url || undefined} 
                     alt="Profile" 
                   />
-                  <AvatarFallback className="bg-green-500 text-white font-semibold text-2xl">
+                  <AvatarFallback className="bg-purple-400 text-white font-semibold text-2xl">
                     {profile.username.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>

@@ -93,8 +93,8 @@ export const AlphaChatSettings = ({ onClose }: AlphaChatSettingsProps) => {
       <div className="bg-black text-white border border-gray-800 rounded-lg overflow-hidden">
       <div className="bg-black border-b border-gray-800 p-6">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-yellow-500/20 rounded-lg">
-            <Crown className="h-6 w-6 text-yellow-500" />
+          <div className="p-2 bg-purple-400/20 rounded-lg">
+            <Crown className="h-6 w-6 text-purple-400" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-white">Alpha Chat</h3>

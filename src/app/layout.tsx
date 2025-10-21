@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.socialmemes.fun'),
   title: "Social Memes",
   description: "Share memes and tag tokens on the ultimate crypto meme platform",
+  viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
   icons: {
     icon: [
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
@@ -64,6 +65,18 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* SVG Gradients for Pro Icons */}
+        <svg width="0" height="0" style={{ position: 'absolute' }}>
+          <defs>
+            <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#A855F7" />
+              <stop offset="25%" stopColor="#9333EA" />
+              <stop offset="50%" stopColor="#7C3AED" />
+              <stop offset="75%" stopColor="#9333EA" />
+              <stop offset="100%" stopColor="#A855F7" />
+            </linearGradient>
+          </defs>
+        </svg>
         <WalletContextProvider>
           {children}
           <GlobalWalletSetup />

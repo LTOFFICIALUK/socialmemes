@@ -391,7 +391,7 @@ export const ReferralsClient = () => {
                       >
                         <Avatar className="h-10 w-10">
                           <AvatarImage src={referral.avatar_url || undefined} alt={referral.username} />
-                          <AvatarFallback className="bg-gray-700 text-white font-semibold">
+                          <AvatarFallback className="bg-purple-400 text-white font-semibold">
                             {referral.username.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>

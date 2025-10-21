@@ -77,7 +77,7 @@ export const FollowersModal = ({
                   <div className="flex items-center space-x-3">
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={follower.avatar_url || undefined} alt={follower.username} />
-                      <AvatarFallback className="bg-green-500 text-white font-semibold">
+                      <AvatarFallback className="bg-purple-400 text-white font-semibold">
                         {follower.username.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>

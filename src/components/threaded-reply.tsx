@@ -141,7 +141,7 @@ export const ThreadedReply = ({ reply, currentUser, isInConversationThread = fal
           }}
         >
           <AvatarImage src={reply.profiles?.avatar_url || undefined} alt={reply.profiles?.username || 'User'} />
-          <AvatarFallback className="bg-green-500 text-white font-semibold">
+          <AvatarFallback className="bg-purple-400 text-white font-semibold">
             {reply.profiles?.username?.charAt(0).toUpperCase() || 'U'}
           </AvatarFallback>
         </Avatar>

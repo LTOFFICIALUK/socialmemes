@@ -56,9 +56,9 @@ const proFeatures = [
     description: 'Get 20% off all post promotions',
   },
   {
-    icon: <Star className="h-4 w-4 text-yellow-500" />,
-    title: 'Gold Username',
-    description: 'Stand out with a premium gold username with shimmer effect',
+    icon: <Star className="h-4 w-4 text-purple-400" />,
+    title: 'Purple Username',
+    description: 'Stand out with a premium purple username with shimmer effect',
   },
   {
     icon: <Crown className="h-4 w-4 text-purple-500" />,
@@ -302,7 +302,7 @@ export const ProModal = ({ isOpen, onClose, forceWalletSetup = false }: ProModal
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-800">
             <div className="flex items-center space-x-3">
-              <Crown className="h-6 w-6 text-yellow-500" />
+              <Crown className="h-6 w-6 text-purple-400" />
               <h2 className="text-2xl font-bold text-white">Upgrade to Pro</h2>
             </div>
             {!(forceWalletSetup && currentUser?.pro && !currentUser?.payout_wallet_address) && (
@@ -353,12 +353,12 @@ export const ProModal = ({ isOpen, onClose, forceWalletSetup = false }: ProModal
 
                 {/* Force wallet setup message */}
                 {forceWalletSetup && !currentUser.payout_wallet_address && (
-                  <div className="p-4 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
+                  <div className="p-4 bg-purple-400/20 border border-purple-400/30 rounded-lg">
                     <div className="flex items-center space-x-2">
-                      <Wallet className="h-5 w-5 text-yellow-500" />
+                      <Wallet className="h-5 w-5 text-purple-400" />
                       <div>
-                        <span className="text-yellow-500 font-medium">Setup Required</span>
-                        <p className="text-yellow-400 text-sm mt-1">
+                        <span className="text-purple-400 font-medium">Setup Required</span>
+                        <p className="text-purple-300 text-sm mt-1">
                           Please set your payout wallet address below to complete your Pro setup. You cannot close this modal until you provide a valid wallet address.
                         </p>
                       </div>
@@ -430,7 +430,7 @@ export const ProModal = ({ isOpen, onClose, forceWalletSetup = false }: ProModal
                 >
                   {plan.popular && (
                     <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-yellow-500 text-black px-2 py-1 rounded-full text-xs font-medium">
+                      <span className="bg-purple-400 text-white px-2 py-1 rounded-full text-xs font-medium">
                         Most Popular
                       </span>
                     </div>
@@ -452,7 +452,7 @@ export const ProModal = ({ isOpen, onClose, forceWalletSetup = false }: ProModal
                       </li>
                       <li className="flex items-center">
                         <Check className="h-3 w-3 text-green-500 mr-2 flex-shrink-0" />
-                        <span className="text-gray-300">Gold username with shimmer</span>
+                        <span className="text-gray-300">Purple username with shimmer</span>
                       </li>
                       <li className="flex items-center">
                         <Check className="h-3 w-3 text-green-500 mr-2 flex-shrink-0" />
@@ -465,7 +465,7 @@ export const ProModal = ({ isOpen, onClose, forceWalletSetup = false }: ProModal
                       disabled={isSubscribing || currentUser.pro}
                       className={`w-full ${
                         plan.popular
-                          ? 'bg-yellow-500 hover:bg-yellow-600 text-black'
+                          ? 'bg-purple-400 hover:bg-purple-500 text-white'
                           : 'bg-blue-600 hover:bg-blue-700'
                       }`}
                     >
@@ -548,7 +548,7 @@ export const ProModal = ({ isOpen, onClose, forceWalletSetup = false }: ProModal
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-700">
               <div className="flex items-center space-x-3">
-                <Wallet className="h-6 w-6 text-yellow-500" />
+                <Wallet className="h-6 w-6 text-purple-400" />
                 <h2 className="text-xl font-semibold text-white">Setup Required</h2>
               </div>
               {!forceWalletSetup && (

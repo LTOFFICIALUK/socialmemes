@@ -318,8 +318,8 @@ input:-moz-autofill {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Pro Username Gold Shimmer Effect */
-@keyframes goldShimmer {
+/* Pro Username Purple Shimmer Effect */
+@keyframes purpleShimmer {
   0% {
     background-position: -200% 0;
   }
@@ -331,40 +331,40 @@ input:-moz-autofill {
 .pro-username-gold {
   background: linear-gradient(
     90deg,
-    #fbbf24 0%,
-    #f59e0b 25%,
-    #d97706 50%,
-    #f59e0b 75%,
-    #fbbf24 100%
+    #A855F7 0%,
+    #9333EA 25%,
+    #7C3AED 50%,
+    #9333EA 75%,
+    #A855F7 100%
   );
   background-size: 200% 100%;
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: goldShimmer 3s ease-in-out infinite;
+  animation: purpleShimmer 3s ease-in-out infinite;
   font-weight: 600;
   cursor: pointer;
 }
 
 .pro-icon-gold {
-  stroke: url(#goldGradient);
-  animation: goldIconShimmer 3s ease-in-out infinite;
+  stroke: url(#purpleGradient);
+  animation: purpleIconShimmer 3s ease-in-out infinite;
 }
 
-@keyframes goldIconShimmer {
+@keyframes purpleIconShimmer {
   0% {
-    stroke: #fbbf24;
+    stroke: #A855F7;
   }
   25% {
-    stroke: #f59e0b;
+    stroke: #9333EA;
   }
   50% {
-    stroke: #d97706;
+    stroke: #7C3AED;
   }
   75% {
-    stroke: #f59e0b;
+    stroke: #9333EA;
   }
   100% {
-    stroke: #fbbf24;
+    stroke: #A855F7;
   }
 }

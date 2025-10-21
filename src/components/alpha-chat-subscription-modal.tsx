@@ -185,7 +185,7 @@ export const AlphaChatSubscriptionModal = ({
         <div className="bg-black border border-gray-800 rounded-lg p-6 w-full max-w-md max-h-[calc(100vh-8rem)] lg:max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-2">
-              <Crown className="h-6 w-6 text-yellow-500" />
+              <Crown className="h-6 w-6 text-purple-400" />
               <h2 className="text-xl font-bold text-white">Subscribe to Alpha Chat</h2>
             </div>
             <button

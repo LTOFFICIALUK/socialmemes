@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
@@ -23,6 +24,19 @@ function SignUpForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
+  // Listen for auth state changes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Signup auth state change:', event, session ? 'Session exists' : 'No session')
+      if (event === 'SIGNED_IN' && session) {
+        console.log('User signed in after signup, redirecting to home...')
+        router.push('/')
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [router])
+
   // Handle referral code from URL parameter
   useEffect(() => {
     const refCode = searchParams.get('ref')
@@ -33,9 +47,29 @@ function SignUpForm() {
     }
   }, [searchParams])
 
+  const validateUsername = (usernameToCheck: string) => {
+    const trimmedUsername = usernameToCheck.trim()
+    
+    // Check if username contains only letters and numbers
+    const validPattern = /^[a-zA-Z0-9]+$/
+    
+    if (!validPattern.test(trimmedUsername)) {
+      return 'Username can only contain letters and numbers'
+    }
+    
+    return ''
+  }
+
   const checkUsernameAvailability = async (usernameToCheck: string) => {
     if (!usernameToCheck.trim()) {
       setUsernameError('')
+      return
+    }
+
+    // First validate the format
+    const formatError = validateUsername(usernameToCheck)
+    if (formatError) {
+      setUsernameError(formatError)
       return
     }
 
@@ -102,6 +136,15 @@ function SignUpForm() {
     if (!email.trim()) errors.email = true
     if (!password.trim()) errors.password = true
 
+    // Check username format validation
+    const formatError = validateUsername(username)
+    if (formatError) {
+      setUsernameError(formatError)
+      setValidationErrors(errors)
+      setIsLoading(false)
+      return
+    }
+
     if (Object.keys(errors).length > 0 || usernameError || referralCodeError) {
       setValidationErrors(errors)
       setIsLoading(false)
@@ -164,16 +207,8 @@ function SignUpForm() {
         }
 
         // Show success message
-        setSuccess('Account created successfully! Please check your email to verify your account.')
-        // Clear form
-        setEmail('')
-        setPassword('')
-        setUsername('')
-        setReferralCode('')
-        // Redirect after a short delay
-        setTimeout(() => {
-          router.push('/')
-        }, 3000)
+        setSuccess('Account created successfully! You can now start using Social Memes!')
+        // Auth state listener will handle the redirect automatically
       }
     } catch {
       setError('An unexpected error occurred')
@@ -187,6 +222,17 @@ function SignUpForm() {
       <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div>
+            {/* Logo */}
+            <div className="flex justify-center mb-8">
+              <Image
+                src="/newlogo.png"
+                alt="Social Memes Logo"
+                width={200}
+                height={70}
+                className="object-contain"
+                priority
+              />
+            </div>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
               Join Social Memes
             </h2>

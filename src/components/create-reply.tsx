@@ -173,7 +173,7 @@ export const CreateReply = ({ currentUser, onSubmit, isSubmitting, parentReplyId
         <div className="flex items-start space-x-3">
           <Avatar className="h-10 w-10">
             <AvatarImage src={currentUser.avatar_url || undefined} alt={currentUser.username} />
-            <AvatarFallback className="bg-green-500 text-white font-semibold">
+            <AvatarFallback className="bg-purple-400 text-white font-semibold">
               {currentUser.username.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
