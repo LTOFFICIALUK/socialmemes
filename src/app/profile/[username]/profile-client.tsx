@@ -414,22 +414,16 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
                   )}
                   
                   <div className="flex items-center space-x-6 mb-4">
-                    <button
-                      onClick={() => setShowFollowersModal(true)}
-                      className="flex items-center space-x-1 text-gray-300 hover:text-white transition-colors"
-                    >
+                    <div className="flex items-center space-x-1 text-gray-300">
                       <Users className="h-4 w-4" />
                       <span className="font-semibold">{followerCount}</span>
                       <span>followers</span>
-                    </button>
+                    </div>
                     
-                    <button
-                      onClick={() => setShowFollowingModal(true)}
-                      className="flex items-center space-x-1 text-gray-300 hover:text-white transition-colors"
-                    >
+                    <div className="flex items-center space-x-1 text-gray-300">
                       <span className="font-semibold">{followingCount}</span>
                       <span>following</span>
-                    </button>
+                    </div>
                   </div>
                 </div>
               </div>
