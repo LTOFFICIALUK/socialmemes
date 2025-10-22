@@ -111,6 +111,8 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
   }
 
   const validateAndSetImage = (file: File) => {
+    console.log('validateAndSetImage called with file:', file.name, file.type, file.size)
+    
     // Validate file type
     if (!file.type.startsWith('image/')) {
       setErrorMessage('Please select an image file')
@@ -123,31 +125,43 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
       return
     }
 
-    // Validate image is square
+    // Set the file immediately for preview, then validate dimensions
+    setImageFile(file)
+    setErrorMessage('')
+
+    // Create preview immediately
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+
+    // Validate image is square (but don't block the preview)
     const img = new Image()
     img.onload = () => {
+      console.log('Image loaded, dimensions:', img.width, 'x', img.height)
       if (img.width !== img.height) {
         setErrorMessage('Image must be square (same width and height)')
-        return
+        // Don't clear the file, just show the warning
+      } else {
+        setErrorMessage('')
       }
-
-      // Image is valid and square
-      setImageFile(file)
-      setErrorMessage('')
-
-      // Create preview
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
+    }
+    img.onerror = () => {
+      console.error('Failed to load image for validation')
+      setErrorMessage('Failed to load image. Please try a different file.')
     }
     img.src = URL.createObjectURL(file)
   }
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('handleImageSelect called, files:', e.target.files)
     const file = e.target.files?.[0]
-    if (!file) return
+    if (!file) {
+      console.log('No file selected')
+      return
+    }
+    console.log('File selected:', file.name, file.type, file.size)
     validateAndSetImage(file)
   }
 
@@ -387,27 +401,32 @@ export const FeaturedTokenModal = ({ isOpen, onClose, onSuccess }: FeaturedToken
                 onDragLeave={handleDragLeave}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
+                onClick={() => {
+                  console.log('Upload area clicked')
+                  const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
+                  if (fileInput) {
+                    fileInput.click()
+                  }
+                }}
                 className={`flex flex-col items-center justify-center w-full aspect-square border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
                   isDragging
                     ? 'border-green-500 bg-green-500/10'
                     : 'border-gray-700 hover:border-gray-600'
                 }`}
               >
-                <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer">
-                  <div className="flex flex-col items-center justify-center py-8">
-                    <Upload className={`h-12 w-12 mb-3 ${isDragging ? 'text-green-400' : 'text-gray-400'}`} />
-                    <p className={`text-sm mb-1 ${isDragging ? 'text-green-400' : 'text-gray-400'}`}>
-                      {isDragging ? 'Drop image here' : 'Click or drag to upload image'}
-                    </p>
-                    <p className="text-xs text-gray-500">Square images only (PNG, JPG up to 5MB)</p>
-                  </div>
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleImageSelect}
-                  />
-                </label>
+                <div className="flex flex-col items-center justify-center py-8">
+                  <Upload className={`h-12 w-12 mb-3 ${isDragging ? 'text-green-400' : 'text-gray-400'}`} />
+                  <p className={`text-sm mb-1 ${isDragging ? 'text-green-400' : 'text-gray-400'}`}>
+                    {isDragging ? 'Drop image here' : 'Click or drag to upload image'}
+                  </p>
+                  <p className="text-xs text-gray-500">Square images only (PNG, JPG up to 5MB)</p>
+                </div>
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                />
               </div>
             )}
           </div>
