@@ -1,8 +1,0 @@
-{
-  "crons": [
-    {
-      "path": "/api/cron/unflag-users",
-      "schedule": "0 * * * *"
-    }
-  ]
-}
