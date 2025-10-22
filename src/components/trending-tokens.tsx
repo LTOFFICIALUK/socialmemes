@@ -84,7 +84,7 @@ export const TrendingTokens = ({ trendingTokens, tokenImages }: TrendingTokensPr
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2">
                 <p className={`text-sm font-medium truncate ${getRankTextColor(_index)}`}>
-                  ${token.token_symbol}
+                  ${token.token_symbol.replace(/\$/g, '')}
                 </p>
                 {token.token_address && (
                   <ExternalLink className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />

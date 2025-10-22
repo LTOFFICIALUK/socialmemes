@@ -187,7 +187,7 @@ export const ThreadedReply = ({ reply, currentUser, isInConversationThread = fal
                   >
                     <Coins className="h-3 w-3 text-green-400" />
                     <span className="text-green-400 text-sm font-medium">
-                      ${reply.token_symbol}
+                      ${reply.token_symbol.replace(/\$/g, '')}
                     </span>
                   </div>
                 </>

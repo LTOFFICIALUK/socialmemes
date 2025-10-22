@@ -374,7 +374,7 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
                   >
                     <Coins className="h-3 w-3 text-green-400" />
                     <span className="text-green-400 text-sm font-medium">
-                      ${post.token_symbol}
+                      ${post.token_symbol.replace(/\$/g, '')}
                     </span>
                   </div>
                 </>

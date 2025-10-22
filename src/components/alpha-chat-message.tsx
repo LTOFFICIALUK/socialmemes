@@ -39,7 +39,7 @@ export const AlphaChatMessageComponent = ({ message }: AlphaChatMessageProps) =>
           )}
           {message.token_symbol && (
             <div className="mt-2 p-2 bg-gray-800 rounded-lg">
-              <span className="text-green-400 font-semibold">${message.token_symbol}</span>
+              <span className="text-green-400 font-semibold">${message.token_symbol.replace(/\$/g, '')}</span>
               {message.token_name && (
                 <span className="text-gray-400 ml-2">{message.token_name}</span>
               )}
