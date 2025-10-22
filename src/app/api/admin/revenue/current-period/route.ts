@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -92,7 +92,7 @@ export async function GET() {
     const isEnded = timeUntilEnd <= 0
 
     // Get next period if it exists
-    const { data: nextPeriod, error: nextError } = await supabase
+    const { data: nextPeriod } = await supabase
       .from('biweekly_periods')
       .select('*')
       .eq('is_future', true)

@@ -11,7 +11,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   }
 })
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Fetch all-time platform revenue data
     const { data: featuredTokensData, error: featuredTokensError } = await supabase

@@ -136,7 +136,7 @@ export const NotificationItem = ({
         return 'Payout available!'
       default:
         // Handle moderation_flag and any other types
-        if ((notification as any).type === 'moderation_flag') {
+        if (notification.type === 'moderation_flag') {
           const flagDuration = notification.metadata?.duration || '24 hours'
           const flagReason = (notification.metadata as { reason?: string })?.reason || 'Content policy violation'
           return `Your account has been flagged for ${flagDuration}. Reason: ${flagReason}. You cannot post, comment, or like during this period.`

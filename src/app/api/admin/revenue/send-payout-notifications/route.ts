@@ -42,9 +42,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Helper function to format period name
-    const formatPeriodName = (start: string, end: string): string => {
+    const formatPeriodName = (start: string): string => {
       const startDate = new Date(start)
-      const endDate = new Date(end)
       const month = startDate.toLocaleString('default', { month: 'long' })
       const year = startDate.getFullYear()
       const startDay = startDate.getDate()
@@ -52,7 +51,7 @@ export async function POST(request: NextRequest) {
       return `${month} ${year} - Period ${startDay <= 14 ? '1' : '2'}`
     }
 
-    const periodName = formatPeriodName(periodStart, periodEnd)
+    const periodName = formatPeriodName(periodStart)
     let userPayoutNotifications = 0
     let referralPayoutNotifications = 0
     const errors: string[] = []

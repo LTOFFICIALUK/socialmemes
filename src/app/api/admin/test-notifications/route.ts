@@ -52,9 +52,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Helper function to format period name
-    const formatPeriodName = (start: string, end: string): string => {
+    const formatPeriodName = (start: string): string => {
       const startDate = new Date(start)
-      const endDate = new Date(end)
       const month = startDate.toLocaleString('default', { month: 'long' })
       const year = startDate.getFullYear()
       const startDay = startDate.getDate()
@@ -109,7 +108,7 @@ export async function POST(request: NextRequest) {
               notification_type: 'referral_bonus',
               claim_action: 'claim_payout',
               title: `Referral Bonus Earned!`,
-              message: `You earned ${mockBonusAmount.toFixed(4)} SOL referral bonus for ${formatPeriodName(periodStart, periodEnd)} from users you referred.`,
+              message: `You earned ${mockBonusAmount.toFixed(4)} SOL referral bonus for ${formatPeriodName(periodStart)} from users you referred.`,
               action_text: 'Claim Bonus'
             }
           })
@@ -135,13 +134,12 @@ export async function POST(request: NextRequest) {
               notification_type: 'payout_earned',
               claim_action: 'claim_payout',
               title: `Revenue Share Payout Available!`,
-              message: `You earned ${mockPayoutAmount.toFixed(4)} SOL for ${formatPeriodName(periodStart, periodEnd)}. Your engagement: ${mockInteractions.posts} posts, ${mockInteractions.comments} comments, ${mockInteractions.likes} likes received, ${mockInteractions.follows} follows received.`,
+              message: `You earned ${mockPayoutAmount.toFixed(4)} SOL for ${formatPeriodName(periodStart)}. Your engagement: ${mockInteractions.posts} posts, ${mockInteractions.comments} comments, ${mockInteractions.likes} likes received, ${mockInteractions.follows} follows received.`,
               action_text: 'Claim Payout'
             }
           })
         
         notificationPromises.push(notificationPromise)
-        notificationsSent++
       }
     }
 
@@ -162,7 +160,7 @@ export async function POST(request: NextRequest) {
       totalUsers: users.length,
       failed: failed,
       message: `Successfully sent ${successful} test notifications to users`,
-      period: formatPeriodName(periodStart, periodEnd)
+      period: formatPeriodName(periodStart)
     })
 
   } catch (error) {

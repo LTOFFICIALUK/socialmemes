@@ -125,7 +125,7 @@ export function AdminDashboardClient() {
   // Populate form fields when current period data changes
   useEffect(() => {
     if (currentPeriodData?.revenue_data) {
-      setNewRevenue(prev => ({
+      setNewRevenue(() => ({
         pumpfunCreatorWallet: currentPeriodData.revenue_data?.pumpfun_creator_wallet || '',
         platformRevenue: currentPeriodData.revenue_data?.platform_revenue_sol?.toString() || ''
       }))
