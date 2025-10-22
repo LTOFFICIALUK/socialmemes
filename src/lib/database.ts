@@ -188,6 +188,58 @@ export const deletePostAsAdmin = async (postId: string) => {
   return result
 }
 
+export const flagUserAsAdmin = async (userId: string, reason: string) => {
+  // Call the admin flag user API endpoint
+  const { data: { session } } = await supabase.auth.getSession()
+  
+  if (!session?.access_token) {
+    throw new Error('No authentication token found')
+  }
+
+  const response = await fetch('/api/admin/flag-user', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${session.access_token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ userId, reason })
+  })
+
+  const result = await response.json()
+
+  if (!response.ok) {
+    throw new Error(result.error || 'Failed to flag user')
+  }
+
+  return result
+}
+
+export const banUserAsAdmin = async (userId: string, reason: string) => {
+  // Call the admin ban user API endpoint
+  const { data: { session } } = await supabase.auth.getSession()
+  
+  if (!session?.access_token) {
+    throw new Error('No authentication token found')
+  }
+
+  const response = await fetch('/api/admin/ban-user', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${session.access_token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ userId, reason })
+  })
+
+  const result = await response.json()
+
+  if (!response.ok) {
+    throw new Error(result.error || 'Failed to ban user')
+  }
+
+  return result
+}
+
 // Type for raw database result with count arrays
 type RawPost = Omit<Database['public']['Tables']['posts']['Row'], 'impression_count'> & {
   profiles: Profile

@@ -7,10 +7,12 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog'
-import { Post, deletePostAsAdmin } from '@/lib/database'
+import { Post, deletePostAsAdmin, flagUserAsAdmin, banUserAsAdmin } from '@/lib/database'
 import { formatDate, formatNumber } from '@/lib/utils'
 import { useImpressionTracking } from '@/hooks/useImpressionTracking'
 import { isUserAdmin } from '@/lib/admin-utils'
+import { checkUserModerationStatus, getModerationErrorMessage } from '@/lib/moderation-utils'
+import { useToast, ToastContainer } from '@/components/ui/toast'
 
 interface PostCardProps {
   post: Post
@@ -29,9 +31,13 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showAdminDeleteDialog, setShowAdminDeleteDialog] = useState(false)
+  const [showFlagUserDialog, setShowFlagUserDialog] = useState(false)
+  const [showBanUserDialog, setShowBanUserDialog] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [isShared, setIsShared] = useState(false)
+  const [moderationReason, setModerationReason] = useState('')
   const menuRef = useRef<HTMLDivElement>(null)
+  const { warning, toasts, removeToast } = useToast()
   
   // Reaction states for alpha chat messages
   const [fireCount, setFireCount] = useState((post as Post & { fire_count?: number }).fire_count || 0)
@@ -52,7 +58,14 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
     delay: 1000
   })
 
-  const handleLike = () => {
+  const handleLike = async () => {
+    // Check moderation status before allowing like
+    const status = await checkUserModerationStatus()
+    if (status && status.status !== 'active') {
+      warning('Action Restricted', getModerationErrorMessage(status))
+      return
+    }
+
     if (isLiked) {
       setIsLiked(false)
       setLikesCount(prev => prev - 1)
@@ -68,6 +81,13 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
   const handleFireReaction = async () => {
     if (!currentUserId) return
 
+    // Check moderation status before allowing reaction
+    const status = await checkUserModerationStatus()
+    if (status && status.status !== 'active') {
+      warning('Action Restricted', getModerationErrorMessage(status))
+      return
+    }
+
     try {
       const { reactFireAlphaChatMessage } = await import('@/lib/database')
       const result = await reactFireAlphaChatMessage(currentUserId, post.id)
@@ -82,7 +102,14 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
   const handleDiamondReaction = async () => {
     if (!currentUserId) return
 
-    try {
+    // Check moderation status before allowing reaction
+    const status = await checkUserModerationStatus()
+    if (status && status.status !== 'active') {
+      warning('Action Restricted', getModerationErrorMessage(status))
+      return
+    }
+
+    try{
       const { reactDiamondAlphaChatMessage } = await import('@/lib/database')
       const result = await reactDiamondAlphaChatMessage(currentUserId, post.id)
       setDiamondCount(result.diamond_count)
@@ -94,6 +121,13 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
 
   const handleMoneyReaction = async () => {
     if (!currentUserId) return
+
+    // Check moderation status before allowing reaction
+    const status = await checkUserModerationStatus()
+    if (status && status.status !== 'active') {
+      warning('Action Restricted', getModerationErrorMessage(status))
+      return
+    }
 
     try {
       const { reactMoneyAlphaChatMessage } = await import('@/lib/database')
@@ -177,6 +211,52 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
     }
   }
 
+  const handleFlagUserClick = () => {
+    setShowFlagUserDialog(true)
+    setShowDeleteMenu(false)
+  }
+
+  const handleFlagUserConfirm = async () => {
+    if (!moderationReason.trim()) return
+    
+    try {
+      setIsDeleting(true)
+      await flagUserAsAdmin(post.user_id, moderationReason.trim())
+      setModerationReason('')
+      // Optionally refresh the page or show success message
+      window.location.reload()
+    } catch (error) {
+      console.error('Error flagging user:', error)
+      // Error handling is done in the parent component with toast notifications
+    } finally {
+      setIsDeleting(false)
+      setShowFlagUserDialog(false)
+    }
+  }
+
+  const handleBanUserClick = () => {
+    setShowBanUserDialog(true)
+    setShowDeleteMenu(false)
+  }
+
+  const handleBanUserConfirm = async () => {
+    if (!moderationReason.trim()) return
+    
+    try {
+      setIsDeleting(true)
+      await banUserAsAdmin(post.user_id, moderationReason.trim())
+      setModerationReason('')
+      // Optionally refresh the page or show success message
+      window.location.reload()
+    } catch (error) {
+      console.error('Error banning user:', error)
+      // Error handling is done in the parent component with toast notifications
+    } finally {
+      setIsDeleting(false)
+      setShowBanUserDialog(false)
+    }
+  }
+
   const handleShare = async () => {
     try {
       const postUrl = `${window.location.origin}/posts/${post.id}`
@@ -229,7 +309,7 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
   return (
     <article 
       ref={impressionRef as React.RefObject<HTMLElement>}
-      className="border-b border-gray-800 hover:bg-gray-900/50 transition-colors cursor-pointer overflow-hidden"
+      className="border-b border-gray-800 hover:bg-gray-900/50 transition-colors cursor-pointer overflow-visible"
       onClick={handlePostCardClick}
     >
       <div className="flex space-x-3 p-3 sm:p-4 min-w-0">
@@ -303,7 +383,7 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
             
             {/* Delete menu - show for post author or admins */}
             {currentUserId && (post.user_id === currentUserId || isAdmin) && (
-              <div className="relative" ref={menuRef}>
+              <div className="relative z-50" ref={menuRef}>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -316,7 +396,7 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
                 </Button>
                 
                 {showDeleteMenu && (
-                  <div className="absolute right-1 top-9 bg-black border border-gray-700 rounded-lg shadow-lg z-10 min-w-[160px] py-1">
+                  <div className="absolute right-1 top-9 bg-black border border-gray-700 rounded-lg shadow-lg z-50 min-w-[160px] py-1">
                     {/* Show promote option only for post author */}
                     {post.user_id === currentUserId && (
                       <button
@@ -353,6 +433,30 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
                         <Trash2 className="h-4 w-4 mr-3" />
                         {isDeleting ? 'Deleting...' : 'Admin Deletion'}
                       </button>
+                    )}
+                    
+                    {/* Show moderation options for admins (even if not the post author) */}
+                    {isAdmin && post.user_id !== currentUserId && (
+                      <>
+                        <button
+                          className="w-full flex items-center px-4 py-2 text-sm text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10 transition-colors"
+                          onClick={handleFlagUserClick}
+                          disabled={isDeleting}
+                          data-prevent-navigation
+                        >
+                          <TrendingUp className="h-4 w-4 mr-3" />
+                          {isDeleting ? 'Processing...' : 'Flag User'}
+                        </button>
+                        <button
+                          className="w-full flex items-center px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                          onClick={handleBanUserClick}
+                          disabled={isDeleting}
+                          data-prevent-navigation
+                        >
+                          <Trash2 className="h-4 w-4 mr-3" />
+                          {isDeleting ? 'Processing...' : 'Ban User'}
+                        </button>
+                      </>
                     )}
                   </div>
                 )}
@@ -510,6 +614,49 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
         variant="destructive"
         isLoading={isDeleting}
       />
+
+      {/* Flag User Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showFlagUserDialog}
+        onClose={() => {
+          setShowFlagUserDialog(false)
+          setModerationReason('')
+        }}
+        onConfirm={handleFlagUserConfirm}
+        title="Flag User"
+        message={`Flag user ${post.profiles.username}? This will prevent them from posting, commenting, or replying.`}
+        confirmText="Flag User"
+        cancelText="Cancel"
+        variant="destructive"
+        isLoading={isDeleting}
+        showInput={true}
+        inputPlaceholder="Reason for flagging..."
+        inputValue={moderationReason}
+        onInputChange={setModerationReason}
+      />
+
+      {/* Ban User Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showBanUserDialog}
+        onClose={() => {
+          setShowBanUserDialog(false)
+          setModerationReason('')
+        }}
+        onConfirm={handleBanUserConfirm}
+        title="Ban User"
+        message={`Ban user ${post.profiles.username}? This will completely remove their access to the platform.`}
+        confirmText="Ban User"
+        cancelText="Cancel"
+        variant="destructive"
+        isLoading={isDeleting}
+        showInput={true}
+        inputPlaceholder="Reason for banning..."
+        inputValue={moderationReason}
+        onInputChange={setModerationReason}
+      />
+      
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
     </article>
   )
 }

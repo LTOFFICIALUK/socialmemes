@@ -134,14 +134,26 @@ export const EditProfileModal = ({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 pb-20 lg:pb-4">
-      <div className="bg-black border border-gray-800 rounded-lg w-full max-w-2xl max-h-[calc(100vh-8rem)] lg:max-h-[90vh] flex flex-col">
+    <div 
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-4 pb-20 lg:pb-4"
+      onClick={(e) => {
+        // Close modal when clicking on backdrop
+        if (e.target === e.currentTarget) {
+          onClose()
+        }
+      }}
+    >
+      <div 
+        className="bg-black border border-gray-800 rounded-lg w-full max-w-2xl max-h-[calc(100vh-8rem)] lg:max-h-[90vh] flex flex-col mx-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-800">
           <h2 className="text-xl font-bold text-white">Edit Profile</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors"
+            className="text-gray-400 hover:text-white transition-colors p-2 -m-2 touch-manipulation"
+            aria-label="Close modal"
           >
             <X className="h-6 w-6" />
           </button>

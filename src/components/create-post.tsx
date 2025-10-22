@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Image, X, Loader2, Coins } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { TokenModal } from '@/components/ui/token-modal'
 import { cn } from '@/lib/utils'
+import { useToast, ToastContainer } from '@/components/ui/toast'
+import { checkUserModerationStatus, getModerationErrorMessage } from '@/lib/moderation-utils'
 
 interface CreatePostProps {
   currentUser: {
@@ -37,7 +39,20 @@ export const CreatePost = ({ currentUser, onSubmit, isSubmitting, isModal = fals
   const [showTokenModal, setShowTokenModal] = useState(false)
   const [isDragOver, setIsDragOver] = useState(false)
   const [dragCounter, setDragCounter] = useState(0)
+  const [canPost, setCanPost] = useState(true)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { warning, toasts, removeToast } = useToast()
+
+  // Check user moderation status
+  useEffect(() => {
+    const checkModerationStatus = async () => {
+      const status = await checkUserModerationStatus()
+      if (status && status.status !== 'active') {
+        setCanPost(false)
+      }
+    }
+    checkModerationStatus()
+  }, [])
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -142,6 +157,15 @@ export const CreatePost = ({ currentUser, onSubmit, isSubmitting, isModal = fals
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Check moderation status before submitting
+    if (!canPost) {
+      const status = await checkUserModerationStatus()
+      if (status) {
+        warning('Action Restricted', getModerationErrorMessage(status))
+      }
+      return
+    }
     
     if (!image && !content.trim()) {
       alert('Please add some text or select an image')
@@ -343,6 +367,9 @@ export const CreatePost = ({ currentUser, onSubmit, isSubmitting, isModal = fals
         }
         onTokenRemove={handleRemoveToken}
       />
+      
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   )
 }

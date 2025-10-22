@@ -14,16 +14,20 @@ export const isUserAdmin = async (userId?: string): Promise<boolean> => {
       return false
     }
 
-    // Use the database function to check admin status
-    const { data: isAdminResult, error } = await supabase
-      .rpc('is_admin', { user_uuid: targetUserId })
+    // Directly query the admins table
+    const { data: adminRecord, error } = await supabase
+      .from('admins')
+      .select('id')
+      .eq('user_id', targetUserId)
+      .eq('is_active', true)
+      .maybeSingle()
 
     if (error) {
       console.error('Error checking admin status:', error)
       return false
     }
 
-    return isAdminResult === true
+    return !!adminRecord
   } catch (error) {
     console.error('Error in isUserAdmin:', error)
     return false

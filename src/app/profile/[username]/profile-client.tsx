@@ -363,15 +363,15 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
                 </Avatar>
                 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
+                  <div className="flex items-center justify-between mb-2 gap-2">
+                    <div className="flex items-center space-x-2 min-w-0 flex-1">
                       <h2 className={`text-2xl font-bold truncate ${
                         profile.pro ? 'pro-username-gold' : 'text-white'
                       }`}>
                         {profile.username}
                       </h2>
                       {profile.pro && (
-                        <Crown className="h-5 w-5 text-purple-400" />
+                        <Crown className="h-5 w-5 text-purple-400 flex-shrink-0" />
                       )}
                     </div>
                     {isOwnProfile ? (
@@ -379,7 +379,8 @@ export function ProfileClient({ trendingTokens, tokenImages }: ProfileClientProp
                         variant="outline"
                         size="sm"
                         onClick={() => setShowEditProfileModal(true)}
-                        className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                        className="border-gray-600 text-gray-300 hover:bg-gray-800 touch-manipulation min-h-[44px] flex-shrink-0"
+                        aria-label="Edit profile"
                       >
                         <Settings className="h-4 w-4 mr-1" />
                         Edit

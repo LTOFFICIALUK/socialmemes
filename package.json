@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "unflag": "node scripts/unflag-users.js"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",

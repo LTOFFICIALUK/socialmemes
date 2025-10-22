@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Image, X, Loader2, Coins } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { TokenModal } from '@/components/ui/token-modal'
 import { cn } from '@/lib/utils'
+import { useToast, ToastContainer } from '@/components/ui/toast'
+import { checkUserModerationStatus, getModerationErrorMessage } from '@/lib/moderation-utils'
 
 interface CreateReplyProps {
   currentUser: {
@@ -36,7 +38,20 @@ export const CreateReply = ({ currentUser, onSubmit, isSubmitting, parentReplyId
   const [showTokenModal, setShowTokenModal] = useState(false)
   const [isDragOver, setIsDragOver] = useState(false)
   const [dragCounter, setDragCounter] = useState(0)
+  const [canReply, setCanReply] = useState(true)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { warning, toasts, removeToast } = useToast()
+
+  // Check user moderation status
+  useEffect(() => {
+    const checkModerationStatus = async () => {
+      const status = await checkUserModerationStatus()
+      if (status && status.status !== 'active') {
+        setCanReply(false)
+      }
+    }
+    checkModerationStatus()
+  }, [])
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -134,6 +149,15 @@ export const CreateReply = ({ currentUser, onSubmit, isSubmitting, parentReplyId
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Check moderation status before submitting
+    if (!canReply) {
+      const status = await checkUserModerationStatus()
+      if (status) {
+        warning('Action Restricted', getModerationErrorMessage(status))
+      }
+      return
+    }
     
     if (!image && !content.trim()) {
       alert('Please add some text or select an image')
@@ -338,6 +362,9 @@ export const CreateReply = ({ currentUser, onSubmit, isSubmitting, parentReplyId
         }
         onTokenRemove={handleRemoveToken}
       />
+      
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   )
 }

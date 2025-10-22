@@ -354,7 +354,7 @@ export const PostDetail = ({ postId, currentUser, onPromote }: PostDetailProps) 
               
               {/* Delete menu - show for post author or admins */}
               {(currentUser.id === post.user_id || isAdmin) && (
-                <div className="relative" ref={menuRef}>
+                <div className="relative z-50" ref={menuRef}>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -366,7 +366,7 @@ export const PostDetail = ({ postId, currentUser, onPromote }: PostDetailProps) 
                   </Button>
                   
                   {showDeleteMenu && (
-                    <div className="absolute right-1 top-9 bg-black border border-gray-700 rounded-lg shadow-lg z-10 min-w-[160px] py-1">
+                    <div className="absolute right-1 top-9 bg-black border border-gray-700 rounded-lg shadow-lg z-50 min-w-[160px] py-1">
                       {/* Show promote option only for post author */}
                       {currentUser.id === post.user_id && (
                         <button

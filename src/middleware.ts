@@ -80,6 +80,29 @@ export async function middleware(request: NextRequest) {
       return response
     }
 
+    // Allow banned page to be accessed
+    if (request.nextUrl.pathname === '/banned') {
+      return response
+    }
+
+    // Check if user is banned and redirect to banned page
+    if (session) {
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('moderation_status')
+          .eq('id', session.user.id)
+          .single()
+
+        if (profile?.moderation_status === 'banned') {
+          return NextResponse.redirect(new URL('/banned', request.url))
+        }
+      } catch (error) {
+        console.error('Error checking ban status in middleware:', error)
+        // Continue with request if there's an error
+      }
+    }
+
     // Allow admin routes to pass through - client will handle auth check
     if (request.nextUrl.pathname.startsWith('/admin')) {
       return response

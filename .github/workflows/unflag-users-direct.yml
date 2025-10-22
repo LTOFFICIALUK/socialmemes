@@ -1,0 +1,104 @@
+name: Auto Unflag Users (Direct Database)
+
+on:
+  schedule:
+    # Run every hour at minute 0
+    - cron: '0 * * * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  unflag-users:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unflag expired users via database
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          node -e "
+          const { createClient } = require('@supabase/supabase-js');
+          
+          const supabaseUrl = process.env.SUPABASE_URL;
+          const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+          
+          if (!supabaseUrl || !supabaseKey) {
+            console.error('Missing required environment variables');
+            process.exit(1);
+          }
+          
+          const supabase = createClient(supabaseUrl, supabaseKey);
+          
+          async function unflagExpiredUsers() {
+            try {
+              console.log('Starting unflag process...');
+              
+              // Get all flagged users whose flag has expired (older than 24 hours)
+              const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+              
+              const { data: expiredFlags, error: fetchError } = await supabase
+                .from('profiles')
+                .select('id, username, moderation_status, moderated_at')
+                .eq('moderation_status', 'flagged')
+                .lt('moderated_at', twentyFourHoursAgo);
+              
+              if (fetchError) {
+                console.error('Error fetching expired flags:', fetchError);
+                process.exit(1);
+              }
+              
+              if (!expiredFlags || expiredFlags.length === 0) {
+                console.log('No expired flags found');
+                return;
+              }
+              
+              console.log(\`Found \${expiredFlags.length} expired flags\`);
+              
+              // Unflag all expired users
+              const userIds = expiredFlags.map(u => u.id);
+              
+              const { error: updateError } = await supabase
+                .from('profiles')
+                .update({
+                  moderation_status: 'active',
+                  moderation_reason: null,
+                  moderated_by: null,
+                  moderated_at: null
+                })
+                .in('id', userIds);
+              
+              if (updateError) {
+                console.error('Error unflagging users:', updateError);
+                process.exit(1);
+              }
+              
+              console.log(\`Successfully unflagged \${expiredFlags.length} user(s):\`);
+              expiredFlags.forEach(user => {
+                console.log(\`- \${user.username} (flagged at: \${user.moderated_at})\`);
+              });
+              
+            } catch (error) {
+              console.error('Unexpected error:', error);
+              process.exit(1);
+            }
+          }
+          
+          unflagExpiredUsers();
+          "
+
+      - name: Log completion
+        if: always()
+        run: |
+          echo "Unflag job completed at $(date)"

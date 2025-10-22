@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Heart, MessageCircle, UserPlus, DollarSign } from 'lucide-react'
+import { Heart, MessageCircle, UserPlus, DollarSign, AlertTriangle } from 'lucide-react'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Notification } from '@/lib/database'
@@ -90,6 +90,8 @@ export const NotificationItem = ({
         return <MessageCircle className="h-4 w-4 text-purple-500" />
       case 'payout_available':
         return <DollarSign className="h-4 w-4 text-green-500" />
+      case 'moderation_flag':
+        return <AlertTriangle className="h-4 w-4 text-yellow-500" />
       default:
         return null
     }
@@ -130,6 +132,10 @@ export const NotificationItem = ({
         }
         // Fallback for payout notifications without proper metadata
         return 'Payout available!'
+      case 'moderation_flag':
+        const flagDuration = notification.metadata?.duration || '24 hours'
+        const flagReason = notification.metadata?.reason || 'Content policy violation'
+        return `Your account has been flagged for ${flagDuration}. Reason: ${flagReason}. You cannot post, comment, or like during this period.`
       default:
         return 'New notification'
     }
@@ -152,6 +158,10 @@ export const NotificationItem = ({
     if (notification.type === 'payout_available') {
       // Payout notifications stay on the notifications page for now
       // In the future, this could link to a payout details page
+      return '#'
+    }
+    if (notification.type === 'moderation_flag') {
+      // Moderation flag notifications stay on the notifications page
       return '#'
     }
     if (notification.post_id) {

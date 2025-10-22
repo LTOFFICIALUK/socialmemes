@@ -5,6 +5,8 @@ import { Loader2 } from 'lucide-react'
 import { PostCard } from './post-card'
 import { Post } from '@/lib/database'
 import { likePost, unlikePost, likeAlphaChatMessage, unlikeAlphaChatMessage } from '@/lib/database'
+import { checkUserModerationStatus, getModerationErrorMessage } from '@/lib/moderation-utils'
+import { useToast, ToastContainer } from '@/components/ui/toast'
 
 interface FeedProps {
   posts: Post[]
@@ -17,9 +19,17 @@ interface FeedProps {
 }
 
 export const Feed = ({ posts, currentUserId, onLoadMore, hasMore, isLoading, onDeletePost, onPromotePost }: FeedProps) => {
+  const { warning, toasts, removeToast } = useToast()
 
   const handleLike = async (postId: string) => {
     if (!currentUserId) return
+
+    // Check moderation status before allowing like
+    const status = await checkUserModerationStatus()
+    if (status && status.status !== 'active') {
+      warning('Action Restricted', getModerationErrorMessage(status))
+      return
+    }
 
     try {
       // Find the post to check if it's an alpha chat message
@@ -38,6 +48,13 @@ export const Feed = ({ posts, currentUserId, onLoadMore, hasMore, isLoading, onD
 
   const handleUnlike = async (postId: string) => {
     if (!currentUserId) return
+
+    // Check moderation status before allowing unlike
+    const status = await checkUserModerationStatus()
+    if (status && status.status !== 'active') {
+      warning('Action Restricted', getModerationErrorMessage(status))
+      return
+    }
 
     try {
       // Find the post to check if it's an alpha chat message
@@ -108,6 +125,9 @@ export const Feed = ({ posts, currentUserId, onLoadMore, hasMore, isLoading, onD
           <p>You&apos;ve reached the end!</p>
         </div>
       )}
+      
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   )
 }
