@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog'
-import { Post } from '@/lib/database'
+import { Post, deletePostAsAdmin } from '@/lib/database'
 import { formatDate, formatNumber } from '@/lib/utils'
 import { useImpressionTracking } from '@/hooks/useImpressionTracking'
+import { isUserAdmin } from '@/lib/admin-utils'
 
 interface PostCardProps {
   post: Post
@@ -27,6 +28,8 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
   const [showDeleteMenu, setShowDeleteMenu] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showAdminDeleteDialog, setShowAdminDeleteDialog] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [isShared, setIsShared] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   
@@ -154,6 +157,26 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
     }
   }
 
+  const handleAdminDeleteClick = () => {
+    setShowAdminDeleteDialog(true)
+    setShowDeleteMenu(false)
+  }
+
+  const handleAdminDeleteConfirm = async () => {
+    try {
+      setIsDeleting(true)
+      await deletePostAsAdmin(post.id)
+      // Call the parent's onDelete to update the UI
+      onDelete?.(post.id)
+    } catch (error) {
+      console.error('Error deleting post as admin:', error)
+      // Error handling is done in the parent component with toast notifications
+    } finally {
+      setIsDeleting(false)
+      setShowAdminDeleteDialog(false)
+    }
+  }
+
   const handleShare = async () => {
     try {
       const postUrl = `${window.location.origin}/posts/${post.id}`
@@ -168,6 +191,23 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
       console.error('Error copying to clipboard:', error)
     }
   }
+
+  // Check if current user is admin
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (currentUserId) {
+        try {
+          const adminStatus = await isUserAdmin(currentUserId)
+          setIsAdmin(adminStatus)
+        } catch (error) {
+          console.error('Error checking admin status:', error)
+          setIsAdmin(false)
+        }
+      }
+    }
+
+    checkAdminStatus()
+  }, [currentUserId])
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -261,8 +301,8 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
               )}
             </div>
             
-            {/* Delete menu - only show for post author */}
-            {currentUserId && post.user_id === currentUserId && (
+            {/* Delete menu - show for post author or admins */}
+            {currentUserId && (post.user_id === currentUserId || isAdmin) && (
               <div className="relative" ref={menuRef}>
                 <Button
                   variant="ghost"
@@ -277,23 +317,43 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
                 
                 {showDeleteMenu && (
                   <div className="absolute right-1 top-9 bg-black border border-gray-700 rounded-lg shadow-lg z-10 min-w-[160px] py-1">
-                    <button
-                      className="w-full flex items-center px-4 py-2 text-sm text-white hover:text-gray-200 hover:bg-gray-500/10 transition-colors"
-                      onClick={handlePromoteClick}
-                      data-prevent-navigation
-                    >
-                      <TrendingUp className="h-4 w-4 mr-3" />
-                      Promote
-                    </button>
-                    <button
-                      className="w-full flex items-center px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                      onClick={handleDeleteClick}
-                      disabled={isDeleting}
-                      data-prevent-navigation
-                    >
-                      <Trash2 className="h-4 w-4 mr-3" />
-                      {isDeleting ? 'Deleting...' : 'Delete'}
-                    </button>
+                    {/* Show promote option only for post author */}
+                    {post.user_id === currentUserId && (
+                      <button
+                        className="w-full flex items-center px-4 py-2 text-sm text-white hover:text-gray-200 hover:bg-gray-500/10 transition-colors"
+                        onClick={handlePromoteClick}
+                        data-prevent-navigation
+                      >
+                        <TrendingUp className="h-4 w-4 mr-3" />
+                        Promote
+                      </button>
+                    )}
+                    
+                    {/* Show regular delete option only for post author */}
+                    {post.user_id === currentUserId && (
+                      <button
+                        className="w-full flex items-center px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                        onClick={handleDeleteClick}
+                        disabled={isDeleting}
+                        data-prevent-navigation
+                      >
+                        <Trash2 className="h-4 w-4 mr-3" />
+                        {isDeleting ? 'Deleting...' : 'Delete'}
+                      </button>
+                    )}
+                    
+                    {/* Show admin delete option for admins (even if not the post author) */}
+                    {isAdmin && post.user_id !== currentUserId && (
+                      <button
+                        className="w-full flex items-center px-4 py-2 text-sm text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 transition-colors"
+                        onClick={handleAdminDeleteClick}
+                        disabled={isDeleting}
+                        data-prevent-navigation
+                      >
+                        <Trash2 className="h-4 w-4 mr-3" />
+                        {isDeleting ? 'Deleting...' : 'Admin Deletion'}
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -433,6 +493,19 @@ export const PostCard = ({ post, currentUserId, onLike, onUnlike, onDelete, onPr
         title="Delete Post"
         message="Are you sure you want to delete this post? This action cannot be undone."
         confirmText="Delete"
+        cancelText="Cancel"
+        variant="destructive"
+        isLoading={isDeleting}
+      />
+
+      {/* Admin Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showAdminDeleteDialog}
+        onClose={() => setShowAdminDeleteDialog(false)}
+        onConfirm={handleAdminDeleteConfirm}
+        title="Admin Deletion"
+        message={`Are you sure you want to delete this post as an admin? This action cannot be undone and will permanently remove the post by ${post.profiles.username}.`}
+        confirmText="Delete as Admin"
         cancelText="Cancel"
         variant="destructive"
         isLoading={isDeleting}

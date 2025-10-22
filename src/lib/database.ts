@@ -162,6 +162,32 @@ export const deletePost = async (userId: string, postId: string) => {
   if (error) throw error
 }
 
+export const deletePostAsAdmin = async (postId: string) => {
+  // Call the admin deletion API endpoint
+  const { data: { session } } = await supabase.auth.getSession()
+  
+  if (!session?.access_token) {
+    throw new Error('No authentication token found')
+  }
+
+  const response = await fetch('/api/admin/delete-post', {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${session.access_token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ postId })
+  })
+
+  const result = await response.json()
+
+  if (!response.ok) {
+    throw new Error(result.error || 'Failed to delete post')
+  }
+
+  return result
+}
+
 // Type for raw database result with count arrays
 type RawPost = Omit<Database['public']['Tables']['posts']['Row'], 'impression_count'> & {
   profiles: Profile

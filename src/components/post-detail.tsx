@@ -10,9 +10,10 @@ import { CreateReply } from '@/components/create-reply'
 import { ThreadedReply } from '@/components/threaded-reply'
 import { Post, Reply } from '@/lib/database'
 import { formatDate, formatNumber, getBestDexScreenerUrl } from '@/lib/utils'
-import { getPostById, likePost, unlikePost, deletePost, createReply, getRepliesByPostId } from '@/lib/database'
+import { getPostById, likePost, unlikePost, deletePost, deletePostAsAdmin, createReply, getRepliesByPostId } from '@/lib/database'
 import { supabase } from '@/lib/supabase'
 import { useImpressionTrackingImmediate } from '@/hooks/useImpressionTrackingImmediate'
+import { isUserAdmin } from '@/lib/admin-utils'
 
 interface PostDetailProps {
   postId: string
@@ -30,6 +31,8 @@ export const PostDetail = ({ postId, currentUser, onPromote }: PostDetailProps) 
   const [showDeleteMenu, setShowDeleteMenu] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showAdminDeleteDialog, setShowAdminDeleteDialog] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [isSubmittingReply, setIsSubmittingReply] = useState(false)
   const [isLoadingReplies, setIsLoadingReplies] = useState(false)
   const [isShared, setIsShared] = useState(false)
@@ -95,6 +98,21 @@ export const PostDetail = ({ postId, currentUser, onPromote }: PostDetailProps) 
     }
   }, [replies]) // Run when replies are loaded
 
+  // Check if current user is admin
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      try {
+        const adminStatus = await isUserAdmin(currentUser.id)
+        setIsAdmin(adminStatus)
+      } catch (error) {
+        console.error('Error checking admin status:', error)
+        setIsAdmin(false)
+      }
+    }
+
+    checkAdminStatus()
+  }, [currentUser.id])
+
   const handleLike = async () => {
     if (!post) return
 
@@ -146,6 +164,27 @@ export const PostDetail = ({ postId, currentUser, onPromote }: PostDetailProps) 
     } finally {
       setIsDeleting(false)
       setShowDeleteDialog(false)
+    }
+  }
+
+  const handleAdminDeleteClick = () => {
+    setShowAdminDeleteDialog(true)
+    setShowDeleteMenu(false)
+  }
+
+  const handleAdminDeleteConfirm = async () => {
+    if (!post) return
+    
+    try {
+      setIsDeleting(true)
+      await deletePostAsAdmin(post.id)
+      // Redirect back to home after successful deletion
+      router.push('/')
+    } catch (error) {
+      console.error('Error deleting post as admin:', error)
+    } finally {
+      setIsDeleting(false)
+      setShowAdminDeleteDialog(false)
     }
   }
 
@@ -313,8 +352,8 @@ export const PostDetail = ({ postId, currentUser, onPromote }: PostDetailProps) 
                 )}
               </div>
               
-              {/* Delete menu - only show for post author */}
-              {currentUser.id === post.user_id && (
+              {/* Delete menu - show for post author or admins */}
+              {(currentUser.id === post.user_id || isAdmin) && (
                 <div className="relative" ref={menuRef}>
                   <Button
                     variant="ghost"
@@ -328,21 +367,40 @@ export const PostDetail = ({ postId, currentUser, onPromote }: PostDetailProps) 
                   
                   {showDeleteMenu && (
                     <div className="absolute right-1 top-9 bg-black border border-gray-700 rounded-lg shadow-lg z-10 min-w-[160px] py-1">
-                      <button
-                        className="w-full flex items-center px-4 py-2 text-sm text-white hover:text-gray-200 hover:bg-gray-500/10 transition-colors"
-                        onClick={handlePromoteClick}
-                      >
-                        <TrendingUp className="h-4 w-4 mr-3" />
-                        Promote
-                      </button>
-                      <button
-                        className="w-full flex items-center px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                        onClick={handleDeleteClick}
-                        disabled={isDeleting}
-                      >
-                        <Trash2 className="h-4 w-4 mr-3" />
-                        {isDeleting ? 'Deleting...' : 'Delete'}
-                      </button>
+                      {/* Show promote option only for post author */}
+                      {currentUser.id === post.user_id && (
+                        <button
+                          className="w-full flex items-center px-4 py-2 text-sm text-white hover:text-gray-200 hover:bg-gray-500/10 transition-colors"
+                          onClick={handlePromoteClick}
+                        >
+                          <TrendingUp className="h-4 w-4 mr-3" />
+                          Promote
+                        </button>
+                      )}
+                      
+                      {/* Show regular delete option only for post author */}
+                      {currentUser.id === post.user_id && (
+                        <button
+                          className="w-full flex items-center px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                          onClick={handleDeleteClick}
+                          disabled={isDeleting}
+                        >
+                          <Trash2 className="h-4 w-4 mr-3" />
+                          {isDeleting ? 'Deleting...' : 'Delete'}
+                        </button>
+                      )}
+                      
+                      {/* Show admin delete option for admins (even if not the post author) */}
+                      {isAdmin && currentUser.id !== post.user_id && (
+                        <button
+                          className="w-full flex items-center px-4 py-2 text-sm text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 transition-colors"
+                          onClick={handleAdminDeleteClick}
+                          disabled={isDeleting}
+                        >
+                          <Trash2 className="h-4 w-4 mr-3" />
+                          {isDeleting ? 'Deleting...' : 'Admin Deletion'}
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -451,6 +509,19 @@ export const PostDetail = ({ postId, currentUser, onPromote }: PostDetailProps) 
         title="Delete Post"
         message="Are you sure you want to delete this post? This action cannot be undone."
         confirmText="Delete"
+        cancelText="Cancel"
+        variant="destructive"
+        isLoading={isDeleting}
+      />
+
+      {/* Admin Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showAdminDeleteDialog}
+        onClose={() => setShowAdminDeleteDialog(false)}
+        onConfirm={handleAdminDeleteConfirm}
+        title="Admin Deletion"
+        message={`Are you sure you want to delete this post as an admin? This action cannot be undone and will permanently remove the post by ${post?.profiles.username}.`}
+        confirmText="Delete as Admin"
         cancelText="Cancel"
         variant="destructive"
         isLoading={isDeleting}
