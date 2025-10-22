@@ -90,9 +90,11 @@ export const NotificationItem = ({
         return <MessageCircle className="h-4 w-4 text-purple-500" />
       case 'payout_available':
         return <DollarSign className="h-4 w-4 text-green-500" />
-      case 'moderation_flag' as any:
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />
       default:
+        // Handle moderation_flag and any other types
+        if (type === 'moderation_flag') {
+          return <AlertTriangle className="h-4 w-4 text-yellow-500" />
+        }
         return null
     }
   }
@@ -132,11 +134,13 @@ export const NotificationItem = ({
         }
         // Fallback for payout notifications without proper metadata
         return 'Payout available!'
-      case 'moderation_flag' as any:
-        const flagDuration = notification.metadata?.duration || '24 hours'
-        const flagReason = notification.metadata?.reason || 'Content policy violation'
-        return `Your account has been flagged for ${flagDuration}. Reason: ${flagReason}. You cannot post, comment, or like during this period.`
       default:
+        // Handle moderation_flag and any other types
+        if ((notification as any).type === 'moderation_flag') {
+          const flagDuration = notification.metadata?.duration || '24 hours'
+          const flagReason = (notification.metadata as { reason?: string })?.reason || 'Content policy violation'
+          return `Your account has been flagged for ${flagDuration}. Reason: ${flagReason}. You cannot post, comment, or like during this period.`
+        }
         return 'New notification'
     }
   }
@@ -160,7 +164,7 @@ export const NotificationItem = ({
       // In the future, this could link to a payout details page
       return '#'
     }
-    if (notification.type === 'moderation_flag' as any) {
+    if ((notification as any).type === 'moderation_flag') {
       // Moderation flag notifications stay on the notifications page
       return '#'
     }
