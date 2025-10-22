@@ -136,7 +136,7 @@ export const NotificationItem = ({
         return 'Payout available!'
       default:
         // Handle moderation_flag and any other types
-        if (notification.type === 'moderation_flag') {
+        if ((notification as unknown as { type: string }).type === 'moderation_flag') {
           const flagDuration = notification.metadata?.duration || '24 hours'
           const flagReason = (notification.metadata as { reason?: string })?.reason || 'Content policy violation'
           return `Your account has been flagged for ${flagDuration}. Reason: ${flagReason}. You cannot post, comment, or like during this period.`
@@ -164,7 +164,7 @@ export const NotificationItem = ({
       // In the future, this could link to a payout details page
       return '#'
     }
-    if ((notification as any).type === 'moderation_flag') {
+    if ((notification as unknown as { type: string }).type === 'moderation_flag') {
       // Moderation flag notifications stay on the notifications page
       return '#'
     }
