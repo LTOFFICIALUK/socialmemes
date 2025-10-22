@@ -106,7 +106,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Log the admin action for audit purposes
-    console.log(`Admin ${user.id} deleting post ${postId} by user ${post.user_id} (${post.profiles?.username || 'unknown'})`)
+    console.log(`Admin ${user.id} deleting post ${postId} by user ${post.user_id} (${post.profiles?.[0]?.username || 'unknown'})`)
 
     // Delete the post using service role (bypasses RLS)
     // The RLS policy we created will also allow this, but using service role is more explicit
@@ -129,7 +129,7 @@ export async function DELETE(request: NextRequest) {
       message: 'Post deleted successfully',
       deletedPost: {
         id: post.id,
-        author: post.profiles?.username || 'unknown',
+        author: post.profiles?.[0]?.username || 'unknown',
         content: post.content?.substring(0, 100) + (post.content && post.content.length > 100 ? '...' : ''),
         createdAt: post.created_at
       }
