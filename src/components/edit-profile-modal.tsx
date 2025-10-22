@@ -21,7 +21,6 @@ export const EditProfileModal = ({
   onProfileUpdate 
 }: EditProfileModalProps) => {
   const [formData, setFormData] = useState({
-    full_name: profile.full_name || '',
     bio: profile.bio || '',
     username: profile.username
   })
@@ -115,7 +114,6 @@ export const EditProfileModal = ({
 
       // Update profile
       const updatedProfile = await updateProfile(profile.id, {
-        full_name: formData.full_name || null,
         bio: formData.bio || null,
         avatar_url: avatarUrl,
         banner_url: bannerUrl
@@ -238,17 +236,18 @@ export const EditProfileModal = ({
           {/* Form Fields */}
           <div className="space-y-4">
             <div>
-              <label htmlFor="full_name" className="block text-sm font-medium text-white mb-2">
-                Full Name
+              <label htmlFor="username" className="block text-sm font-medium text-white mb-2">
+                Username
               </label>
               <textarea
-                id="full_name"
-                name="full_name"
-                value={formData.full_name}
-                onChange={handleInputChange}
-                placeholder="Enter your full name"
+                id="username"
+                name="username"
+                value={formData.username}
+                disabled
+                placeholder="Username"
                 rows={1}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-400 placeholder-gray-500 resize-none cursor-not-allowed disabled:text-gray-400"
+                style={{ color: '#9CA3AF' }}
               />
             </div>
 

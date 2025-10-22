@@ -1046,7 +1046,7 @@ const docSections: DocSection[] = [
             </p>
             <ul className="text-blue-200 space-y-2 ml-4">
               <li>• Contact our support team at support@socialmemes.com</li>
-              <li>• Join our community Discord server</li>
+              <li>• Follow us on X and join our Telegram community</li>
               <li>• Check our status page for service updates</li>
             </ul>
           </div>

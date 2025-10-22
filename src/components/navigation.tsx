@@ -374,11 +374,13 @@ export const Navigation = ({ currentUser, onSignOut, onPromoteClick, onProClick 
               </Avatar>
             </Link>
             <div className="flex-1 min-w-0">
-              <p className={`text-sm font-medium truncate ${
-                currentUser.pro ? 'pro-username-gold' : 'text-white'
-              }`}>
-                {currentUser.username || 'User'}
-              </p>
+              <Link href={`/profile/${currentUser.username || 'user'}`}>
+                <p className={`text-sm font-medium truncate cursor-pointer hover:opacity-80 transition-opacity ${
+                  currentUser.pro ? 'pro-username-gold' : 'text-white'
+                }`}>
+                  {currentUser.username || 'User'}
+                </p>
+              </Link>
             </div>
             <Button
               variant="ghost"

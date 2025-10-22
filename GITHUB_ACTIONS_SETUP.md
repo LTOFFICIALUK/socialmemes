@@ -128,7 +128,7 @@ schedule:
 
 ### Add Notifications
 
-Add Slack/Discord notifications when users are unflagged:
+Add X/Telegram notifications when users are unflagged:
 
 ```yaml
 - name: Notify on unflag
