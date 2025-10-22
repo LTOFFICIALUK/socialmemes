@@ -8,7 +8,7 @@ const AuthFooter = () => {
     <div className="flex items-center justify-center space-x-6 text-white text-sm">
       {/* $MEMES Link */}
       <a
-        href="https://dexscreener.com"
+        href="https://dexscreener.com/solana/j3xvhv8mt3nyebpehyjr44nfvx4kesyjbbrbvxnjxvuc"
         target="_blank"
         rel="noopener noreferrer"
         className="flex items-center space-x-2 hover:text-gray-300 transition-colors"
