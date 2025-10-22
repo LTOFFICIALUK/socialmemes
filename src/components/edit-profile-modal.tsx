@@ -239,15 +239,13 @@ export const EditProfileModal = ({
               <label htmlFor="username" className="block text-sm font-medium text-white mb-2">
                 Username
               </label>
-              <textarea
+              <input
+                type="text"
                 id="username"
                 name="username"
                 value={formData.username}
-                disabled
-                placeholder="Username"
-                rows={1}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-400 placeholder-gray-500 resize-none cursor-not-allowed disabled:text-gray-400"
-                style={{ color: '#9CA3AF' }}
+                readOnly
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-500 placeholder-gray-500 cursor-not-allowed opacity-60"
               />
             </div>
 
